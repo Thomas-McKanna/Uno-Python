@@ -1,4 +1,5 @@
 from cards import Card, Deck, Hand
+from player import Player
 
 
 # Generate cards for UNO
@@ -30,7 +31,18 @@ deck = Deck(discard=discard, cards=cards)
 deck.shuffle()
 discard.cards = deck.draw(1) # Discard the top card of the deck
 
-hand = Hand(deck) # Create a hand
-hand.draw(7) # Initial deal
-print("Hand: ", hand)
-print("Discard pile: ", discard.cards)
+# Create 3 players
+player1 = Player("Player 1", deck)
+player2 = Player("Player 2", deck)
+player3 = Player("Player 3", deck)
+players = [player1, player2, player3]
+
+for _ in range(7):
+    for player in players:
+        player.draw(1)
+
+
+print("Discard Pile: ", deck.getDiscard())
+for player in players:
+    print(f"{player.name}: {player.hand}")
+
