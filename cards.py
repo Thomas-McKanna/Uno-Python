@@ -54,10 +54,9 @@ class Deck:
         return drawnCards
     
     def shuffle(self):
-      random.shuffle(self.cards)
+        random.shuffle(self.cards)
     
     def discard(self, discardCards):
-
         self.discardDeck.cards.extend(discardCards)
 
     def __len__(self):
