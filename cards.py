@@ -43,7 +43,7 @@ class Deck:
         cards and return what has already been drawn.
         """
         drawnCards = []
-        for i in range(number):
+        for _ in range(number):
             if len(self.cards) == 0:
                 if self.discardDeck is None or len(self.discardDeck) == 1:
                     return drawnCards

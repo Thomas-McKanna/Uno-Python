@@ -1,4 +1,4 @@
-from cards import *
+from cards import Card, Deck, Hand
 
 
 # Generate cards for UNO
