@@ -13,8 +13,10 @@ class Card:
         return str(self)
 
 class Hand:
-    def __init__(self, deck, cards=[]):
+    def __init__(self, deck, cards=None):
         self.deck = deck
+        if cards is None:
+            cards = []
         self.cards = cards
     
     def discard(self, discards):
@@ -31,8 +33,10 @@ class Hand:
         return str(self.cards)
 
 class Deck:
-    def __init__(self, discard: 'Deck' = None, cards=[]):
+    def __init__(self, discard: 'Deck' = None, cards=None):
         self.discardDeck = discard
+        if cards is None:
+            cards = []
         self.cards = cards
 
     def draw(self, number: int):
