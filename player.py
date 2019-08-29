@@ -6,11 +6,18 @@ class Player:
 
 
     def draw(self, number):
-        self.hand.draw(number)
+        return self.hand.draw(number)
 
     def playCard(self, idx):
         """
         Attempts to play a card from the player's hand at index idx
         """
-        print(self.hand.deck.getDiscard())
-        print(self.hand.cards[idx])
+        choice = self.hand.cards[idx]
+        curDiscard = self.hand.deck.getDiscard()
+
+        if choice.color == curDiscard.color or choice.value == curDiscard.value:
+            self.hand.discard([choice])
+            print(f"Player: {choice}")
+            return True
+        return False
+

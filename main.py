@@ -41,8 +41,20 @@ for _ in range(7):
     for player in players:
         player.draw(1)
 
-
-print("Discard Pile: ", deck.getDiscard())
-for player in players:
-    print(f"{player.name}: {player.hand}")
+while True:
+    for player in players:
+        print(f"{player.name}: {player.hand}")
+        print(f"Discard Pile: {deck.getDiscard()}")
+        action = ""
+        while action not in ["play", "draw"]:
+            action = input("Play/Draw: ").lower()
+        if action == "play":
+            while not player.playCard(int(input("Which card?"))):
+                pass
+        elif action == "draw":
+            drawnCard = player.draw(1)[0]
+            if drawnCard.match(deck.getDiscard()):
+                nextAction = input("Play drawn card? (y/n): ").lower()
+                if nextAction == "y":
+                    player.playCard(len(player.hand))
 

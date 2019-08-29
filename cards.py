@@ -12,6 +12,9 @@ class Card:
     def __repr__(self):
         return str(self)
 
+    def match(self, other):
+        return self.color == other.color or self.value == other.value
+
 class Hand:
     def __init__(self, deck, cards=None):
         self.deck = deck
@@ -24,7 +27,9 @@ class Hand:
         self.cards = [card for card in self.cards if card not in discards]
     
     def draw(self, number):
-        self.cards.extend(self.deck.draw(number))
+        drawnCards = self.deck.draw(number)
+        self.cards.extend(drawnCards)
+        return drawnCards
 
     def __len__(self):
         return len(self.cards)
