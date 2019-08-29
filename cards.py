@@ -65,3 +65,6 @@ class Deck:
 
     def __len__(self):
         return len(self.cards)
+
+    def getDiscard(self):
+        return self.discardDeck.cards[-1]
