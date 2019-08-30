@@ -12,12 +12,18 @@ class Player:
         """
         Attempts to play a card from the player's hand at index idx
         """
-        choice = self.hand.cards[idx]
+        try:
+            choice = self.hand.cards[idx]
+        except IndexError:
+            print("Card index out of range.")
+            return False
         curDiscard = self.hand.deck.getDiscard()
 
         if choice.color == curDiscard.color or choice.value == curDiscard.value:
             self.hand.discard([choice])
             print(f"Player: {choice}")
             return True
-        return False
+        else:
+            print("Card does not match color or number.")
+            return False
 
