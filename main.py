@@ -43,6 +43,7 @@ for _ in range(7):
 
 while True:
     for player in players:
+        print("-------------------------------")
         print(f"{player.name}: {player.hand}")
         print(f"Discard Pile: {deck.getDiscard()}")
         action = ""
