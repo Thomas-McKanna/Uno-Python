@@ -58,5 +58,5 @@ while True:
             if drawnCard.match(deck.getDiscard()):
                 nextAction = input("Play drawn card? (y/n): ").lower()
                 if nextAction == "y":
-                    player.playCard(len(player.hand))
+                    player.playCard(len(player.hand)-1)
 
