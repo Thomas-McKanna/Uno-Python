@@ -18,7 +18,11 @@ class Player:
             print("Card index out of range.")
             return False
         curDiscard = self.hand.deck.getDiscard()
-
+        if choice.value in ["wild", "+4"]:
+            colorChoice = ""
+            while colorChoice not in ["Red", "Green", "Yellow", "Blue"]:
+                colorChoice = input("Which color would you like to play as? ") 
+            choice.color = colorChoice
         if choice.color == curDiscard.color or choice.value == curDiscard.value:
             self.hand.discard([choice])
             print(f"Player: {choice}")
