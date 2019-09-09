@@ -34,8 +34,10 @@ class GameObjects:
         drawn.
         """
         if GameObjects.display_surf is None:
-            GameObjects.display_surf = pygame.display.set_mode(
-                (c.WINWIDTH, c.WINHEIGHT))
+            GameObjects.display_surf = pygame.display.set_mode((0, 0),
+                                                               pygame.RESIZABLE)
+            # GameObjects.display_surf = pygame.display.set_mode(
+            #     (c.WINWIDTH, c.WINHEIGHT))
             GameObjects.base_surf = GameObjects.display_surf.copy()
         return GameObjects.display_surf
 
@@ -48,7 +50,7 @@ class GameObjects:
         """
         if GameObjects.base_surf is None:
             GameObjects.get_surface()
-        return GameObjects.display_surf
+        return GameObjects.base_surf
 
     @staticmethod
     def get_animatables():
