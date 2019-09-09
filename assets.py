@@ -1,6 +1,8 @@
 import pygame
 
 LOGO = pygame.image.load('assets/uno_logo.png')
+DASH = pygame.image.load('assets/Dashed_Border.png')
+DECK = pygame.image.load('assets/Deck.png')
 
 CARD_IMAGE_DICT = {
     # Blue Cards
@@ -61,7 +63,5 @@ CARD_IMAGE_DICT = {
     'YELLOW_SKIP': pygame.image.load('assets/Yellow_Skip.png'),
     # Other Cards
     'WILD': pygame.image.load('assets/Wild.png'),
-    'WILD_DRAW': pygame.image.load('assets/Wild_Draw.png'),
-    'DECK': pygame.image.load('assets/Deck.png'),
-    'DASH': pygame.image.load('assets/Dashed_Border.png')
+    'WILD_DRAW': pygame.image.load('assets/Wild_Draw.png')
 }

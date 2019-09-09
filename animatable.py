@@ -288,10 +288,10 @@ class Animatable:
 
         args = (self.surface, new_centerx, new_centery, duration)
         self.position_animation_queue.put(
-            (args, self.calculate_move_positions)
+            (args, self._calculate_move_positions)
         )
 
-    def calculate_move_positions(self, surface, end_centerx, end_centery, duration):
+    def _calculate_move_positions(self, surface, end_centerx, end_centery, duration):
         """
         Calculates a list of positions (x-, y-coordinates) which a surface
         should take to get from one point to another.
@@ -340,10 +340,10 @@ class Animatable:
         """
         args = (center_x, center_y, angle, duration)
         self.position_animation_queue.put(
-            (args, self.calculate_circle_positions)
+            (args, self._calculate_circle_positions)
         )
 
-    def calculate_circle_positions(self, center_x, center_y, angle, duration):
+    def _calculate_circle_positions(self, center_x, center_y, angle, duration):
         """
         Calculates a list of positions (x-, y-coordinates) which a surface
         should take to move around circle.
