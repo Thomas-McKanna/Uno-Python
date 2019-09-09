@@ -1,0 +1,373 @@
+import pygame
+import math
+import copy
+from queue import Queue
+from numpy import arange
+from shared_objects import GameObjects
+from constants import FPS
+from util import circle_transform
+
+
+class Animatable:
+    def __init__(self, surface, centerx=0, centery=0, hidden=True):
+        """
+        Initializes an Surface for animation.
+        Parameters:
+        -----------
+        surface: a pygame.Surface
+        centerx: x-position of center of rectangle
+        centery: y-position of center of rectangle
+        hidden: whether or not the surface is displayed on screen
+        """
+        self.surface = surface.copy()
+        self.original_surface = surface.copy()
+        self.rect = surface.get_rect()
+
+        self.rect.centerx = centerx  # x position for top left corner
+        self.rect.centery = centery  # y position for top left corner
+
+        self.hidden = hidden
+
+        self.position_animation_queue = Queue()
+
+        self.position_queue = Queue()
+
+        self.rotozoom_generators = []
+        self.color_generators = []
+
+    def get_frame(self):
+        """
+        Returns a blit pair indication what the surface is for this Animatable
+        and where the surface should be displayed.
+        """
+        # 1. Apply transformations in scale or tilt (rotation/zoom)
+        if len(self.rotozoom_generators):
+            for generator in self.rotozoom_generators:
+                did_trans = next(generator, False)
+                if not did_trans:
+                    self.rotozoom_generators = [
+                        g for g in self.rotozoom_generators if not generator]
+
+        # 2. Apply transformations of color
+        if len(self.color_generators):
+            for generator in self.color_generators:
+                did_trans = next(generator, False)
+                if not did_trans:
+                    self.color_generators = [
+                        g for g in self.color_generators if not generator]
+
+        # 3. Apply changes in position
+        if not self.position_queue.empty():
+            self.rect.center = self.position_queue.get()
+        elif not self.position_animation_queue.empty():
+            args, function = self.position_animation_queue.get()
+            items = function(*args)
+            for item in items:
+                self.position_queue.put(item)
+
+        return (self.surface, self.rect)
+
+    def hide(self):
+        """
+        Makes the card invisible on the screen.
+        """
+        self.hidden = True
+
+    def show(self):
+        """
+        Makes the card visible on the screen.
+        """
+        self.hidden = False
+
+    def instant_scale(self, scale):
+        x, y = self.rect.center
+
+        orig_w = self.original_surface.get_rect().w
+        orig_h = self.original_surface.get_rect().h
+        w, h = (int(round(orig_w * scale)), int(round(orig_h * scale)))
+        self.surface = pygame.transform.smoothscale(
+            self.original_surface, (w, h))
+        self.rect = self.surface.get_rect()
+        self.instant_move(x, y)
+
+    def instant_move(self, x, y):
+        self.rect.center = (x, y)
+
+    ###########################################################################
+    # Rotozoom Transformation Functions
+    ###########################################################################
+
+    def rotate(self, angle, duration):
+        """
+        Rotates the animatable by a number of degrees over a duration.
+
+        This function will supercede rotate. If you want to rotate and zoom
+        use the rotozoom function.
+
+        Parameters:
+        -----------
+        angle: integer value; positive will rotate counter-clockwise and 
+            negative will rotate clockwise
+        duration: how long it seconds before the rotation completes
+        """
+        def generator(surface, angles):
+            """
+            Generator function that alters this animatable's tilt.
+            """
+            original_surf = surface.copy()
+            for angle in angles:
+                self.surface = pygame.transform.rotate(original_surf, angle)
+                yield True
+
+        angles = [step / duration *
+                  angle for step in arange(0, duration, 1 / FPS)]
+        angles.append(angle)
+
+        self.rotozoom_generators.append(generator(self.surface, angles))
+
+    def scale(self, from_scale, to_scale, duration=0.25, pulse=False):
+        """
+        The animatable shrinks/grows to the given scale from a given scale
+
+        This function will supercede rotate. If you want to rotate and zoom
+        use the rotozoom function.
+
+        Parameters:s
+        -----------
+        from_scale: what proportional of original surface to start scaling from
+        to_scale: what proportional of original surface to scale to
+        duration: how long it seconds before the rotation completes
+        pulse: if True, the surface will scale to target and then scale back to
+            the starting scale
+        """
+        def generator(surface, dimensions):
+            """
+            Generator function that alters this animatable's size.
+            """
+            original_surf = surface.copy()
+            for dimension in dimensions:
+                x, y = self.rect.center
+                self.surface = pygame.transform.smoothscale(
+                    original_surf, dimension)
+                self.rect = self.surface.get_rect()
+                self.instant_move(x, y)
+                yield True
+
+        if pulse:
+            def scale_fun(x): return (4*from_scale - 4 *
+                                      to_scale)*(x - 0.5)**2 + to_scale
+        else:
+            def scale_fun(x): return (from_scale - to_scale) * \
+                (x - 1)**2 + to_scale
+
+        step_size = 1 / (duration * FPS)
+        steps = [
+            scale_fun(x) for x in arange(0, 1, step_size)
+        ]
+
+        rect = self.original_surface.get_rect()
+        w, h = (rect.w, rect.h)
+        dimensions = []
+        for step in steps:
+            dimensions.append(
+                (int(round(w * step)), int(round(h * step)))
+            )
+        if pulse:
+            dimensions.append((int(round(w * from_scale)),
+                               int(round(h * from_scale))))
+        else:
+            dimensions.append(
+                (int(round(w * to_scale)), int(round(h * to_scale))))
+
+        self.rotozoom_generators.append(
+            generator(self.original_surface, dimensions))
+
+    def rotozoom(self, scale, angle, duration):
+        """
+        Rotates and zooms the animatable at the same time.
+
+        Parameters:
+        -----------
+        scale: how many time the size of orginal to grow to
+        angle: integer value; positive will rotate counter-clockwise and 
+            negative will rotate clockwise
+        duration: how long it seconds before the rotation completes
+        """
+        def generator(surface, args):
+            """
+            Generator function that alters this animatable's size.
+            """
+            original_surf = surface.copy()
+            for angle, scale in args:
+                self.surface = pygame.transform.rotozoom(
+                    original_surf, angle, scale)
+                yield True
+
+        angles = [step / duration *
+                  angle for step in arange(0, duration, 1 / FPS)]
+        angles.append(angle)
+
+        def scale_fun(x): return (1 - scale)*(x - 1)**2 + scale
+
+        step_size = 1 / (duration * FPS)
+        scales = [
+            scale_fun(x) for x in arange(0, 1, step_size)
+        ]
+        scales.append(scale)
+
+        args = zip(angles, scales)
+
+        self.rotozoom_generators.append(generator(self.surface, args))
+
+    ###########################################################################
+    # Color Transformation Functions
+    ###########################################################################
+
+    def flash(self, duration, intensity):
+        """
+        Flashes a surfaces, drawing the user's eye.
+
+        This function will only work correctly if the animatable is not
+        currently undergoing a rototation/zoom and if the animatable is
+        a rectangle positions at a 90-degree angle.
+
+        Parameters:
+        -----------
+        duration: how long in seconds the flash lasts
+        intensity: how bright the surface gets; 0 - no flash, 100 - total white
+        """
+
+        def generator(surface, intensities):
+            """
+            Generator function that alters this animatable's surface.
+            """
+            original_surf = surface.copy()
+            orig_rect = original_surf.get_rect()
+            flash_surf = pygame.Surface((orig_rect.w, orig_rect.h))
+            flash_surf = flash_surf.convert_alpha()
+            r, g, b = (255, 255, 255)
+
+            for intensity in intensities:
+                surface.blit(original_surf, (0, 0))
+                flash_surf.fill((r, g, b, intensity))
+                surface.blit(flash_surf, (0, 0))
+                yield True
+
+        def flash_fun(x): return -(2*x - 1)**2 + 1
+
+        step_size = 1 / (duration * FPS)
+        steps = [
+            flash_fun(x) for x in arange(0, 1, step_size)
+        ]
+
+        intensities = []
+        for step in steps:
+            intensities.append(intensity*step)
+        intensities.append(0)
+
+        self.color_generators.append(generator(self.surface, intensities))
+
+    ###########################################################################
+    # Position-Related Animation Functions
+    ###########################################################################
+
+    def move(self, new_centerx, new_centery, duration=0.5):
+        """
+        Moves a card from one position to another.
+        Parameters:
+        -----------
+        new_x: x-coordinate of new card position (top left corner)
+        new_y: y-coordinate of new card position (top left corner)
+        duration: indicates how long in seconds that the
+            animation should last.
+        """
+        rect = self.surface.get_rect()
+        if new_centerx == rect.centerx and new_centery == rect.centery:
+            # No movement required
+            return None
+
+        args = (self.surface, new_centerx, new_centery, duration)
+        self.position_animation_queue.put(
+            (args, self.calculate_move_positions)
+        )
+
+    def calculate_move_positions(self, surface, end_centerx, end_centery, duration):
+        """
+        Calculates a list of positions (x-, y-coordinates) which a surface
+        should take to get from one point to another.
+        Parameters:
+        -----------
+        surface: the pygame.Surface to move
+        end_centerx: the ending x-coordinate
+        end_centery: the ending y-coordinate
+        duration: how long in seconds that the animation should take
+        """
+        rect = self.rect
+        start_centerx, start_centery = rect.center
+        x_diff, y_diff = (start_centerx - end_centerx,
+                          start_centery - end_centery)
+        # Distance between the two points (start and end)
+        magnitude = math.sqrt(x_diff**2 + y_diff**2)
+        # Unit vector
+        x_unit, y_unit = (x_diff/magnitude, y_diff/magnitude)
+
+        # Function to determine velocity of moving surface
+        def mvt_fun(x): return -x**2 + 1
+
+        step_size = 1 / (duration * FPS)
+        steps = [
+            mvt_fun(x) for x in arange(0, 1 - step_size, step_size)
+        ][::-1]
+
+        positions = []
+        for step in steps:
+            step_x = start_centerx + (-x_unit * magnitude * step)
+            step_y = start_centery + (-y_unit * magnitude * step)
+            positions.append((step_x, step_y))
+
+        return positions
+
+    def circle(self, center_x, center_y, angle, duration=0.25):
+        """
+        Moves a card from one position to another.
+        Parameters:
+        -----------
+        center_x: x-coordinate of the center of circle being rotated around
+        center_x: y-coordinate of the center of circle being rotated around
+        radius: how far away from the circle to rotate
+        angle: how many degrees to rotate around circle
+        duration: how long the animation should take
+        """
+        args = (center_x, center_y, angle, duration)
+        self.position_animation_queue.put(
+            (args, self.calculate_circle_positions)
+        )
+
+    def calculate_circle_positions(self, center_x, center_y, angle, duration):
+        """
+        Calculates a list of positions (x-, y-coordinates) which a surface
+        should take to move around circle.
+        Parameters:
+        -----------
+        center_x: x-coordinate of the center of circle being rotated around
+        center_x: y-coordinate of the center of circle being rotated around
+        radius: how far away from the circle to rotate
+        angle: how many degrees to rotate around circle
+        duration: how long the animation should take
+        """
+        rect = self.rect
+        point_x, point_y = rect.center
+
+        angles = []
+        angle_delta = (angle / duration) / FPS
+        for a in arange(0, angle, angle_delta):
+            angles.append(a)
+        angles.append(angle)
+
+        positions = []
+        for a in angles:
+            position = circle_transform(
+                point_x, point_y, center_x, center_y, a)
+            positions.append(position)
+
+        return positions
