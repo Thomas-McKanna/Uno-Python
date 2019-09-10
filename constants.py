@@ -50,8 +50,6 @@ DRAW_DECK_CENTER_X = 3 * WINWIDTH // 8
 # Y-position of center of draw deck (deck that players draw cards from)
 DRAW_DECK_CENTER_Y = WINHEIGHT // 2
 
-# The farthest possible angle a card can be away from the focus card
-HAND_BOUNDARY_ANGLE = 30
-
-# A unit-less coefficient that effect how tightly a hand is packed together
-CARD_PACK_COEF = 0.2
+# Coefficient determining how stretched out the hand is (1-100)
+# (High values => very stretched / Low values => very squeezed)
+HAND_BOUNDARY_COEF = 13

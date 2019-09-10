@@ -21,7 +21,7 @@ class Hand:
         for card in self.cards:
             card.instant_scale(c.DEFAULT_CARD_SCALE)
 
-    def arrange(self):
+    def arrange(self, scale_focus=False):
         """
         Moves hand into circular position at bottom of screen.
         """
@@ -33,11 +33,9 @@ class Hand:
         )
         self.angle_offset_map[self.cards[self.focus_index]] = 0
 
-        angles = self._get_angle_steps()
+        angles = self._get_angles()
 
-        # Accumlate value for each angle
-        for i in range(1, len(angles)):
-            angles[i] = angles[i] + angles[i - 1]
+        # TODO: fix DRY violation below
 
         # Left side
         for i, card in enumerate(self.cards[:self.focus_index][::-1]):
@@ -63,19 +61,9 @@ class Hand:
             self.angle_offset_map[card] = -angles[i]
             card.move(x, y, c.SHIFT_HAND_DURATION)
 
-        self.cards[self.focus_index].scale(
-            c.DEFAULT_CARD_SCALE, c.FOCUS_CARD_SCALE)
-
-    def _layer_cards(self):
-        """
-        Removes all cards in the hand from the list of animatables and puts
-        them back in order so that they layer nicely.
-        """
-        animatables = GameObjects.get_animatables()
-        for card in self.cards:
-            animatables.remove(card)
-        for card in self.cards:
-            animatables.push(card)
+        if scale_focus:
+            self.cards[self.focus_index].scale(
+                c.DEFAULT_CARD_SCALE, c.FOCUS_CARD_SCALE)
 
     def rotate(self, right=True):
         """
@@ -127,42 +115,7 @@ class Hand:
 
         self.arrange()
 
-        # if clockwise:
-        #     cw = 1
-        # else:
-        #     cw = -1
-
-        # if len(self.cards) <= 1:
-        #     # Don't rotate if there is only one card left
-        #     return
-
-        # # Rotate each card in hand
-        # angle_to_rotate = 360 / len(self.cards)
-        # for card in self.cards:
-        #     card.circle(
-        #         center_x=c.HAND_CIRCLE_CENTER_X,
-        #         center_y=c.HAND_CIRCLE_CENTER_Y,
-        #         angle=cw * angle_to_rotate,
-        #         duration=c.SHIFT_HAND_DURATION)
-
-        # # Scale down the old focus card
-        # self.cards[self.focus_index].scale(
-        #     from_scale=c.FOCUS_CARD_SCALE,
-        #     to_scale=c.DEFAULT_CARD_SCALE,
-        #     duration=c.SHIFT_HAND_DURATION
-        # )
-
-        # # Set new focus card
-        # self.focus_index = (self.focus_index - cw) % len(self.cards)
-
-        # # Scale up the new focus card
-        # self.cards[self.focus_index].scale(
-        #     from_scale=c.DEFAULT_CARD_SCALE,
-        #     to_scale=c.FOCUS_CARD_SCALE,
-        #     duration=c.SHIFT_HAND_DURATION
-        # )
-
-    def _get_angle_steps(self):
+    def _get_angles(self):
         """
         Returns a list for which each element indicates how many more degrees
         a card should be place beyond it's neighbor closest to the focus card.
@@ -172,8 +125,17 @@ class Hand:
             self.cards) - self.focus_index + 1)
 
         # Each angle value will be slightly less
-        angles_steps = [
-            (c.HAND_BOUNDARY_ANGLE / ((i + 1)*c.CARD_PACK_COEF*len(self.cards))) for i in range(bigger_side_num)
+        fractions = [
+            1/(i+2) for i in range(bigger_side_num)
         ]
 
-        return angles_steps
+        # Accumlate fractions to determine angles
+        for i in range(1, len(fractions)):
+            fractions[i] = fractions[i] + fractions[i - 1]
+
+        # Determine angles based on fraction of boundary angle
+        angles = []
+        for fraction in fractions:
+            angles.append(c.HAND_BOUNDARY_COEF * fraction)
+
+        return angles

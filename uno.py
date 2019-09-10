@@ -34,14 +34,14 @@ def main():
     random.shuffle(keys)
 
     cards = [
-        Card(CARD_IMAGE_DICT[random.choice(keys)], c.HAND_CIRCLE_CENTER_X, c.HAND_CIRCLE_CENTER_Y) for _ in range(14)
+        Card(CARD_IMAGE_DICT[random.choice(keys)], c.HAND_CIRCLE_CENTER_X, c.HAND_CIRCLE_CENTER_Y) for _ in range(7)
     ]
     for card in cards:
         animatables.append(card)
 
     hand = Hand(cards)
 
-    hand.arrange()
+    hand.arrange(scale_focus=True)
 
     while True:
         draw_next_frame()
