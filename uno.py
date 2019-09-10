@@ -30,6 +30,33 @@ def main():
 
     animatables = GameObjects.get_animatables()
 
+    keys = list(CARD_IMAGE_DICT.keys())
+    random.shuffle(keys)
+
+    cards = [
+        Card(CARD_IMAGE_DICT[random.choice(keys)], c.HAND_CIRCLE_CENTER_X, c.HAND_CIRCLE_CENTER_Y) for _ in range(14)
+    ]
+    for card in cards:
+        animatables.append(card)
+
+    hand = Hand(cards)
+
+    hand.arrange()
+
+    while True:
+        draw_next_frame()
+
+        check_for_key_press()
+        for event in pygame.event.get():  # event handling loop
+            if event.type == KEYDOWN:
+                if event.key == K_RIGHT:
+                    hand.rotate(right=True)
+                elif event.key == K_LEFT:
+                    hand.rotate(right=False)
+
+        pygame.display.update()
+        clock.tick(c.FPS)
+
     while True:
         draw_next_frame()
 

@@ -48,7 +48,7 @@ class GameObjects:
         """
         if GameObjects.base_surf is None:
             GameObjects.get_surface()
-        return GameObjects.display_surf
+        return GameObjects.base_surf
 
     @staticmethod
     def get_animatables():
