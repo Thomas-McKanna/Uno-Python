@@ -50,7 +50,7 @@ while True:
         while action not in ["play", "draw"]:
             action = input("Play/Draw: ").lower()
         if action == "play":
-            while not player.playCard(int(input("Which card? "))):
+            while not player.playCard(idx=int(input("Which card? "))):
                 pass
         elif action == "draw":
             drawnCard = player.draw(1)[0]
@@ -58,5 +58,5 @@ while True:
             if drawnCard.match(deck.getDiscard()):
                 nextAction = input("Play drawn card? (y/n): ").lower()
                 if nextAction == "y":
-                    player.playCard(len(player.hand)-1)
+                    player.playCard(card=drawnCard)
 

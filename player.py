@@ -8,15 +8,24 @@ class Player:
     def draw(self, number):
         return self.hand.draw(number)
 
-    def playCard(self, idx):
-        """
-        Attempts to play a card from the player's hand at index idx
-        """
+    def getCardFromIndex(self, idx):
         try:
             choice = self.hand.cards[idx]
         except IndexError:
             print("Card index out of range.")
-            return False
+            return None
+        return choice
+        
+    def playCard(self, card=None, idx=None):
+        """
+        Attempts to play a card from the player's hand
+        """
+        if card is None and idx is not None:
+            choice = self.getCardFromIndex(idx)
+        elif card is None and idx is None:
+            raise Exception
+        else:
+            choice = card
         curDiscard = self.hand.deck.getDiscard()
         if choice.value in ["wild", "+4"]:
             colorChoice = ""
