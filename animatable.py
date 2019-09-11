@@ -65,7 +65,10 @@ class Animatable:
             for item in items:
                 self.position_queue.put(item)
 
-        return (self.surface, self.rect)
+        if not self.hidden:
+            return (self.surface, self.rect)
+        else:
+            return None
 
     def hide(self):
         """

@@ -9,6 +9,9 @@ class Player:
     """
     Represents a player in a game of Uno.
     """
+    # Static member which holds reference to list of last played cards (used to 
+    # delete animatable which is no longer needed)
+    last_played_cards = []
 
     def __init__(self, name):
         """
@@ -25,4 +28,13 @@ class Player:
         font = GameObjects.get_font()
         surface = font.render(self.name, True, color)
         return surface
+
+    def get_last_played_cards(self):
+        return Player.last_played_cards
+
+    def push_last_played_card(self, card):
+        Player.last_played_cards.append(card)
+
+    def pop_last_played_card(self):
+        Player.last_played_cards.pop()
 

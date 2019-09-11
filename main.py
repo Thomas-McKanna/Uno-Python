@@ -30,8 +30,7 @@ def main():
 
     animatables = GameObjects.get_animatables()
 
-    num_players = 3
-    opponents = ["Thomas" for i in range(num_players)]
+    opponents = ["Thomas", "Brendan", "Austin"]
     
     game = Uno(None)
 

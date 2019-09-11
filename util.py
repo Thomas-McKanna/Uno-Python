@@ -63,7 +63,9 @@ def draw_next_frame():
 
     frames = []
     for animatable in animatables:
-        frames.append(animatable.get_frame())
+        potential_frame = animatable.get_frame()
+        if potential_frame is not None:
+            frames.append(potential_frame)
 
     # Draw animatables on top of background
     surface.blits(frames)

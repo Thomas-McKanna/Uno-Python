@@ -3,12 +3,18 @@ from oponent_player import Opponent
 
 import constants as c
 
+# Following import just for testing purposes
 from util import wait
+from assets import CARD_IMAGE_DICT, DECK
+import random
+from card import Card
+
 
 class Uno:
     """
     Represents an instance of an Uno game.
     """
+
     def __init__(self, draw_deck):
         """
         draw_deck: a deck of cards containing all the playable cards in this
@@ -53,8 +59,8 @@ class Uno:
 
         positions = [
             (
-                (i+1)/(len(self.opponents)+1)*c.WINWIDTH, # x-pos
-                (1/10)*c.WINHEIGHT # y-pos
+                (i+1)/(len(self.opponents)+1)*c.WINWIDTH,  # x-pos
+                (1/10)*c.WINHEIGHT  # y-pos
             ) for i in range(len(names))
         ]
 
@@ -62,7 +68,7 @@ class Uno:
             Opponent(
                 names[i],                               # name
                 positions[i][0],                        # spread_x
-                positions[i][1] + 0.075*c.WINHEIGHT,    # spread_y (offset)
+                positions[i][1] + 0.125*c.WINHEIGHT,    # spread_y (offset)
                 c.OPPONENT_SPREAD_PX                    # spread_px
             ) for i in range(len(positions))
         ]
@@ -81,7 +87,26 @@ class Uno:
         pass
 
     def do_stuff(self):
-        for opponent in self.opponents:
-            for _ in range(7):
-                opponent.animate_draw_card()
-                wait(c.OPPONENT_SPREAD_DECK_ANI_DURATION)
+        """
+        This function is entirely for testing purposes.
+        """
+        keys = list(CARD_IMAGE_DICT.keys())
+        random.shuffle(keys)
+        temp_card = Card(
+            DECK, 
+            scale=c.DRAW_DECK_SCALE,
+            x=c.DRAW_DECK_CENTER_X, 
+            y=c.DRAW_DECK_CENTER_Y
+        )
+        GameObjects.get_base_surface().blit(temp_card.surface, temp_card.rect)
+        while True:
+            for opponent in self.opponents:
+                for _ in range(5):
+                    opponent.animate_draw_card()
+                    wait(c.OPPONENT_SPREAD_DECK_ANI_DURATION)
+
+            for opponent in self.opponents:
+                for _ in range(5):
+                    opponent.animate_play_card(
+                        Card(CARD_IMAGE_DICT[keys[random.randint(0, len(keys) - 1)]]))
+                    wait(c.OPPONENT_SPREAD_DECK_ANI_DURATION)
