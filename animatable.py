@@ -281,7 +281,7 @@ class Animatable:
         duration: indicates how long in seconds that the
             animation should last.
         """
-        rect = self.surface.get_rect()
+        rect = self.rect
         if new_centerx == rect.centerx and new_centery == rect.centery:
             # No movement required
             return None

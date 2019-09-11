@@ -17,6 +17,7 @@ class GameObjects:
     display_surf = None
     base_surf = None
     animatables = None
+    font = None
 
     @staticmethod
     def get_clock():
@@ -48,7 +49,7 @@ class GameObjects:
         """
         if GameObjects.base_surf is None:
             GameObjects.get_surface()
-        return GameObjects.display_surf
+        return GameObjects.base_surf
 
     @staticmethod
     def get_animatables():
@@ -61,3 +62,13 @@ class GameObjects:
         if GameObjects.animatables is None:
             GameObjects.animatables = []
         return GameObjects.animatables
+
+    @staticmethod
+    def get_font():
+        """
+        Returns a pygame Font object which can be used to render text.
+        """
+        if GameObjects.font is None:
+            GameObjects.font = pygame.font.Font(
+                "assets/Acme-Regular.ttf", c.FONT_SIZE)
+        return GameObjects.font

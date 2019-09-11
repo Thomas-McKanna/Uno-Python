@@ -4,13 +4,18 @@ from constants import HAND_CIRCLE_CENTER_X, HAND_CIRCLE_CENTER_Y, FOCUS_CARD_SCA
 
 import time
 
+
 class Hand:
     """
     Manages a set of cards.
     """
 
-    def __init__(self, cards):
-        self.cards = cards
+    def __init__(self, cards=None):
+        if cards is not None:
+            self.cards = cards
+        else:
+            self.cards = []
+
         self.focus_index = 0
         self.last_rotate_time = time.time()
 
@@ -29,16 +34,17 @@ class Hand:
         i = 0
         while i < num_cards:
             x, y = circle_transform(
-                FOCUS_CARD_X, 
-                FOCUS_CARD_Y, 
-                HAND_CIRCLE_CENTER_X, 
-                HAND_CIRCLE_CENTER_Y, 
+                FOCUS_CARD_X,
+                FOCUS_CARD_Y,
+                HAND_CIRCLE_CENTER_X,
+                HAND_CIRCLE_CENTER_Y,
                 angles[i]
             )
             self.cards[(self.focus_index + i) % num_cards].move(x, y)
             i += 1
 
-        self.cards[self.focus_index].scale(DEFAULT_CARD_SCALE, FOCUS_CARD_SCALE)
+        self.cards[self.focus_index].scale(
+            DEFAULT_CARD_SCALE, FOCUS_CARD_SCALE)
 
     def rotate(self, clockwise=True):
         """
@@ -71,15 +77,15 @@ class Hand:
         for card in self.cards:
             card.circle(
                 center_x=HAND_CIRCLE_CENTER_X,
-                center_y=HAND_CIRCLE_CENTER_Y, 
+                center_y=HAND_CIRCLE_CENTER_Y,
                 angle=cw * angle_to_rotate,
                 duration=ROTATE_HAND_DURATION)
 
         # Scale down the old focus card
         self.cards[self.focus_index].scale(
-            from_scale=FOCUS_CARD_SCALE, 
+            from_scale=FOCUS_CARD_SCALE,
             to_scale=DEFAULT_CARD_SCALE,
-            duration=ROTATE_HAND_DURATION 
+            duration=ROTATE_HAND_DURATION
         )
 
         # Set new focus card
@@ -87,7 +93,7 @@ class Hand:
 
         # Scale up the new focus card
         self.cards[self.focus_index].scale(
-            from_scale=DEFAULT_CARD_SCALE, 
+            from_scale=DEFAULT_CARD_SCALE,
             to_scale=FOCUS_CARD_SCALE,
-            duration=ROTATE_HAND_DURATION 
+            duration=ROTATE_HAND_DURATION
         )

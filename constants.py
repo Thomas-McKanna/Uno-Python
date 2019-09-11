@@ -49,3 +49,20 @@ DRAW_DECK_CENTER_X = 3 * WINWIDTH // 8
 
 # Y-position of center of draw deck (deck that players draw cards from)
 DRAW_DECK_CENTER_Y = WINHEIGHT // 2
+
+# The size of font rendered onto the screen
+FONT_SIZE = round(0.04*WINWIDTH)
+
+# The color of the font rendered onto the screen
+from pygame import Color
+FONT_COLOR = Color('white')
+
+# How long it takes to perform the add card to player spread deck animation
+OPPONENT_SPREAD_DECK_ANI_DURATION = 0.2
+
+# Size of spread deck cards compared to original asset size
+OPPONENT_SPREAD_DECK_CARD_SCALE = 0.1
+
+# Absolute number of pixel away from the center of an opponent card spread
+# the center of any card in the spread can be
+OPPONENT_SPREAD_PX = 40
