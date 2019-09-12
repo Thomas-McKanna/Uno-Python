@@ -1,6 +1,7 @@
 from card import Card
 from util import circle_transform
-from constants import HAND_CIRCLE_CENTER_X, HAND_CIRCLE_CENTER_Y, FOCUS_CARD_SCALE, DEFAULT_CARD_SCALE, FOCUS_CARD_X, FOCUS_CARD_Y, ROTATE_HAND_DURATION, FPS
+import constants as c
+from shared_objects import GameObjects
 
 import time
 
@@ -9,44 +10,66 @@ class Hand:
     """
     Manages a set of cards.
     """
-
     def __init__(self, cards=None):
         if cards is not None:
             self.cards = cards
         else:
             self.cards = []
 
-        self.focus_index = 0
+        self.focus_index = len(self.cards) // 2
+
         self.last_rotate_time = time.time()
 
-        for card in self.cards:
-            card.instant_scale(DEFAULT_CARD_SCALE)
+        self.angle_offset_map = {}
 
-    def arrange(self):
+        for card in self.cards:
+            card.instant_scale(c.DEFAULT_CARD_SCALE)
+
+    def arrange(self, scale_focus=False):
         """
         Moves hand into circular position at bottom of screen.
         """
-        num_cards = len(self.cards)
-        angles = [
-            (360 / num_cards) * i for i in range(num_cards)
-        ]
+        # Center
+        self.cards[self.focus_index].move(
+            c.FOCUS_CARD_X,
+            c.FOCUS_CARD_Y,
+            c.SHIFT_HAND_DURATION
+        )
+        self.angle_offset_map[self.cards[self.focus_index]] = 0
 
-        i = 0
-        while i < num_cards:
+        angles = self._get_angles()
+
+        # TODO: fix DRY violation below
+
+        # Left side
+        for i, card in enumerate(self.cards[:self.focus_index][::-1]):
             x, y = circle_transform(
-                FOCUS_CARD_X,
-                FOCUS_CARD_Y,
-                HAND_CIRCLE_CENTER_X,
-                HAND_CIRCLE_CENTER_Y,
+                c.FOCUS_CARD_X,
+                c.FOCUS_CARD_Y,
+                c.HAND_CIRCLE_CENTER_X,
+                c.HAND_CIRCLE_CENTER_Y,
+                -angles[i]
+            )
+            self.angle_offset_map[card] = -angles[i]
+            card.move(x, y, c.SHIFT_HAND_DURATION)
+
+        # Right side
+        for i, card in enumerate(self.cards[self.focus_index+1:]):
+            x, y = circle_transform(
+                c.FOCUS_CARD_X,
+                c.FOCUS_CARD_Y,
+                c.HAND_CIRCLE_CENTER_X,
+                c.HAND_CIRCLE_CENTER_Y,
                 angles[i]
             )
-            self.cards[(self.focus_index + i) % num_cards].move(x, y)
-            i += 1
+            self.angle_offset_map[card] = -angles[i]
+            card.move(x, y, c.SHIFT_HAND_DURATION)
 
-        self.cards[self.focus_index].scale(
-            DEFAULT_CARD_SCALE, FOCUS_CARD_SCALE)
+        if scale_focus:
+            self.cards[self.focus_index].scale(
+                c.DEFAULT_CARD_SCALE, c.FOCUS_CARD_SCALE)
 
-    def rotate(self, clockwise=True):
+    def rotate(self, right=True):
         """
         Rotates all cards in the hand clockwise.
 
@@ -57,43 +80,66 @@ class Hand:
         """
         curr_time = time.time()
 
-        if curr_time - self.last_rotate_time < ROTATE_HAND_DURATION + 2 / FPS:
+        if curr_time - self.last_rotate_time < c.SHIFT_HAND_DURATION + 2 / c.FPS:
             # Do not initiate a new rotation if already rotating
             return
 
         self.last_rotate_time = curr_time
 
-        if clockwise:
-            cw = 1
+        if right:
+            if self.focus_index + 1 == len(self.cards):
+                return
+            else:
+                self.cards[self.focus_index].scale(
+                    c.FOCUS_CARD_SCALE,
+                    c.DEFAULT_CARD_SCALE,
+                    c.SHIFT_HAND_DURATION
+                )
+                self.focus_index += 1
+                self.cards[self.focus_index].scale(
+                    c.DEFAULT_CARD_SCALE,
+                    c.FOCUS_CARD_SCALE,
+                    c.SHIFT_HAND_DURATION
+                )
         else:
-            cw = -1
+            if self.focus_index == 0:
+                return
+            else:
+                self.cards[self.focus_index].scale(
+                    c.FOCUS_CARD_SCALE,
+                    c.DEFAULT_CARD_SCALE,
+                    c.SHIFT_HAND_DURATION
+                )
+                self.focus_index -= 1
+                self.cards[self.focus_index].scale(
+                    c.DEFAULT_CARD_SCALE,
+                    c.FOCUS_CARD_SCALE,
+                    c.SHIFT_HAND_DURATION
+                )
 
-        if len(self.cards) <= 1:
-            # Don't rotate if there is only one card left
-            return
+        self.arrange()
 
-        # Rotate each card in hand
-        angle_to_rotate = 360 / len(self.cards)
-        for card in self.cards:
-            card.circle(
-                center_x=HAND_CIRCLE_CENTER_X,
-                center_y=HAND_CIRCLE_CENTER_Y,
-                angle=cw * angle_to_rotate,
-                duration=ROTATE_HAND_DURATION)
+    def _get_angles(self):
+        """
+        Returns a list for which each element indicates how many more degrees
+        a card should be place beyond it's neighbor closest to the focus card.
+        """
+        # Number of cards on the side with the most cards on it (left or right)
+        bigger_side_num = max(self.focus_index, len(
+            self.cards) - self.focus_index + 1)
 
-        # Scale down the old focus card
-        self.cards[self.focus_index].scale(
-            from_scale=FOCUS_CARD_SCALE,
-            to_scale=DEFAULT_CARD_SCALE,
-            duration=ROTATE_HAND_DURATION
-        )
+        # Each angle value will be slightly less
+        fractions = [
+            1/(i+2) for i in range(bigger_side_num)
+        ]
 
-        # Set new focus card
-        self.focus_index = (self.focus_index - cw) % len(self.cards)
+        # Accumlate fractions to determine angles
+        for i in range(1, len(fractions)):
+            fractions[i] = fractions[i] + fractions[i - 1]
 
-        # Scale up the new focus card
-        self.cards[self.focus_index].scale(
-            from_scale=DEFAULT_CARD_SCALE,
-            to_scale=FOCUS_CARD_SCALE,
-            duration=ROTATE_HAND_DURATION
-        )
+        # Determine angles based on fraction of boundary angle
+        angles = []
+        for fraction in fractions:
+            angles.append(c.HAND_BOUNDARY_COEF * fraction)
+
+        return angles

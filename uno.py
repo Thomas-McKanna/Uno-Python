@@ -1,10 +1,14 @@
+import pygame
+
+from pygame.locals import *
+
 from shared_objects import GameObjects
 from oponent_player import Opponent
 
 import constants as c
 
 # Following import just for testing purposes
-from util import wait
+from util import wait, draw_next_frame, check_for_key_press
 from assets import CARD_IMAGE_DICT, DECK
 import random
 from card import Card
@@ -72,7 +76,8 @@ class Uno:
                 c.OPPONENT_SPREAD_PX                    # spread_px
             ) for i in range(len(positions))
         ]
-
+    
+        base_surf = GameObjects.get_base_surface()
         for i, player in enumerate(self.opponents):
             name_surface = player.get_name_surface()
             rect = name_surface.get_rect()
@@ -81,10 +86,27 @@ class Uno:
             base_surf.blit(name_surface, rect)
 
         # REMOVE IN FUTURE
-        self.do_stuff()
+        # self.do_stuff()
 
     def start_game(self):
-        pass
+        clock = GameObjects.get_clock()
+        while True:
+            draw_next_frame()
+
+            check_for_key_press()
+
+            for event in pygame.event.get():  # event handling loop
+                print(event)
+                if event.type == KEYDOWN:
+                    if event.key == K_RIGHT:
+                        # hand.rotate(right=True)
+                        pass
+                    elif event.key == K_LEFT:
+                        # hand.rotate(right=False)
+                        pass
+
+            pygame.display.update()
+            clock.tick(c.FPS)
 
     def do_stuff(self):
         """
