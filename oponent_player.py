@@ -1,5 +1,5 @@
 from player import Player
-from spread_deck import SimpleSpreadDeck
+from opponent_hand import OpponentHand
 from assets import DECK
 from shared_objects import GameObjects
 from util import wait
@@ -28,7 +28,7 @@ class Opponent(Player):
         self.spread_y = spread_y
         self.spread = spread_px
 
-        self.spread_deck = SimpleSpreadDeck(
+        self.hand = OpponentHand(
             self.spread_x,
             self.spread_y,
             self.spread,
@@ -36,28 +36,26 @@ class Opponent(Player):
             DECK
         )
 
-    def animate_draw_card(self):
+    def draw_card(self):
         """
         Draws a card from the draw deck and adds it to the spread deck. The
         card is not revealed on the screen.
         """
-        self.spread_deck.push_card()
+        card = GameObjects.get_draw_deck().pop()
+        if card is not None:
+            self.hand.draw_card(card)
 
-    def animate_play_card(self, card):
+    def play_card(self):
         """
         Plays a card, moving it from spread deck to the play deck. The card
         is revealed on the screen.
         """
-        # Pop the card off of the spread deck (passing random, meaningless
-        # card for now)
-        temp = self.spread_deck.pop_card(card.original_surface)
+        # For now, just playing last card in hand (default behavior)
+        card = self.hand.play_card()
+
+        if card is None:
+            return
 
         # Clean up for animatables that are made in previous calls to this
         # function
-        last_played_cards = self.get_last_played_cards()
-        if len(last_played_cards) >= 2:
-            animatables = GameObjects.get_animatables()
-            animatables.remove(last_played_cards[0])
-            del last_played_cards[0]
-
-        last_played_cards.append(temp)
+        self.add_to_last_played_cards(card)

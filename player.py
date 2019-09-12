@@ -29,8 +29,21 @@ class Player:
         surface = font.render(self.name, True, color)
         return surface
 
-    def get_last_played_cards(self):
-        return Player.last_played_cards
+    def add_to_last_played_cards(self, card):
+        """
+        Any time a card is played, it should be sent to this function, which
+        manages how played cards are drawn on the screen. Only the last two
+        played cards are in the animatables list.
+        Parameters:
+        -----------
+        card: the Card object which was just played
+        """
+        if len(Player.last_played_cards) >= 2:
+            animatables = GameObjects.get_animatables()
+            animatables.remove(Player.last_played_cards[0])
+            del Player.last_played_cards[0]
+
+        Player.last_played_cards.append(card)
 
     def push_last_played_card(self, card):
         Player.last_played_cards.append(card)

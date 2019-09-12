@@ -69,3 +69,11 @@ def draw_next_frame():
 
     # Draw animatables on top of background
     surface.blits(frames)
+
+def bring_to_front(animatable):
+    """
+    Brings the pass in animatable to the top of the list so that it is drawn
+    on top of everthing else.
+    """
+    GameObjects.get_animatables().remove(animatable)
+    GameObjects.get_animatables().append(animatable)

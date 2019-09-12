@@ -1,5 +1,5 @@
 from player import Player
-from hand import Hand
+from primary_player_hand import PrimaryHand
 from deck import Deck
 from shared_objects import GameObjects
 
@@ -13,7 +13,7 @@ class PrimaryPlayer(Player):
     def __init__(self, name):
         super(PrimaryPlayer, self).__init__(name)
 
-        self.hand = Hand()
+        self.hand = PrimaryHand()
 
     def draw_card(self):
         """
@@ -35,17 +35,14 @@ class PrimaryPlayer(Player):
         """
         # Pop the card off of the spread deck (passing random, meaningless
         # card for now)
-        card = self.hand.play_focus()
+        card = self.hand.play_card()
+
+        if card is None:
+            return
 
         # Clean up for animatables that are made in previous calls to this
         # function
-        last_played_cards = self.get_last_played_cards()
-        if len(last_played_cards) >= 2:
-            animatables = GameObjects.get_animatables()
-            animatables.remove(last_played_cards[0])
-            del last_played_cards[0]
-
-        last_played_cards.append(card)
+        self.add_to_last_played_cards(card)
 
     def shift_hand(self, right=True):
         """

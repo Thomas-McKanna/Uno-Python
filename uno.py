@@ -57,6 +57,15 @@ class Uno:
         called before start_game.
         """
         base_surf = GameObjects.get_base_surface()
+        base_surf.fill(pygame.Color('darkgreen'))
+
+        draw_deck_card = Card(
+            DECK,
+            scale=c.DRAW_DECK_SCALE,
+            x=c.DRAW_DECK_CENTER_X,
+            y=c.DRAW_DECK_CENTER_Y
+        )
+        GameObjects.get_base_surface().blit(draw_deck_card.surface, draw_deck_card.rect)
 
         # Initialize and draw opponent objects
 
@@ -77,7 +86,7 @@ class Uno:
                 c.OPPONENT_SPREAD_PX                    # spread_px
             ) for i in range(len(positions))
         ]
-    
+
         base_surf = GameObjects.get_base_surface()
         for i, player in enumerate(self.opponents):
             name_surface = player.get_name_surface()
@@ -119,40 +128,34 @@ class Uno:
                     if event.key == K_RIGHT:
                         self.primary_player.shift_hand(right=True)
                         wait(c.MOVE_CARD_ANI_DURATION)
+                        self.other_turns()
                     elif event.key == K_LEFT:
                         self.primary_player.shift_hand(right=False)
                         wait(c.MOVE_CARD_ANI_DURATION)
+                        self.other_turns()
                     elif event.key == K_DOWN:
                         self.primary_player.draw_card()
                         wait(c.MOVE_CARD_ANI_DURATION)
+                        self.other_turns()
                     elif event.key == K_UP:
                         self.primary_player.play_card()
                         wait(c.MOVE_CARD_ANI_DURATION)
+                        self.other_turns()
 
             pygame.display.update()
             clock.tick(c.FPS)
 
-    def do_stuff(self):
+    def other_turns(self):
         """
         This function is entirely for testing purposes.
         """
         keys = list(CARD_IMAGE_DICT.keys())
         random.shuffle(keys)
-        temp_card = Card(
-            DECK, 
-            scale=c.DRAW_DECK_SCALE,
-            x=c.DRAW_DECK_CENTER_X, 
-            y=c.DRAW_DECK_CENTER_Y
-        )
-        GameObjects.get_base_surface().blit(temp_card.surface, temp_card.rect)
-        while True:
-            for opponent in self.opponents:
-                for _ in range(5):
-                    opponent.animate_draw_card()
-                    wait(c.MOVE_CARD_ANI_DURATION)
 
-            for opponent in self.opponents:
-                for _ in range(5):
-                    opponent.animate_play_card(
-                        Card(CARD_IMAGE_DICT[keys[random.randint(0, len(keys) - 1)]]))
-                    wait(c.MOVE_CARD_ANI_DURATION)
+        for opponent in self.opponents:
+            rand_val = random.random()
+            if rand_val < 0.5:
+                opponent.draw_card()
+            else:
+                opponent.play_card()
+            wait(c.MOVE_CARD_ANI_DURATION)

@@ -2,21 +2,20 @@ import copy
 import pygame
 
 from card import Card
+from hand import Hand
 from shared_objects import GameObjects
+from util import bring_to_front
 
 import constants as c
 
 
-class SimpleSpreadDeck:
+class OpponentHand(Hand):
     """
-    A horizontal set of cards which expands and shrink according to its size.
-    It is called "simple" because all of the cards are of the same type and 
-    cards can only be added or taken away from the front of the deck.
-
-    Note that this deck is really just for cosmetic purposes.
+    The hand of an opponent player. Implements the
+    same functions as PrimaryHand, but with different animations.
     """
 
-    def __init__(self, x, y, spread, scale, card_surf, num_cards=0):
+    def __init__(self, x, y, spread, scale, card_surf, cards=None):
         """
         x: x-position of center of deck
         y: y-position of center of deck
@@ -25,104 +24,98 @@ class SimpleSpreadDeck:
         scale: floating point value indication what proportion of the original
             surface pased in each card should be
         card_surf: (the surface will not be modified!) the card surface to use
-            for each card in the deck
-        num_cards: optional value indication how many cards should be in the
-            deck to start
+            for each card in the deck (this is what is displayed for each card,
+            despite the actual surface of the card)
+        cards: a list of Card object which should be in this hand to begin with
         """
+        super(OpponentHand, self).__init__(cards)
+
         self.x = x
         self.y = y
         self.spread = spread
         self.surface = card_surf.copy()
         self.scale = scale
 
+        # Stores a list of dummy cards which represent the real cards (since
+        # we don't want to show real card surfaces to player)
         self.cards = []
-        for _ in range(num_cards):
-            self.add_card()
 
-    def push_card(self):
+    def draw_card(self, card):
         """
-        Animates a card moving to the deck. The new card is hidden and the
-        function show_top_card will subsequently have to be called in order
-        to show the card (it is automatically hidden so that as the card
-        goes from draw deck to spread deck there are not two representations
-        of it on the screen).
+        A card moves from the draw deck to this opponent's hand.
+        Parameters:
+        -----------
+        card: the Card object to be added to this hand
         """
-        new_card = Card(
-            self.surface,
-            c.DRAW_DECK_SCALE,
-            c.DRAW_DECK_CENTER_X,
-            c.DRAW_DECK_CENTER_Y
-        )
+        # Append the real card to the real list of cards
+        self.cards.append(card)
 
-        self.cards.append(new_card)
-
-        GameObjects.get_animatables().append(new_card)
+        GameObjects.get_animatables().append(card)
 
         self.animate_move_cards(self.cards[:-1])
 
         num_cards = len(self.cards)
+        
+        # Move the card to draw deck position
+        card.instant_move(c.DRAW_DECK_CENTER_X, c.DRAW_DECK_CENTER_Y)
+
+        # Flip that card (since it should be hidden)
+        card.flip()
 
         # Move the new card from draw deck to spread deck
-        new_card.move(
+        card.move(
             new_centerx=self.get_position_for_card(num_cards - 1, num_cards),
             new_centery=self.y,
             duration=c.MOVE_CARD_ANI_DURATION
         )
 
-        new_card.scale(
+        card.scale(
             from_scale=c.DRAW_DECK_SCALE,
             to_scale=c.OPPONENT_SPREAD_DECK_CARD_SCALE,
             duration=c.MOVE_CARD_ANI_DURATION
         )
 
-    def pop_card(self, card_surface):
+    def play_card(self, card=None):
         """
         Pops the top card off of the stack.
         Parameters:
         -----------
-        card_surface: the card_surface to reveal and move to the play deck
-        Returns:
-        --------
-        The newly created play card, which should be removed from animatables
-        at the proper time (after next play card)
+        card: a Card object which is in this Hand. The card will be removed
+        from the hand.
         """
-        if not len(self.cards):
-            return
+        if card is None:
+            if len(self.cards):
+                # default to playing the last card
+                card = self.cards[-1]
+            else:
+                return None
+            
+        if not card in self.cards:
+            return None
 
-        old_card = self.cards[-1]
-        x, y = old_card.rect.center
-        play_card = Card(
-            card_surface,
-            scale=1,
-            x=x,
-            y=y
-        )
+        # Bring card to the front of screen
+        bring_to_front(card)
 
-        animatables = GameObjects.get_animatables()
+        # Flip the card over so that we can see its face
+        card.flip()
 
-        # TODO: this temporary card never gets removed from animatables list,
-        # and so subsequent card plays will slowly bog down the system. It
-        # needs to be removed from animatables after the animation completes.
-        animatables.append(play_card)
-
-        play_card.move(
+        card.move(
             new_centerx=c.PLAY_DECK_CENTER_X,
             new_centery=c.PLAY_DECK_CENTER_Y,
             duration=c.MOVE_CARD_ANI_DURATION
         )
 
-        play_card.scale(
+        card.scale(
             from_scale=c.OPPONENT_SPREAD_DECK_CARD_SCALE,
             to_scale=c.PLAY_DECK_SCALE,
             duration=c.MOVE_CARD_ANI_DURATION
         )
 
-        animatables.remove(old_card)
-        self.cards.pop()
+        self.cards.remove(card)
 
         self.animate_move_cards(self.cards)
 
-        return play_card
+        return card
 
     def get_position_for_card(self, position, num_cards):
         """
