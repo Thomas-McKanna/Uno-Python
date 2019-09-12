@@ -21,7 +21,7 @@ HALF_WINHEIGHT = int(WINHEIGHT / 2)
 HAND_CIRCLE_CENTER_X = WINWIDTH // 2
 
 # Y-position of imaginary circle that hand rotates around
-HAND_CIRCLE_CENTER_Y = 3 * WINHEIGHT // 2
+HAND_CIRCLE_CENTER_Y = 4 * WINHEIGHT // 2
 
 # X-position where the focus card it located
 FOCUS_CARD_X = WINWIDTH // 2
@@ -30,13 +30,13 @@ FOCUS_CARD_X = WINWIDTH // 2
 FOCUS_CARD_Y = 5 * WINHEIGHT // 6
 
 # Size of focused card compared to original asset size
-FOCUS_CARD_SCALE = 0.325
+FOCUS_CARD_SCALE = 0.27
 
 # Size of cards compared to original asset size
 DEFAULT_CARD_SCALE = 0.22
 
 # How many seconds it should take for rotate hand by one card
-ROTATE_HAND_DURATION = 0.2
+SHIFT_HAND_DURATION = 0.15
 
 # X-position of center of play deck (deck that players put choice on)
 PLAY_DECK_CENTER_X = 5 * WINWIDTH // 8
@@ -49,3 +49,7 @@ DRAW_DECK_CENTER_X = 3 * WINWIDTH // 8
 
 # Y-position of center of draw deck (deck that players draw cards from)
 DRAW_DECK_CENTER_Y = WINHEIGHT // 2
+
+# Coefficient determining how stretched out the hand is (1-100)
+# (High values => very stretched / Low values => very squeezed)
+HAND_BOUNDARY_COEF = 13
