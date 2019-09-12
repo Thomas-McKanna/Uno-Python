@@ -66,13 +66,13 @@ class SimpleSpreadDeck:
         new_card.move(
             new_centerx=self.get_position_for_card(num_cards - 1, num_cards),
             new_centery=self.y,
-            duration=c.OPPONENT_SPREAD_DECK_ANI_DURATION
+            duration=c.MOVE_CARD_ANI_DURATION
         )
 
         new_card.scale(
             from_scale=c.DRAW_DECK_SCALE,
             to_scale=c.OPPONENT_SPREAD_DECK_CARD_SCALE,
-            duration=c.OPPONENT_SPREAD_DECK_ANI_DURATION
+            duration=c.MOVE_CARD_ANI_DURATION
         )
 
     def pop_card(self, card_surface):
@@ -108,13 +108,13 @@ class SimpleSpreadDeck:
         play_card.move(
             new_centerx=c.PLAY_DECK_CENTER_X,
             new_centery=c.PLAY_DECK_CENTER_Y,
-            duration=c.OPPONENT_SPREAD_DECK_ANI_DURATION
+            duration=c.MOVE_CARD_ANI_DURATION
         )
 
         play_card.scale(
             from_scale=c.OPPONENT_SPREAD_DECK_CARD_SCALE,
             to_scale=c.PLAY_DECK_SCALE,
-            duration=c.OPPONENT_SPREAD_DECK_ANI_DURATION
+            duration=c.MOVE_CARD_ANI_DURATION
         )
 
         animatables.remove(old_card)
@@ -152,5 +152,5 @@ class SimpleSpreadDeck:
             card.move(
                 new_centerx=self.get_position_for_card(i, num_cards),
                 new_centery=self.y,
-                duration=c.OPPONENT_SPREAD_DECK_ANI_DURATION
+                duration=c.MOVE_CARD_ANI_DURATION
             )

@@ -63,9 +63,6 @@ FONT_SIZE = round(0.04*WINWIDTH)
 from pygame import Color
 FONT_COLOR = Color('white')
 
-# How long it takes to perform the add card to player spread deck animation
-OPPONENT_SPREAD_DECK_ANI_DURATION = 0.4
-
 # Size of spread deck cards compared to original asset size
 OPPONENT_SPREAD_DECK_CARD_SCALE = 0.2
 
@@ -76,3 +73,6 @@ OPPONENT_SPREAD_PX = 40
 # Coefficient determining how stretched out the hand is (1-100)
 # (High values => very stretched / Low values => very squeezed)
 HAND_BOUNDARY_COEF = 13
+
+# How many seconds it takes to move a card somewhere on the screen
+MOVE_CARD_ANI_DURATION = 0.4

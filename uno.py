@@ -4,6 +4,7 @@ from pygame.locals import *
 
 from shared_objects import GameObjects
 from oponent_player import Opponent
+from primary_player import PrimaryPlayer
 
 import constants as c
 
@@ -85,6 +86,23 @@ class Uno:
             rect.center = (x, y)
             base_surf.blit(name_surface, rect)
 
+        # Initialize the primary player object
+        self.primary_player = PrimaryPlayer(self.primary_player)
+
+        # Initialize the decks
+
+        keys = list(CARD_IMAGE_DICT.keys())
+        random.shuffle(keys)
+
+        cards = [
+            Card(CARD_IMAGE_DICT[keys[i]]) for i in range(len(keys))
+        ]
+
+        draw_deck = GameObjects.get_draw_deck()
+
+        for card in cards:
+            draw_deck.push(card)
+
         # REMOVE IN FUTURE
         # self.do_stuff()
 
@@ -99,11 +117,17 @@ class Uno:
                 print(event)
                 if event.type == KEYDOWN:
                     if event.key == K_RIGHT:
-                        # hand.rotate(right=True)
-                        pass
+                        self.primary_player.shift_hand(right=True)
+                        wait(c.MOVE_CARD_ANI_DURATION)
                     elif event.key == K_LEFT:
-                        # hand.rotate(right=False)
-                        pass
+                        self.primary_player.shift_hand(right=False)
+                        wait(c.MOVE_CARD_ANI_DURATION)
+                    elif event.key == K_DOWN:
+                        self.primary_player.draw_card()
+                        wait(c.MOVE_CARD_ANI_DURATION)
+                    elif event.key == K_UP:
+                        self.primary_player.play_card()
+                        wait(c.MOVE_CARD_ANI_DURATION)
 
             pygame.display.update()
             clock.tick(c.FPS)
@@ -125,10 +149,10 @@ class Uno:
             for opponent in self.opponents:
                 for _ in range(5):
                     opponent.animate_draw_card()
-                    wait(c.OPPONENT_SPREAD_DECK_ANI_DURATION)
+                    wait(c.MOVE_CARD_ANI_DURATION)
 
             for opponent in self.opponents:
                 for _ in range(5):
                     opponent.animate_play_card(
                         Card(CARD_IMAGE_DICT[keys[random.randint(0, len(keys) - 1)]]))
-                    wait(c.OPPONENT_SPREAD_DECK_ANI_DURATION)
+                    wait(c.MOVE_CARD_ANI_DURATION)

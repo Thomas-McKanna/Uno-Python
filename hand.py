@@ -25,16 +25,29 @@ class Hand:
         for card in self.cards:
             card.instant_scale(c.DEFAULT_CARD_SCALE)
 
-    def arrange(self, scale_focus=False):
+    def arrange(self, scale_focus=False, move_focus=True):
         """
         Moves hand into circular position at bottom of screen.
+        Parameters:
+        -----------
+        scale_focus: (optional) if True, focus card is scales up
+            as the animation takes place
+        move_focus: (optional) if True, the focus card moves to its proper
+            place, otherwise it will not be moved
         """
+        # If there are no cards in the hand, don't try to arrange them
+        if not len(self.cards):
+            return
+
         # Center
-        self.cards[self.focus_index].move(
-            c.FOCUS_CARD_X,
-            c.FOCUS_CARD_Y,
-            c.SHIFT_HAND_DURATION
-        )
+        if move_focus:
+            print(self.cards, self.focus_index)
+            self.cards[self.focus_index].move(
+                c.FOCUS_CARD_X,
+                c.FOCUS_CARD_Y,
+                c.SHIFT_HAND_DURATION
+            )
+
         self.angle_offset_map[self.cards[self.focus_index]] = 0
 
         angles = self._get_angles()
@@ -69,9 +82,9 @@ class Hand:
             self.cards[self.focus_index].scale(
                 c.DEFAULT_CARD_SCALE, c.FOCUS_CARD_SCALE)
 
-    def rotate(self, right=True):
+    def shift(self, right=True):
         """
-        Rotates all cards in the hand clockwise.
+        Shift the focus card to the right or left.
 
         Parameters:
         -----------
@@ -143,3 +156,74 @@ class Hand:
             angles.append(c.HAND_BOUNDARY_COEF * fraction)
 
         return angles
+
+    def play_focus(self):
+        """
+        Moves that card in the focus card position to the play deck and moves
+        one of the remaining cards into the focus card position.
+        Returns:
+        --------
+        The Card object which was played.
+        """
+        play_card = self.cards[self.focus_index]
+
+        play_card.move(
+            new_centerx=c.PLAY_DECK_CENTER_X,
+            new_centery=c.PLAY_DECK_CENTER_Y,
+            duration=c.MOVE_CARD_ANI_DURATION
+        )
+
+        play_card.scale(
+            from_scale=c.FOCUS_CARD_SCALE,
+            to_scale=c.PLAY_DECK_SCALE,
+            duration=c.MOVE_CARD_ANI_DURATION
+        )
+
+        self.cards.remove(play_card)
+
+        if self.focus_index >= len(self.cards):
+            self.focus_index -= 1
+        self.arrange(scale_focus=True)
+
+        return play_card
+
+    def draw_card(self, card):
+        """
+        Moves a cards from the draw deck to the hand, making it the new focus
+        card. The card is reveals as it moves to the hand.
+        Parameters:
+        -----------
+        card: the Card object to be added to the hand
+        """
+        # If there was a previously existing focus card, scale it down
+        if len(self.cards):
+            self.cards[self.focus_index].scale(
+                from_scale=c.FOCUS_CARD_SCALE,
+                to_scale=c.DEFAULT_CARD_SCALE,
+                duration=c.MOVE_CARD_ANI_DURATION
+            )
+
+        # Plus one for the new card
+        self.focus_index = (len(self.cards) + 1) // 2
+        self.cards.insert(self.focus_index, card)
+
+        self.arrange(scale_focus=False, move_focus=False)
+
+        card.instant_move(c.DRAW_DECK_CENTER_X, c.DRAW_DECK_CENTER_Y)
+        card.instant_scale(c.DRAW_DECK_SCALE)
+
+        card.move(
+            new_centerx=c.FOCUS_CARD_X,
+            new_centery=c.FOCUS_CARD_Y,
+            duration=c.MOVE_CARD_ANI_DURATION
+        )
+
+        card.scale(
+            from_scale=c.DRAW_DECK_SCALE,
+            to_scale=c.FOCUS_CARD_SCALE,
+            duration=c.MOVE_CARD_ANI_DURATION
+        )
+
+        GameObjects.get_animatables().append(card)
+
+
