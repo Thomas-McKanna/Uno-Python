@@ -5,6 +5,7 @@ from pygame.locals import *
 from shared_objects import GameObjects
 from oponent_player import Opponent
 from primary_player import PrimaryPlayer
+from animatable import Animatable
 
 import constants as c
 
@@ -28,6 +29,12 @@ class Uno:
         self.draw_deck = draw_deck
         self.opponents = []
         self.primary_player = None
+        self.background = Animatable(
+            surface=GameObjects.get_base_surface(), 
+            centerx=c.HALF_WINWIDTH, 
+            centery=c.HALF_WINHEIGHT, 
+            hidden=False
+        )
 
     def add_opponent(self, name):
         """
@@ -56,8 +63,10 @@ class Uno:
         Requires all players in the game to be set to work correctly. Should be 
         called before start_game.
         """
-        base_surf = GameObjects.get_base_surface()
-        base_surf.fill(pygame.Color('darkgreen'))
+        animatables = GameObjects.get_animatables()
+        self.background.instant_color(pygame.Color('darkgreen'))
+
+        animatables.append(self.background)
 
         draw_deck_card = Card(
             DECK,
@@ -65,7 +74,8 @@ class Uno:
             x=c.DRAW_DECK_CENTER_X,
             y=c.DRAW_DECK_CENTER_Y
         )
-        GameObjects.get_base_surface().blit(draw_deck_card.surface, draw_deck_card.rect)
+
+        animatables.append(draw_deck_card)
 
         # Initialize and draw opponent objects
 
@@ -87,13 +97,11 @@ class Uno:
             ) for i in range(len(positions))
         ]
 
-        base_surf = GameObjects.get_base_surface()
         for i, player in enumerate(self.opponents):
             name_surface = player.get_name_surface()
-            rect = name_surface.get_rect()
             x, y = positions[i]
-            rect.center = (x, y)
-            base_surf.blit(name_surface, rect)
+            opponent_animatable = Animatable(name_surface, x, y, False)
+            animatables.append(opponent_animatable)
 
         # Initialize the primary player object
         self.primary_player = PrimaryPlayer(self.primary_player)
@@ -138,7 +146,9 @@ class Uno:
                         wait(c.MOVE_CARD_ANI_DURATION)
                         self.other_turns()
                     elif event.key == K_UP:
+                        color = (random.randint(0, 256), random.randint(0, 256), random.randint(0, 256), 255)
                         self.primary_player.play_card()
+                        self.background.fade_to_color(color, 3)
                         wait(c.MOVE_CARD_ANI_DURATION)
                         self.other_turns()
 

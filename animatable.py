@@ -108,6 +108,22 @@ class Animatable:
         """
         self.rect.center = (x, y)
 
+    def instant_color(self, RGB):
+        """
+        Instantly changes the color of the surface to a solid color.
+        Parameters:
+        -----------
+        RGB: (r, g, b, a) tuple representing the color of the background (a is
+            the alpha value)
+        """
+        original_surf = self.surface
+        orig_rect = original_surf.get_rect()
+        flash_surf = pygame.Surface((orig_rect.w, orig_rect.h))
+        flash_surf = flash_surf.convert_alpha()
+        r, g, b, a = RGB
+        flash_surf.fill((r, g, b, a))
+        self.surface.blit(flash_surf, (0, 0))
+
     ###########################################################################
     # Rotozoom Transformation Functions
     ###########################################################################
@@ -293,8 +309,7 @@ class Animatable:
         surface is maintained in the original_surface variable.
         Parameters:
         -----------
-        RGB: a tuple indicating what color to fade to (recommend using
-            pygame.Color)
+        RGB: (r, g, b, a) tuple indicating the color (a is an alpha value)
         duration: how long it should take for the fade to complete
         """
 
@@ -306,7 +321,7 @@ class Animatable:
             orig_rect = original_surf.get_rect()
             flash_surf = pygame.Surface((orig_rect.w, orig_rect.h))
             flash_surf = flash_surf.convert_alpha()
-            r, g, b = RGB
+            r, g, b, _ = RGB
             for val in alpha_vals:
                 flash_surf.fill((r, g, b, val))
                 self.surface.blit(flash_surf, (0, 0))
