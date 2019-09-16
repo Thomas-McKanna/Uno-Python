@@ -1,4 +1,5 @@
 import random
+import json
 
 class Card:
     def __init__(self, id, value: str, color: str):
@@ -14,6 +15,9 @@ class Card:
 
     def match(self, other):
         return self.color == other.color or self.value == other.value
+    
+    def reprJSON(self):
+        return dict(id=self.id, value=self.value, color=self.color)
 
 class Hand:
     def __init__(self, deck, cards=None):
@@ -36,6 +40,9 @@ class Hand:
 
     def __str__(self):
         return str(self.cards)
+    
+    def reprJSON(self):
+        return dict(deck=self.deck, cards=self.cards)
 
 class Deck:
     def __init__(self, discard: 'Deck' = None, cards=None):
@@ -73,3 +80,13 @@ class Deck:
 
     def getDiscard(self):
         return self.discardDeck.cards[-1]
+    
+    def reprJSON(self):
+        return dict(discardDeck=self.discardDeck, cards=self.cards)
+
+class ComplexEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if hasattr(obj,'reprJSON'):
+            return obj.reprJSON()
+        else:
+            return json.JSONEncoder.default(self, obj)
