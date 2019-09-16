@@ -1,6 +1,6 @@
-from cards import Card, Deck, Hand
+from cards import Card, Deck, Hand, ComplexEncoder
 from player import Player
-
+import json
 
 # Generate cards for UNO
 cards = []
@@ -41,6 +41,9 @@ for _ in range(7):
     for player in players:
         player.draw(1)
 
+print(json.dumps(deck.reprJSON(), cls=ComplexEncoder))
+
+"""
 while True:
     for player in players:
         print("-------------------------------")
@@ -60,3 +63,4 @@ while True:
                 if nextAction == "y":
                     player.playCard(card=drawnCard)
 
+"""
