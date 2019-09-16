@@ -85,7 +85,7 @@ class Deck:
         return dict(discardDeck=self.discardDeck, cards=self.cards)
 
 class ComplexEncoder(json.JSONEncoder):
-    def default(self, obj):
+    def default(self, obj): # pylint: disable=E0202
         if hasattr(obj,'reprJSON'):
             return obj.reprJSON()
         else:
