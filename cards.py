@@ -43,6 +43,12 @@ class Hand:
     
     def reprJSON(self):
         return dict(deck=self.deck, cards=self.cards)
+    
+    def loadJSON(self, data):
+        jsondata = json.loads(data)
+        self.cards = jsondata["cards"]
+        deckdata = json.dumps(jsondata["deck"])
+        self.deck.loadJSON(deckdata)
 
 class Deck:
     def __init__(self, discard: 'Deck' = None, cards=None):
@@ -83,6 +89,14 @@ class Deck:
     
     def reprJSON(self):
         return dict(discardDeck=self.discardDeck, cards=self.cards)
+    
+    def loadJSON(self, data):
+        jsondata = json.loads(data)
+        self.cards = jsondata["cards"]
+        if jsondata["discardDeck"]:
+            discarddata = json.dumps(jsondata["discardDeck"])
+            self.discardDeck.loadJSON(discarddata)
+
 
 class ComplexEncoder(json.JSONEncoder):
     def default(self, obj): # pylint: disable=E0202
