@@ -23,6 +23,5 @@ before_script:
 
 test:
   script:
-    - pip install tox pylint coverage  # you can also use tox
-    - tox -e py36,pylint,coverage
-    - pytest
+    - pip install pylint coverage pytest pytest-cov  # you can also use tox
+    - pytest --cov=cardgame
