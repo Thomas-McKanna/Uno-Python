@@ -118,10 +118,22 @@ def test_deck_getDiscard_empty():
     assert deck.getDiscard() == None
 
 def test_deck_reprJSON():
-    pass
+    discardDeck = Deck(None, [Card(1, "3", "Red"), Card(2, "4", "Blue")])
+    cards = [Card(3, "5", "Yellow"), Card(4, "6", "Green")]
+    deck = Deck(discardDeck, cards)
+    assert deck.reprJSON() == dict(discardDeck = deck.discardDeck, cards = deck.cards)
 
 def test_deck_loadJSON():
-    pass
+    testjson = """
+{"discardDeck": {"discardDeck": null, "cards": [{"id": 101, "value": "wild", "color": "wild"}]}, "cards":
+[{"id": 54, "value": "2", "color": "Yellow"}, {"id": 28, "value": "2", "color": "Green"}, {"id": 15, "value": "8", "color": "Red"}, {"id": 77, "value": "1", "color": "Blue"}, {"id": 99, "value": "reverse", "color": "Blue"}]}
+"""
+    deck = Deck()
+    deck.loadJSON(testjson)
+    assert len(deck.cards) == 5
+    assert len(deck.discardDeck.cards) == 1
+    assert deck.discardDeck.discardDeck is None
+
 
 '''
 class Deck:
