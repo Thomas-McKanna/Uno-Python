@@ -77,12 +77,14 @@ def test_deck_draw_excess_reshuffle():
     discardDeck = Deck(None, [Card(1, "3", "Red"), Card(2, "4", "Blue")])
     cards = [Card(3, "5", "Yellow"), Card(4, "6", "Green")]
     deck = Deck(discardDeck, cards)
-    deck.draw(3)
+    drawn_cards = deck.draw(3)
+    assert len(drawn_cards) == 3
 
 def test_deck_draw_excess_no_discard():
     cards = [Card(3, "5", "Yellow"), Card(4, "6", "Green")]
     deck = Deck(None, cards)
-    deck.draw(3)
+    drawn_cards = deck.draw(3)
+    assert len(drawn_cards) == 2
 
 def test_deck_shuffle(test_deck_setup):
     # This test may fail due to random chance if the first
