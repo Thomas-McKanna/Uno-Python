@@ -24,7 +24,8 @@ class Card:
         self.id = jsondata["id"]
         self.value = jsondata["value"]
         self.color = jsondata["color"]
-
+        return self
+    
     def __eq__(self, other):
         return self.__dict__ == other.__dict__
         
@@ -58,9 +59,11 @@ class Hand:
     
     def loadJSON(self, data):
         jsondata = json.loads(data)
-        self.cards = jsondata["cards"]
+        cards = [Card().loadJSON(card) for card in jsondata["cards"]]
+        self.cards = cards
         deckdata = json.dumps(jsondata["deck"])
         self.deck.loadJSON(deckdata)
+        return self
 
 class Deck:
     def __init__(self, discard: 'Deck' = None, cards=None):
@@ -108,12 +111,14 @@ class Deck:
     
     def loadJSON(self, data):
         jsondata = json.loads(data)
-        self.cards = jsondata["cards"]
+        cards = [Card().loadJSON(json.dumps(card)) for card in jsondata["cards"]]
+        self.cards = cards
         if jsondata["discardDeck"]:
             if self.discardDeck is None:
                 self.discardDeck = Deck()
             discarddata = json.dumps(jsondata["discardDeck"])
             self.discardDeck.loadJSON(discarddata)
+        return self
 
 
 class ComplexEncoder(json.JSONEncoder):
