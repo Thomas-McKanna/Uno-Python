@@ -69,10 +69,20 @@ def test_deck_not_list():
     with pytest.raises(TypeError):
         deck = Deck(None, sample_card)
 
-
 def test_deck_draw(test_deck_setup):
     drawncard = test_deck_setup.draw(1)
     assert str(drawncard[0]) == str(Card(1, "+4", "wild"))
+
+def test_deck_draw_excess_reshuffle():
+    discardDeck = Deck(None, [Card(1, "3", "Red"), Card(2, "4", "Blue")])
+    cards = [Card(3, "5", "Yellow"), Card(4, "6", "Green")]
+    deck = Deck(discardDeck, cards)
+    deck.draw(3)
+
+def test_deck_draw_excess_no_discard():
+    cards = [Card(3, "5", "Yellow"), Card(4, "6", "Green")]
+    deck = Deck(None, cards)
+    deck.draw(3)
 
 def test_deck_shuffle(test_deck_setup):
     # This test may fail due to random chance if the first
