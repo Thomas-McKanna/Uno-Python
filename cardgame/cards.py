@@ -19,6 +19,12 @@ class Card:
     def reprJSON(self):
         return dict(id=self.id, value=self.value, color=self.color)
 
+    def loadJSON(self, data):
+        jsondata = json.loads(data)
+        self.id = jsondata["id"]
+        self.value = jsondata["value"]
+        self.color = jsondata["color"]
+
 class Hand:
     def __init__(self, deck, cards=None):
         self.deck = deck
