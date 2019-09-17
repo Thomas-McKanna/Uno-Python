@@ -100,6 +100,8 @@ class Deck:
         jsondata = json.loads(data)
         self.cards = jsondata["cards"]
         if jsondata["discardDeck"]:
+            if self.discardDeck is None:
+                self.discardDeck = Deck()
             discarddata = json.dumps(jsondata["discardDeck"])
             self.discardDeck.loadJSON(discarddata)
 
