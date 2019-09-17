@@ -89,6 +89,8 @@ class Deck:
         return len(self.cards)
 
     def getDiscard(self):
+        if len(self.discardDeck) == 0:
+            return None
         return self.discardDeck.cards[-1]
     
     def reprJSON(self):
