@@ -1,5 +1,5 @@
 import pytest
-from cards import Card, Hand, Deck, ComplexEncoder
+from cardgame.cards import Card, Hand, Deck, ComplexEncoder
 
 
 
@@ -27,3 +27,102 @@ def test_card_reprJSON():
     output = {"id": 1, "value": "4", "color": "Red"}
     card = Card(1, "4", "Red")
     assert card.reprJSON() == output
+
+# Test Deck class
+@pytest.fixture
+def test_deck_setup():
+    discardDeck = Deck(None, None)
+    cards = []
+    colors = ["Red", "Green", "Yellow", "Blue"]
+    for color in colors:
+        cards.append(Card(len(cards), str(0), color))
+        for num in range(1,10):
+            cards.append(Card(len(cards), str(num), color))
+        cards.append(Card(len(cards), "+2", color))
+        cards.append(Card(len(cards), "skip", color))
+        cards.append(Card(len(cards), "reverse", color))
+    cards.append(Card(len(cards), "wild", "wild"))
+    cards.append(Card(len(cards), "+4", "wild"))
+
+    deck = Deck(discardDeck, cards)
+    return deck
+
+
+def test_deck_draw(test_deck_setup):
+    drawncard = test_deck_setup.draw(1)
+    assert str(drawncard[0]) == str(Card(1, "+4", "wild"))
+
+def test_deck_shuffle(test_deck_setup):
+    # This test may fail due to random chance if the first
+    # cards happen to be unchanged after the shuffle
+    old5cards = test_deck_setup.cards[:5]
+    test_deck_setup.shuffle()
+    new5cards = test_deck_setup.cards[:5]
+    assert old5cards != new5cards
+
+def test_deck_discard(test_deck_setup):
+    topcard = test_deck_setup.cards[-1]
+    test_deck_setup.discard(test_deck_setup.draw(1))
+    removal = topcard not in test_deck_setup.cards
+    discard = topcard == test_deck_setup.discardDeck.cards[-1]
+    assert removal
+    assert discard
+
+
+def test_deck_getDiscard():
+    pass
+
+def test_deck_reprJSON():
+    pass
+
+def test_deck_loadJSON():
+    pass
+
+'''
+class Deck:
+    def __init__(self, discard: 'Deck' = None, cards=None):
+        self.discardDeck = discard
+        if cards is None:
+            cards = []
+        self.cards = cards
+
+    def draw(self, number: int):
+        """
+        This will draw up to <number> cards. If the deck runs out of cards,
+        it will add all but the top card from the discard to the deck, shuffle, 
+        then continue drawing. If there is no discard deck, it will stop drawing
+        cards and return what has already been drawn.
+        """
+        drawnCards = []
+        for _ in range(number):
+            if len(self.cards) == 0:
+                if self.discardDeck is None or len(self.discardDeck) == 1:
+                    return drawnCards
+                self.cards = self.discardDeck.cards[:-1]
+                self.discardDeck.cards = self.discardDeck.cards[-1:]
+                self.shuffle()
+            drawnCards.append(self.cards.pop())
+        return drawnCards
+    
+    def shuffle(self):
+        random.shuffle(self.cards)
+    
+    def discard(self, discardCards):
+        self.discardDeck.cards.extend(discardCards)
+
+    def __len__(self):
+        return len(self.cards)
+
+    def getDiscard(self):
+        return self.discardDeck.cards[-1]
+    
+    def reprJSON(self):
+        return dict(discardDeck=self.discardDeck, cards=self.cards)
+    
+    def loadJSON(self, data):
+        jsondata = json.loads(data)
+        self.cards = jsondata["cards"]
+        if jsondata["discardDeck"]:
+            discarddata = json.dumps(jsondata["discardDeck"])
+            self.discardDeck.loadJSON(discarddata)
+'''
