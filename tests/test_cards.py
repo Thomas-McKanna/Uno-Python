@@ -47,6 +47,28 @@ def test_deck_setup():
     deck = Deck(discardDeck, cards)
     return deck
 
+def test_empty_deck():
+    deck = Deck()
+    assert deck.discardDeck == None
+    assert deck.cards == []
+
+def test_deck_no_discard():
+    sample_card = Card(1, "4", "Red")
+    deck = Deck(None, [sample_card])
+    assert deck.cards[0] == sample_card
+
+def test_deck():
+    sample_discard = Deck()
+    sample_card = Card(1, "4", "Red")
+    deck = Deck(sample_discard, [sample_card])
+    assert deck.cards[0] == sample_card
+    assert deck.discardDeck == sample_discard
+
+def test_deck_not_list():
+    sample_card = Card(1, "4", "Red")
+    with pytest.raises(TypeError):
+        deck = Deck(None, sample_card)
+
 
 def test_deck_draw(test_deck_setup):
     drawncard = test_deck_setup.draw(1)
