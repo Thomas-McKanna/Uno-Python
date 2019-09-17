@@ -104,7 +104,18 @@ def test_deck_discard(test_deck_setup):
 
 
 def test_deck_getDiscard():
-    pass
+    discardDeck = Deck(None, [Card(1, "3", "Red"), Card(2, "4", "Blue")])
+    cards = [Card(3, "5", "Yellow"), Card(4, "6", "Green")]
+    deck = Deck(discardDeck, cards)
+
+    assert str(deck.getDiscard()) == "Blue 4"
+
+def test_deck_getDiscard_empty():
+    discardDeck = Deck()
+    cards = [Card(3, "5", "Yellow"), Card(4, "6", "Green")]
+    deck = Deck(discardDeck, cards)
+
+    assert deck.getDiscard() == None
 
 def test_deck_reprJSON():
     pass
