@@ -24,6 +24,8 @@ class Hand:
         self.deck = deck
         if cards is None:
             cards = []
+        if type(cards) is not list:
+            raise TypeError("Cards must be a list")
         self.cards = cards
     
     def discard(self, discards):
@@ -55,6 +57,8 @@ class Deck:
         self.discardDeck = discard
         if cards is None:
             cards = []
+        if type(cards) is not list:
+            raise TypeError("Cards must be a list")
         self.cards = cards
 
     def draw(self, number: int):
