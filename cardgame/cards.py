@@ -25,6 +25,10 @@ class Card:
         self.value = jsondata["value"]
         self.color = jsondata["color"]
 
+    def __eq__(self, other):
+        return self.__dict__ == other.__dict__
+        
+
 class Hand:
     def __init__(self, deck, cards=None):
         self.deck = deck
