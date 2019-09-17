@@ -1,4 +1,4 @@
-if __name__ == "__main__":
+if __name__ == "__main__": # pragma: no cover
     from cards import Card, Deck, Hand, ComplexEncoder
     from player import Player
     import json
