@@ -1,4 +1,5 @@
 import pytest
+import json
 from cardgame.cards import Card, Hand, Deck, ComplexEncoder
 
 
@@ -134,7 +135,23 @@ def test_deck_loadJSON():
     assert len(deck.discardDeck.cards) == 1
     assert deck.discardDeck.discardDeck is None
 
+def test_deck_json_dumps():
+    discardDeck = Deck(None, [Card(1, "3", "Red"), Card(2, "4", "Blue")])
+    cards = [Card(3, "5", "Yellow"), Card(4, "6", "Green")]
+    deck = Deck(discardDeck, cards)
+    string = json.dumps(deck.reprJSON(), cls=ComplexEncoder)
+    expected = """{"discardDeck": {"discardDeck": null, "cards": [{"id": 1, "value": "3", "color": "Red"}, {"id": 2, "value": "4", "color": "Blue"}]}, "cards": [{"id": 3, "value": "5", "color": "Yellow"}, {"id": 4, "value": "6", "color": "Green"}]}"""
+    assert string == expected
 
+def test_deck_json_dump_load():
+    discardDeck = Deck(None, [Card(1, "3", "Red"), Card(2, "4", "Blue")])
+    cards = [Card(3, "5", "Yellow"), Card(4, "6", "Green")]
+    deck = Deck(discardDeck, cards)
+    string = json.dumps(deck.reprJSON(), cls=ComplexEncoder)
+
+    deck2 = Deck()
+    deck2.loadJSON(string)
+    assert deck.cards == deck2.cards
 '''
 class Deck:
     def __init__(self, discard: 'Deck' = None, cards=None):
