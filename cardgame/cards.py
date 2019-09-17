@@ -2,7 +2,7 @@ import random
 import json
 
 class Card:
-    def __init__(self, id, value: str, color: str):
+    def __init__(self, id=None, value: str=None, color: str=None):
         self.id = id
         self.value = value
         self.color = color
