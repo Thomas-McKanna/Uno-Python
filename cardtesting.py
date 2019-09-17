@@ -42,7 +42,13 @@ for _ in range(7):
         player.draw(1)
 
 print(json.dumps(deck.reprJSON(), cls=ComplexEncoder))
-
+print("\n\nNew Dict:")
+testjson = """
+{"discardDeck": {"discardDeck": null, "cards": [{"id": 101, "value": "wild", "color": "wild"}]}, "cards":
+[{"id": 54, "value": "2", "color": "Yellow"}, {"id": 28, "value": "2", "color": "Green"}, {"id": 15, "value": "8", "color": "Red"}, {"id": 77, "value": "1", "color": "Blue"}, {"id": 99, "value": "reverse", "color": "Blue"}]}
+"""
+deck.loadJSON(testjson)
+print(json.dumps(deck.reprJSON(), cls=ComplexEncoder))
 """
 while True:
     for player in players:
