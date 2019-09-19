@@ -1,8 +1,6 @@
 import copy
 import pygame
 
-from deck import Deck
-
 import constants as c
 
 
@@ -20,8 +18,6 @@ class GameObjects:
     base_surf = None
     animatables = None
     font = None
-    draw_deck = None
-    play_deck = None
 
     @staticmethod
     def get_clock():
@@ -39,8 +35,10 @@ class GameObjects:
         drawn.
         """
         if GameObjects.display_surf is None:
-            GameObjects.display_surf = pygame.display.set_mode(
-                (c.WINWIDTH, c.WINHEIGHT))
+            GameObjects.display_surf = pygame.display.set_mode((0, 0),
+                                                               pygame.RESIZABLE)
+            # GameObjects.display_surf = pygame.display.set_mode(
+            #     (c.WINWIDTH, c.WINHEIGHT))
             GameObjects.base_surf = GameObjects.display_surf.copy()
         return GameObjects.display_surf
 
@@ -77,21 +75,3 @@ class GameObjects:
                 "assets/Acme-Regular.ttf", c.FONT_SIZE)
         return GameObjects.font
 
-    @staticmethod
-    def get_draw_deck():
-        """
-        Returns a Deck object which is the draw deck in the Uno game.
-        """
-        if GameObjects.draw_deck is None:
-            GameObjects.draw_deck = Deck()
-        return GameObjects.draw_deck
-
-    @staticmethod
-    def get_playdeck():
-        """
-        Returns a Deck object which is where played cards are placed in the 
-        Uno game.
-        """
-        if GameObjects.play_deck is None:
-            GameObjects.play_deck = Deck()
-        return GameObjects.play_deck

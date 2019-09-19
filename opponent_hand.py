@@ -2,20 +2,20 @@ import copy
 import pygame
 
 from card import Card
-from hand import Hand
 from shared_objects import GameObjects
 from util import bring_to_front
+from assets import DECK
 
 import constants as c
 
 
-class OpponentHand(Hand):
+class OpponentHand():
     """
     The hand of an opponent player. Implements the
     same functions as PrimaryHand, but with different animations.
     """
 
-    def __init__(self, x, y, spread, scale, card_surf, cards=None):
+    def __init__(self, x, y, spread=c.OPPONENT_SPREAD_PX, scale=c.OPPONENT_SPREAD_DECK_CARD_SCALE, card_surf=DECK):
         """
         x: x-position of center of deck
         y: y-position of center of deck
@@ -28,8 +28,6 @@ class OpponentHand(Hand):
             despite the actual surface of the card)
         cards: a list of Card object which should be in this hand to begin with
         """
-        super(OpponentHand, self).__init__(cards)
-
         self.x = x
         self.y = y
         self.spread = spread
@@ -40,13 +38,12 @@ class OpponentHand(Hand):
         # we don't want to show real card surfaces to player)
         self.cards = []
 
-    def draw_card(self, card):
+    def draw(self):
         """
         A card moves from the draw deck to this opponent's hand.
-        Parameters:
-        -----------
-        card: the Card object to be added to this hand
         """
+        card = Card(DECK)
+
         # Append the real card to the real list of cards
         self.cards.append(card)
 
@@ -55,12 +52,9 @@ class OpponentHand(Hand):
         self.animate_move_cards(self.cards[:-1])
 
         num_cards = len(self.cards)
-        
+
         # Move the card to draw deck position
         card.instant_move(c.DRAW_DECK_CENTER_X, c.DRAW_DECK_CENTER_Y)
-
-        # Flip that card (since it should be hidden)
-        card.flip()
 
         # Move the new card from draw deck to spread deck
         card.move(
@@ -75,29 +69,31 @@ class OpponentHand(Hand):
             duration=c.MOVE_CARD_ANI_DURATION
         )
 
-    def play_card(self, card=None):
+    def play(self, card):
         """
         Pops the top card off of the stack.
         Parameters:
         -----------
-        card: a Card object which is in this Hand. The card will be removed
-        from the hand.
+        card: a Card object
         """
-        if card is None:
-            if len(self.cards):
-                # default to playing the last card
-                card = self.cards[-1]
-            else:
-                return None
+        if not len(self.cards):
+            # There are no cards to play
+            raise Exception
             
-        if not card in self.cards:
-            return None
+        old_card = self.cards[-1]
 
-        # Bring card to the front of screen
+        x, y = old_card.rect.center
+        card.instant_move(x, y)
+    
+        animatables = GameObjects.get_animatables()
+
+        animatables.remove(old_card)
+        self.cards.remove(old_card)
+
+        if not card in animatables:
+            animatables.append(card)
+
         bring_to_front(card)
-
-        # Flip the card over so that we can see its face
-        card.flip()
 
         card.move(
             new_centerx=c.PLAY_DECK_CENTER_X,
@@ -111,11 +107,7 @@ class OpponentHand(Hand):
             duration=c.MOVE_CARD_ANI_DURATION
         )
 
-        self.cards.remove(card)
-
         self.animate_move_cards(self.cards)
-
-        return card
 
     def get_position_for_card(self, position, num_cards):
         """

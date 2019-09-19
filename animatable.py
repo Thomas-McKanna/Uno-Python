@@ -210,6 +210,7 @@ class Animatable:
             dimensions.append(
                 (int(round(w * to_scale)), int(round(h * to_scale))))
 
+        self.rotozoom_generators = []
         self.rotozoom_generators.append(
             generator(self.original_surface, dimensions))
 
@@ -358,6 +359,8 @@ class Animatable:
             # No movement required
             return None
 
+        self.position_animation_queue = Queue()
+
         args = (self.surface, new_centerx, new_centery, duration)
         self.position_animation_queue.put(
             (args, self._calculate_move_positions)
@@ -378,6 +381,9 @@ class Animatable:
         start_centerx, start_centery = rect.center
         x_diff, y_diff = (start_centerx - end_centerx,
                           start_centery - end_centery)
+        if x_diff == 0 and y_diff == 0:
+            return []
+
         # Distance between the two points (start and end)
         magnitude = math.sqrt(x_diff**2 + y_diff**2)
         # Unit vector

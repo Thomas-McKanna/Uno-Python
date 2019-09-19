@@ -1,26 +1,25 @@
 from card import Card
-from hand import Hand
 from util import circle_transform, bring_to_front
 import constants as c
 from shared_objects import GameObjects
 
 import time
-class PrimaryHand(Hand):
+
+
+class PrimaryHand():
     """
     The hand of the player who is playing against opponents. Implements the
     same functions as OpponentHand, but with different animations.
     """
-    def __init__(self, cards=None):
-        super(PrimaryHand, self).__init__(cards)
+
+    def __init__(self):
+        self.cards = []
 
         self.focus_index = len(self.cards) // 2
 
         self.last_rotate_time = time.time()
 
         self.angle_offset_map = {}
-
-        for card in self.cards:
-            card.instant_scale(c.DEFAULT_CARD_SCALE)
 
     def _arrange(self, scale_focus=False, move_focus=True):
         """
@@ -86,15 +85,10 @@ class PrimaryHand(Hand):
         -----------
         clockwise: True if rotating clockwise and False if rotating counter-
             clockwise
+        Returns:
+        --------
+        The card that is the new focus card
         """
-        curr_time = time.time()
-
-        if curr_time - self.last_rotate_time < c.SHIFT_HAND_DURATION + 2 / c.FPS:
-            # Do not initiate a new rotation if already rotating
-            return
-
-        self.last_rotate_time = curr_time
-
         if right:
             if self.focus_index + 1 == len(self.cards):
                 return
@@ -128,6 +122,8 @@ class PrimaryHand(Hand):
 
         self._arrange()
 
+        return self.cards[self.focus_index]
+
     def _get_angles(self):
         """
         Returns a list for which each element indicates how many more degrees
@@ -153,7 +149,7 @@ class PrimaryHand(Hand):
 
         return angles
 
-    def play_card(self, card=None):
+    def play(self, card):
         """
         Moves that card in the focus card position to the play deck and moves
         one of the remaining cards into the focus card position.
@@ -162,41 +158,34 @@ class PrimaryHand(Hand):
         card: a Card object which is in this Hand. The card will be removed
         from the hand.
         """
-        if card is not None:
+        if card not in self.cards:
             # This function should only be called with default parameter, since
             # only the focus card can be played
-            return None
+            raise Exception
 
-        if not len(self.cards):
-            return None
-
-        play_card = self.cards[self.focus_index]
-
-        play_card.move(
+        card.move(
             new_centerx=c.PLAY_DECK_CENTER_X,
             new_centery=c.PLAY_DECK_CENTER_Y,
             duration=c.MOVE_CARD_ANI_DURATION
         )
 
-        play_card.scale(
+        card.scale(
             from_scale=c.FOCUS_CARD_SCALE,
             to_scale=c.PLAY_DECK_SCALE,
             duration=c.MOVE_CARD_ANI_DURATION
         )
 
-        self.cards.remove(play_card)
+        self.cards.remove(card)
 
         # Move the card to the top of the animatable list so that it appears on
         # top of the play deck
-        bring_to_front(play_card)
-        
+        bring_to_front(card)
+
         if self.focus_index >= len(self.cards):
             self.focus_index -= 1
         self._arrange(scale_focus=True)
 
-        return play_card
-
-    def draw_card(self, card):
+    def draw(self, card):
         """
         Moves a cards from the draw deck to the hand, making it the new focus
         card. The card is reveals as it moves to the hand.
@@ -233,4 +222,8 @@ class PrimaryHand(Hand):
             duration=c.MOVE_CARD_ANI_DURATION
         )
 
-        GameObjects.get_animatables().append(card)
+        if self.focus_index != 0:
+            index = GameObjects.get_animatables().index(self.cards[self.focus_index - 1])
+            GameObjects.get_animatables().insert(index, card)
+        else:
+            GameObjects.get_animatables().insert(0, card)
