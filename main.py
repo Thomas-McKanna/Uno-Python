@@ -47,21 +47,26 @@ def main():
 
         for event in pygame.event.get():  # event handling loop
             if event.type == KEYDOWN:
+                # Draw card
                 if event.key == K_DOWN:
                     animation.draw_card(i)
                     primary.append(i)
                     i += 1
+                # Play card
                 elif event.key == K_UP:
                     animation.play_card(primary[-1])
                     primary.pop()
                     i += 1
+                # Shift hand
                 elif event.key == K_LEFT:
                     animation.shift_hand(False)
                 elif event.key == K_RIGHT:
                     animation.shift_hand(True)
+                # Opponent draw card
                 elif event.key == K_0:
                     animation.opponent_draw_card("Thomas")
                     j += 1
+                # Opponent play card
                 elif event.key == K_1:
                     if j > 0:
                         animation.opponent_play_card("Thomas", 50 - j)

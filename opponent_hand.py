@@ -79,12 +79,12 @@ class OpponentHand():
         if not len(self.cards):
             # There are no cards to play
             raise Exception
-            
+
         old_card = self.cards[-1]
 
         x, y = old_card.rect.center
         card.instant_move(x, y)
-    
+
         animatables = GameObjects.get_animatables()
 
         animatables.remove(old_card)

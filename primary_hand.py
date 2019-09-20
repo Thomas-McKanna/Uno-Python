@@ -91,36 +91,27 @@ class PrimaryHand():
         """
         if right:
             if self.focus_index + 1 == len(self.cards):
-                return
-            else:
-                self.cards[self.focus_index].scale(
-                    c.FOCUS_CARD_SCALE,
-                    c.DEFAULT_CARD_SCALE,
-                    c.SHIFT_HAND_DURATION
-                )
-                self.focus_index += 1
-                self.cards[self.focus_index].scale(
-                    c.DEFAULT_CARD_SCALE,
-                    c.FOCUS_CARD_SCALE,
-                    c.SHIFT_HAND_DURATION
-                )
+                return self.cards[self.focus_index]
+            offset = 1
         else:
-            if self.focus_index == 0:
-                return
-            else:
-                self.cards[self.focus_index].scale(
-                    c.FOCUS_CARD_SCALE,
-                    c.DEFAULT_CARD_SCALE,
-                    c.SHIFT_HAND_DURATION
-                )
-                self.focus_index -= 1
-                self.cards[self.focus_index].scale(
-                    c.DEFAULT_CARD_SCALE,
-                    c.FOCUS_CARD_SCALE,
-                    c.SHIFT_HAND_DURATION
-                )
+            if self.focus_index - 1 == -1:
+                return self.cards[self.focus_index]
+            offset = -1
+        
+        self.cards[self.focus_index].scale(
+            c.FOCUS_CARD_SCALE,
+            c.DEFAULT_CARD_SCALE,
+            c.SHIFT_HAND_DURATION
+        )
+        self.focus_index += offset
+        self.cards[self.focus_index].scale(
+            c.DEFAULT_CARD_SCALE,
+            c.FOCUS_CARD_SCALE,
+            c.SHIFT_HAND_DURATION
+        )
 
         self._arrange()
+        print(self.focus_index)
 
         return self.cards[self.focus_index]
 
