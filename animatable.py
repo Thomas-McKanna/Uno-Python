@@ -35,6 +35,8 @@ class Animatable:
         self.rotozoom_generators = []
         self.color_generators = []
 
+        self.current_scale = 1
+
     def get_frame(self):
         """
         Returns a blit pair indication what the surface is for this Animatable
@@ -65,7 +67,10 @@ class Animatable:
             for item in items:
                 self.position_queue.put(item)
 
-        return (self.surface, self.rect)
+        if not self.hidden:
+            return (self.surface, self.rect)
+        else:
+            return None
 
     def hide(self):
         """
@@ -80,6 +85,11 @@ class Animatable:
         self.hidden = False
 
     def instant_scale(self, scale):
+        """
+        Instantly changes the scale of the surface (no animation)
+        Parameters:
+        scale: proportion of original surface the surface should now be
+        """
         x, y = self.rect.center
 
         orig_w = self.original_surface.get_rect().w
@@ -90,8 +100,29 @@ class Animatable:
         self.rect = self.surface.get_rect()
         self.instant_move(x, y)
 
+        self.current_scale = scale
+
     def instant_move(self, x, y):
+        """
+        Instantly move the animatable to the given position.
+        """
         self.rect.center = (x, y)
+
+    def instant_color(self, RGB):
+        """
+        Instantly changes the color of the surface to a solid color.
+        Parameters:
+        -----------
+        RGB: (r, g, b, a) tuple representing the color of the background (a is
+            the alpha value)
+        """
+        original_surf = self.surface
+        orig_rect = original_surf.get_rect()
+        flash_surf = pygame.Surface((orig_rect.w, orig_rect.h))
+        flash_surf = flash_surf.convert_alpha()
+        r, g, b, a = RGB
+        flash_surf.fill((r, g, b, a))
+        self.surface.blit(flash_surf, (0, 0))
 
     ###########################################################################
     # Rotozoom Transformation Functions
@@ -179,8 +210,11 @@ class Animatable:
             dimensions.append(
                 (int(round(w * to_scale)), int(round(h * to_scale))))
 
+        self.rotozoom_generators = []
         self.rotozoom_generators.append(
             generator(self.original_surface, dimensions))
+
+        self.current_scale = to_scale
 
     def rotozoom(self, scale, angle, duration):
         """
@@ -218,6 +252,8 @@ class Animatable:
         args = zip(angles, scales)
 
         self.rotozoom_generators.append(generator(self.surface, args))
+
+        self.current_scale = scale
 
     ###########################################################################
     # Color Transformation Functions
@@ -267,6 +303,43 @@ class Animatable:
 
         self.color_generators.append(generator(self.surface, intensities))
 
+    def fade_to_color(self, RGB, duration):
+        """
+        Fades the surface to the given RGB color tuple. The surface is not
+        restored to its original color after the animation, but the original
+        surface is maintained in the original_surface variable.
+        Parameters:
+        -----------
+        RGB: (r, g, b, a) tuple indicating the color (a is an alpha value)
+        duration: how long it should take for the fade to complete
+        """
+
+        def generator(alpha_vals):
+            """
+            Generator function that alters this animatable's surface.
+            """
+            original_surf = self.surface
+            orig_rect = original_surf.get_rect()
+            flash_surf = pygame.Surface((orig_rect.w, orig_rect.h))
+            flash_surf = flash_surf.convert_alpha()
+            r, g, b, _ = RGB
+            for val in alpha_vals:
+                flash_surf.fill((r, g, b, val))
+                self.surface.blit(flash_surf, (0, 0))
+                yield True
+
+        step_size = 1 / (duration * FPS)
+        steps = [
+            (x/1) * 255 for x in arange(0, 1, step_size)
+        ]
+
+        alpha_vals = []
+        for step in steps:
+            alpha_vals.append(step)
+        alpha_vals.append(255)
+
+        self.color_generators.append(generator(alpha_vals))
+
     ###########################################################################
     # Position-Related Animation Functions
     ###########################################################################
@@ -281,10 +354,12 @@ class Animatable:
         duration: indicates how long in seconds that the
             animation should last.
         """
-        rect = self.surface.get_rect()
+        rect = self.rect
         if new_centerx == rect.centerx and new_centery == rect.centery:
             # No movement required
             return None
+
+        self.position_animation_queue = Queue()
 
         args = (self.surface, new_centerx, new_centery, duration)
         self.position_animation_queue.put(
@@ -306,6 +381,9 @@ class Animatable:
         start_centerx, start_centery = rect.center
         x_diff, y_diff = (start_centerx - end_centerx,
                           start_centery - end_centery)
+        if x_diff == 0 and y_diff == 0:
+            return []
+
         # Distance between the two points (start and end)
         magnitude = math.sqrt(x_diff**2 + y_diff**2)
         # Unit vector

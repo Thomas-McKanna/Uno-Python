@@ -63,7 +63,17 @@ def draw_next_frame():
 
     frames = []
     for animatable in animatables:
-        frames.append(animatable.get_frame())
+        potential_frame = animatable.get_frame()
+        if potential_frame is not None:
+            frames.append(potential_frame)
 
     # Draw animatables on top of background
     surface.blits(frames)
+
+def bring_to_front(animatable):
+    """
+    Brings the pass in animatable to the top of the list so that it is drawn
+    on top of everthing else.
+    """
+    GameObjects.get_animatables().remove(animatable)
+    GameObjects.get_animatables().append(animatable)

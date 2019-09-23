@@ -17,6 +17,7 @@ class GameObjects:
     display_surf = None
     base_surf = None
     animatables = None
+    font = None
 
     @staticmethod
     def get_clock():
@@ -34,8 +35,10 @@ class GameObjects:
         drawn.
         """
         if GameObjects.display_surf is None:
-            GameObjects.display_surf = pygame.display.set_mode(
-                (c.WINWIDTH, c.WINHEIGHT))
+            GameObjects.display_surf = pygame.display.set_mode((0, 0),
+                                                               pygame.RESIZABLE)
+            # GameObjects.display_surf = pygame.display.set_mode(
+            #     (c.WINWIDTH, c.WINHEIGHT))
             GameObjects.base_surf = GameObjects.display_surf.copy()
         return GameObjects.display_surf
 
@@ -61,3 +64,14 @@ class GameObjects:
         if GameObjects.animatables is None:
             GameObjects.animatables = []
         return GameObjects.animatables
+
+    @staticmethod
+    def get_font():
+        """
+        Returns a pygame Font object which can be used to render text.
+        """
+        if GameObjects.font is None:
+            GameObjects.font = pygame.font.Font(
+                "assets/Acme-Regular.ttf", c.FONT_SIZE)
+        return GameObjects.font
+
