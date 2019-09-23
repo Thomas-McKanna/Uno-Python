@@ -1,6 +1,6 @@
 if __name__ == "__main__": # pragma: no cover
-    from cards import Card, Deck, Hand, ComplexEncoder
-    from player import Player
+    from cardgame.cards import Card, Deck, Hand, ComplexEncoder
+    from cardgame.player import Player
     import json
 
     # Generate cards for UNO
