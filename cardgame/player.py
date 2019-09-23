@@ -1,4 +1,4 @@
-from cards import Hand, Deck
+from .cards import Hand,Deck
 class Player: 
     def __init__(self, name, deck: Deck):
         self.name = name
