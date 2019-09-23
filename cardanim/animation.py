@@ -1,14 +1,14 @@
 import pygame
 import copy
 
-from animatable import Animatable
-from shared_objects import GameObjects
-from card import Card
-from assets import DECK
-from primary_hand import PrimaryHand
-from opponent_hand import OpponentHand
+from .animatable import Animatable
+from .shared_objects import GameObjects
+from .card import Card
+from .assets import DECK
+from .primary_hand import PrimaryHand
+from .opponent_hand import OpponentHand
 
-import constants as c
+from . import constants as c
 
 # Maps id => Card
 cards = {}

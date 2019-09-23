@@ -1,12 +1,12 @@
 import copy
 import pygame
 
-from card import Card
-from shared_objects import GameObjects
-from util import bring_to_front
-from assets import DECK
+from .card import Card
+from .shared_objects import GameObjects
+from .util import bring_to_front
+from .assets import DECK
 
-import constants as c
+from . import constants as c
 
 
 class OpponentHand():

@@ -4,9 +4,9 @@ import sys
 
 from pygame.locals import *
 
-from shared_objects import GameObjects
+from .shared_objects import GameObjects
 
-import constants as c
+from . import constants as c
 
 CLOCK = GameObjects.get_clock()
 

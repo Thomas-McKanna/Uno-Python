@@ -6,14 +6,14 @@ import sys
 
 from pygame.locals import *
 
-import constants as c
+import cardanim.constants as c
 
-from util import check_for_key_press
-from shared_objects import GameObjects
+from cardanim.util import check_for_key_press
+from cardanim.shared_objects import GameObjects
 
-from assets import CARD_IMAGE_DICT
+from cardanim.assets import CARD_IMAGE_DICT
 
-import animation
+import cardanim.animation as animation
 
 def main():
     # Pygame initialization and basic set up of the global variables.

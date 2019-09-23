@@ -1,8 +1,10 @@
 import copy
 import pygame
 
-import constants as c
+from . import constants as c
 
+from pkg_resources import resource_filename
+assets_path = resource_filename('cardanim', 'assets')
 
 class GameObjects:
     """
@@ -72,6 +74,6 @@ class GameObjects:
         """
         if GameObjects.font is None:
             GameObjects.font = pygame.font.Font(
-                "assets/Acme-Regular.ttf", c.FONT_SIZE)
+                assets_path + "/Acme-Regular.ttf", c.FONT_SIZE)
         return GameObjects.font
 

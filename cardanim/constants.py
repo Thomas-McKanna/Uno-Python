@@ -2,7 +2,7 @@
 This file contains contstant values used throughout the program.
 """
 
-from shared_objects import GameObjects
+from .shared_objects import GameObjects
 
 surf = GameObjects.get_surface()
 

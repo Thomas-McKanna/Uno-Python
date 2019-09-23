@@ -1,7 +1,7 @@
-from card import Card
-from util import circle_transform, bring_to_front
-import constants as c
-from shared_objects import GameObjects
+from .card import Card
+from .util import circle_transform, bring_to_front
+from . import constants as c
+from .shared_objects import GameObjects
 
 import time
 

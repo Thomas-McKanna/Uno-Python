@@ -1,10 +1,10 @@
 import pygame
 import copy
 
-from animatable import Animatable
-from assets import DECK
+from .animatable import Animatable
+from .assets import DECK
 
-import constants as c
+from . import constants as c
 
 
 class Card(Animatable):
