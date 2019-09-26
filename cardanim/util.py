@@ -4,32 +4,15 @@ import sys
 
 from pygame.locals import *
 
-from .shared_objects import GameObjects
+from .shared_objects import SharedObjects
 
 from . import constants as c
 
-CLOCK = GameObjects.get_clock()
+CLOCK = SharedObjects.get_clock()
 
-surface = GameObjects.get_surface()
-base_surface = GameObjects.get_base_surface()
-animatables = GameObjects.get_animatables()
-
-
-def check_for_key_press():
-    if len(pygame.event.get(QUIT)) > 0:
-        terminate()
-
-    keyUpEvents = pygame.event.get(KEYUP)
-    if len(keyUpEvents) == 0:
-        return None
-    if keyUpEvents[0].key == K_ESCAPE:
-        terminate()
-    return keyUpEvents[0].key
-
-
-def terminate():
-    pygame.quit()
-    sys.exit()
+surface = SharedObjects.get_surface()
+base_surface = SharedObjects.get_base_surface()
+animatables = SharedObjects.get_animatables()
 
 
 def circle_transform(point_x, point_y, center_x, center_y, angle):
@@ -75,5 +58,5 @@ def bring_to_front(animatable):
     Brings the pass in animatable to the top of the list so that it is drawn
     on top of everthing else.
     """
-    GameObjects.get_animatables().remove(animatable)
-    GameObjects.get_animatables().append(animatable)
+    SharedObjects.get_animatables().remove(animatable)
+    SharedObjects.get_animatables().append(animatable)

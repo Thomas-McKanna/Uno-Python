@@ -2,7 +2,7 @@ import copy
 import pygame
 
 from .card import Card
-from .shared_objects import GameObjects
+from .shared_objects import SharedObjects
 from .util import bring_to_front
 from .assets import DECK
 
@@ -47,7 +47,7 @@ class OpponentHand():
         # Append the real card to the real list of cards
         self.cards.append(card)
 
-        GameObjects.get_animatables().append(card)
+        SharedObjects.get_animatables().append(card)
 
         self.animate_move_cards(self.cards[:-1])
 
@@ -85,7 +85,7 @@ class OpponentHand():
         x, y = old_card.rect.center
         card.instant_move(x, y)
 
-        animatables = GameObjects.get_animatables()
+        animatables = SharedObjects.get_animatables()
 
         animatables.remove(old_card)
         self.cards.remove(old_card)
