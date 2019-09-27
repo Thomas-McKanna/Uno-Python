@@ -3,9 +3,9 @@ import math
 import copy
 from queue import Queue
 from numpy import arange
-from shared_objects import GameObjects
-from constants import FPS
-from util import circle_transform
+from .shared_objects import SharedObjects
+from .constants import FPS
+from .util import circle_transform
 
 
 class Animatable:

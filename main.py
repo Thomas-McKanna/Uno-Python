@@ -4,24 +4,32 @@ import pygame
 import random
 import sys
 
-from pygame.locals import *
+import pygame.locals as pg
 
-import constants as c
+from cardanim.assets import CARDS
 
-from util import check_for_key_press
-from shared_objects import GameObjects
+import cardanim.animation as animation
 
-from assets import CARD_IMAGE_DICT
 
-import animation
+def check_for_key_press():
+    if len(pygame.event.get(pg.QUIT)) > 0:
+        terminate()
+
+    keyUpEvents = pygame.event.get(pg.KEYUP)
+    if len(keyUpEvents) == 0:
+        return None
+    if keyUpEvents[0].key == pg.K_ESCAPE:
+        terminate()
+    return keyUpEvents[0].key
+
+
+def terminate():
+    pygame.quit()
+    sys.exit()
+
 
 def main():
-    # Pygame initialization and basic set up of the global variables.
-    global animatables, original_surface
-
     pygame.init()
-
-    clock = GameObjects.get_clock()
 
     pygame.display.set_caption('Uno!')
 
@@ -34,8 +42,8 @@ def main():
 
     i = 0
     for _ in range(2):
-        for surf in CARD_IMAGE_DICT:
-            animation.track_card(CARD_IMAGE_DICT[surf], i)
+        for surf in CARDS:
+            animation.track_card(CARDS[surf], i)
             i += 1
     i = 0
     primary = []
@@ -46,35 +54,34 @@ def main():
         check_for_key_press()
 
         for event in pygame.event.get():  # event handling loop
-            if event.type == KEYDOWN:
+            if event.type == pg.KEYDOWN:
                 # Draw card
-                if event.key == K_DOWN:
+                if event.key == pg.K_DOWN:
                     animation.draw_card(i)
                     primary.append(i)
                     i += 1
                 # Play card
-                elif event.key == K_UP:
+                elif event.key == pg.K_UP:
                     animation.play_card(primary[-1])
                     primary.pop()
                     i += 1
                 # Shift hand
-                elif event.key == K_LEFT:
+                elif event.key == pg.K_LEFT:
                     animation.shift_hand(False)
-                elif event.key == K_RIGHT:
+                elif event.key == pg.K_RIGHT:
                     animation.shift_hand(True)
                 # Opponent draw card
-                elif event.key == K_0:
+                elif event.key == pg.K_0:
                     animation.opponent_draw_card("Thomas")
                     j += 1
                 # Opponent play card
-                elif event.key == K_1:
+                elif event.key == pg.K_1:
                     if j > 0:
                         animation.opponent_play_card("Thomas", 50 - j)
 
             print(event)
 
         animation.next_frame()
-        clock.tick(c.FPS)
 
 
 if __name__ == '__main__':

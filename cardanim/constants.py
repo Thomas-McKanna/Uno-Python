@@ -2,11 +2,11 @@
 This file contains contstant values used throughout the program.
 """
 
-from shared_objects import GameObjects
+from .shared_objects import SharedObjects
 
-surf = GameObjects.get_surface()
+surf = SharedObjects.get_surface()
 
-# Frames per second (how many times screen it updated in one second)
+# Frames per second (animation speed)
 FPS = 30
 
 # Width of the game window in pixels

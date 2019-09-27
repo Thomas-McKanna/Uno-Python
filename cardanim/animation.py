@@ -1,14 +1,16 @@
 import pygame
 import copy
 
-from animatable import Animatable
-from shared_objects import GameObjects
-from card import Card
-from assets import DECK
-from primary_hand import PrimaryHand
-from opponent_hand import OpponentHand
+from pkg_resources import resource_filename
 
-import constants as c
+from .animatable import Animatable
+from .card import Card
+from .assets import DECK
+from .primary_hand import PrimaryHand
+from .opponent_hand import OpponentHand
+from .shared_objects import SharedObjects
+
+from . import constants as c
 
 # Maps id => Card
 cards = {}
@@ -16,6 +18,8 @@ cards = {}
 opponents = {}
 
 hand = PrimaryHand()
+
+clock = SharedObjects.get_clock()
 
 
 def track_card(surface, id):
@@ -115,9 +119,10 @@ def next_frame():
     Draws the next frame in the game. Should be called continuously at every
     framerate interval.
     """
-    surface = GameObjects.get_surface()
-    base_surface = GameObjects.get_base_surface()
-    animatables = GameObjects.get_animatables()
+    global clock
+    surface = SharedObjects.get_surface()
+    base_surface = SharedObjects.get_base_surface()
+    animatables = SharedObjects.get_animatables()
 
     # Restore background
     surface.blit(base_surface, (0, 0))
@@ -132,6 +137,7 @@ def next_frame():
     surface.blits(frames)
 
     pygame.display.update()
+    clock.tick(c.FPS)
 
 
 def init():
@@ -139,8 +145,10 @@ def init():
     Sets the background upon which all animations are drawn. Should be called
     after adding all players and cards.
     """
-    base_surf = GameObjects.get_base_surface()
-    font = GameObjects.get_font()
+    base_surf = SharedObjects.get_base_surface()
+    font = pygame.font.Font(
+        resource_filename('cardanim', 'assets')
+        + "/Acme-Regular.ttf", c.FONT_SIZE)
 
     # Show opponent name titles
     num_opponents = len(opponents)
