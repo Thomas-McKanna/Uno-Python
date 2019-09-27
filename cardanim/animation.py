@@ -147,7 +147,8 @@ def init():
     """
     base_surf = SharedObjects.get_base_surface()
     font = pygame.font.Font(
-        resource_filename('cardanim', 'assets') + "/Acme-Regular.ttf", c.FONT_SIZE)
+        resource_filename('cardanim', 'assets')
+        + "/Acme-Regular.ttf", c.FONT_SIZE)
 
     # Show opponent name titles
     num_opponents = len(opponents)

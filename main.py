@@ -6,7 +6,7 @@ import sys
 
 import pygame.locals as pg
 
-from cardanim.assets import CARD_IMAGE_DICT
+from cardanim.assets import CARDS
 
 import cardanim.animation as animation
 
@@ -42,8 +42,8 @@ def main():
 
     i = 0
     for _ in range(2):
-        for surf in CARD_IMAGE_DICT:
-            animation.track_card(CARD_IMAGE_DICT[surf], i)
+        for surf in CARDS:
+            animation.track_card(CARDS[surf], i)
             i += 1
     i = 0
     primary = []

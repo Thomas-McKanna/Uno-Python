@@ -1,14 +1,9 @@
 import math
 import pygame
-import sys
-
-from pygame.locals import *
 
 from .shared_objects import SharedObjects
 
 from . import constants as c
-
-CLOCK = SharedObjects.get_clock()
 
 surface = SharedObjects.get_surface()
 base_surface = SharedObjects.get_base_surface()
@@ -22,19 +17,6 @@ def circle_transform(point_x, point_y, center_x, center_y, angle):
     x_prime = round(x_origin * math.cos(angle) - y_origin * math.sin(angle), 2)
     y_prime = round(y_origin * math.cos(angle) + x_origin * math.sin(angle), 2)
     return (x_prime + center_x, y_prime + center_y)
-
-
-def wait(seconds):
-    """
-    Continues to update animations, but delays user interaction (other than
-    to exit) for the given number of seconds.
-    """
-    num_frames = round(seconds / (1 / c.FPS))
-    for _ in range(num_frames):
-        draw_next_frame()
-        check_for_key_press()
-        pygame.display.update()
-        CLOCK.tick(c.FPS)
 
 
 def draw_next_frame():

@@ -1,11 +1,11 @@
 import pygame
 from pkg_resources import resource_filename
 assets_path = resource_filename('cardanim', 'assets')
-LOGO = pygame.image.load(assets_path + '/uno_logo.png')
+LOGO = pygame.image.load(assets_path + '/Logo.png')
 DASH = pygame.image.load(assets_path + '/Dashed_Border.png')
 DECK = pygame.image.load(assets_path + '/Deck.png')
 
-CARD_IMAGE_DICT = {
+CARDS = {
     # Blue Cards
     'BLUE_0': pygame.image.load(assets_path + '/Blue_0.png'),
     'BLUE_1': pygame.image.load(assets_path + '/Blue_1.png'),
