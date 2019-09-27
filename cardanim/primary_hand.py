@@ -1,7 +1,7 @@
 from .card import Card
 from .util import circle_transform, bring_to_front
 from . import constants as c
-from .shared_objects import GameObjects
+from .shared_objects import SharedObjects
 
 import time
 
@@ -214,7 +214,7 @@ class PrimaryHand():
         )
 
         if self.focus_index != 0:
-            index = GameObjects.get_animatables().index(self.cards[self.focus_index - 1])
-            GameObjects.get_animatables().insert(index, card)
+            index = SharedObjects.get_animatables().index(self.cards[self.focus_index - 1])
+            SharedObjects.get_animatables().insert(index, card)
         else:
-            GameObjects.get_animatables().insert(0, card)
+            SharedObjects.get_animatables().insert(0, card)
