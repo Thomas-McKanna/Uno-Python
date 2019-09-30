@@ -9,7 +9,7 @@ import pygame.locals as pg
 from cardanim.assets import CARDS
 
 import cardanim.animation as animation
-
+from audio.audio import *
 
 def check_for_key_press():
     if len(pygame.event.get(pg.QUIT)) > 0:
@@ -50,6 +50,10 @@ def main():
     j = 0
     opponents = []
 
+    mixer.music.play(-1)
+
+    #GAME START SOUND
+    sfx_uno.play()
     while True:
         check_for_key_press()
 
@@ -57,11 +61,13 @@ def main():
             if event.type == pg.KEYDOWN:
                 # Draw card
                 if event.key == pg.K_DOWN:
+                    sfx_card_draw.play()
                     animation.draw_card(i)
                     primary.append(i)
                     i += 1
                 # Play card
                 elif event.key == pg.K_UP:
+                    sfx_card_draw.play()
                     animation.play_card(primary[-1])
                     primary.pop()
                     i += 1
