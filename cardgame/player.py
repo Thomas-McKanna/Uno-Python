@@ -8,6 +8,13 @@ class Player:
     def draw(self, number):
         return self.hand.draw(number)
 
+    def getCardFromID(self, id):
+        try:
+            choice = [card for card in self.hand.cards if card.id == id][0]
+        except IndexError:
+            print("Card index out of range.")
+            return None
+        return choice
     def getCardFromIndex(self, idx):
         try:
             choice = self.hand.cards[idx]

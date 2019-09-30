@@ -94,12 +94,16 @@ def main():
                 if event.key == pg.K_DOWN:
                     card = current_player.draw(1)[0]
                     animation.draw_card(card.id)
+                    print(current_player.hand)
+
                 # Play card
                 elif event.key == pg.K_UP:
-                    animation.shift_hand(False)
-                    cur_card = animation.shift_hand(True)
-                    current_player.playCard()
-                    animation.play_card()
+                    cur_card_id = animation.get_focus_id()
+                    cur_card = current_player.getCardFromID(cur_card_id)
+                    current_player.playCard(cur_card)
+                    animation.play_card(cur_card.id)
+                    print(current_player.hand)
+
                 # Shift hand
                 elif event.key == pg.K_LEFT:
                     animation.shift_hand(False)
