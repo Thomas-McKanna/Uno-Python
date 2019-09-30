@@ -64,6 +64,27 @@ def terminate():
     pygame.quit()
     sys.exit()
 
+def player_cycle(opponents):
+    while True:
+        for opponent in opponents:
+            print(opponent.name)
+            yield opponent
+
+def opponent_turn(opponent_tracker):
+    opponent = next(opponent_tracker)
+    deck = opponent.hand.deck
+    matches = [card for card in opponent.hand.cards if card.match(deck.getDiscard())]
+    if matches:
+        # Play Card
+        chosen_card = random.choice(matches)
+        print(chosen_card)
+        opponent.playCard(chosen_card, accept_input=False)
+        animation.opponent_play_card(opponent.name, chosen_card.id)
+    else:
+        # Draw Card
+        opponent.draw(1)
+        animation.opponent_draw_card(opponent.name)
+
 
 def main():
     pygame.init()
@@ -74,20 +95,15 @@ def main():
     opponent_names = ["Thomas", "Brendan", "Austin"]
     opponents = [Player(name, deck) for name in opponent_names]
     current_player = Player("Player Uno", deck)
-
+        
     for opponent in opponents:
         
         animation.add_opponent(opponent.name)
 
     animation.init()
-
-    i = 0
-    j = 0
-    opponents = []
-
+    opponent_tracker = player_cycle(opponents)
     while True:
         check_for_key_press()
-
         for event in pygame.event.get():  # event handling loop
             if event.type == pg.KEYDOWN:
                 # Draw card
@@ -111,14 +127,9 @@ def main():
                     animation.shift_hand(True)
                 # Opponent draw card
                 elif event.key == pg.K_0:
-                    animation.opponent_draw_card("Thomas")
-                    j += 1
-                # Opponent play card
-                elif event.key == pg.K_1:
-                    if j > 0:
-                        animation.opponent_play_card("Thomas", 50 - j)
+                    opponent_turn(opponent_tracker)
 
-            print(event)
+            # print(event)
 
         animation.next_frame()
 

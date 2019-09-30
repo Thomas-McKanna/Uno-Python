@@ -23,10 +23,11 @@ class Player:
             return None
         return choice
         
-    def playCard(self, card=None, idx=None):
+    def playCard(self, card=None, idx=None, accept_input=True):
         """
         Attempts to play a card from the player's hand
         """
+
         if card is None and idx is not None:
             choice = self.getCardFromIndex(idx)
         elif card is None and idx is None:
@@ -37,9 +38,16 @@ class Player:
         if choice.value in ["wild", "+4"]:
             colorChoice = ""
             while colorChoice not in ["Red", "Green", "Yellow", "Blue"]:
-                colorChoice = input("Which color would you like to play as? ") 
+                if accept_input:
+                    colorChoice = input("Which color would you like to play as? ") 
+                else:
+                    count = {}
+                    for card in self.hand.cards:
+                        count[card.color] = count.get(card.color, 0) + 1
+                    colorChoice = max(count, key=lambda key: count[key])
+                    print("Using: ", colorChoice)
             choice.color = colorChoice
-        if choice.color == curDiscard.color or choice.value == curDiscard.value:
+        if choice.match(curDiscard):
             self.hand.discard([choice])
             print(f"Player: {choice}")
             return True
