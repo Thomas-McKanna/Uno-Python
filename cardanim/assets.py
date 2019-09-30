@@ -63,6 +63,6 @@ CARDS = {
     'YELLOW_REVERSE': pygame.image.load(assets_path + '/Yellow_Reverse.png'),
     'YELLOW_SKIP': pygame.image.load(assets_path + '/Yellow_Skip.png'),
     # Other Cards
-    'WILD': pygame.image.load(assets_path + '/Wild.png'),
-    'WILD_DRAW': pygame.image.load(assets_path + '/Wild_Draw.png')
+    'WILD_WILD': pygame.image.load(assets_path + '/Wild.png'),
+    'WILD_WILD_DRAW': pygame.image.load(assets_path + '/Wild_Draw.png')
 }
