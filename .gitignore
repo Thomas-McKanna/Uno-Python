@@ -1,7 +1,6 @@
-__pycache__
+**/__pycache__
 .vscode
 .pytest_cache
 .coverage
-cardanim/__pycache__
 *.pyc
 *.pyo
