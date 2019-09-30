@@ -108,10 +108,25 @@ def shift_hand(right=True):
     card = hand.shift(right)
     for cid in cards:
         if cards[cid] == card:
-            return card
+            return cid
 
     # Card should have been found
     raise Exception
+
+
+def get_focus_id():
+    """
+    Returns the id of the focus card. If the player has no cards, 
+    -1 is returned.
+    """
+    try:
+        card = hand.cards[hand.focus_index]
+    except:
+        return -1
+
+    for cid in cards:
+        if cards[cid] == card:
+            return cid
 
 
 def next_frame():
