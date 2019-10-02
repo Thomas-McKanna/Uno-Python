@@ -99,7 +99,9 @@ def opponent_turn(opponent_tracker):
 def animwait(seconds):
     goal = pygame.time.get_ticks() + seconds*1000
     while pygame.time.get_ticks() < goal:
+        
         animation.next_frame()
+        check_for_key_press()
 
 
 def main():
