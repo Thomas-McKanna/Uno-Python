@@ -108,10 +108,51 @@ def shift_hand(right=True):
     card = hand.shift(right)
     for cid in cards:
         if cards[cid] == card:
-            return card
+            return cid
 
     # Card should have been found
     raise Exception
+
+
+def draw_to_play_deck(id):
+    """
+    Reveals a card on top of the draw deck and moves it to the play deck. Used
+    at the beginning of game to follow conventional Uno rules of flipping the
+    top card of draw deck to become the first play card.
+    """
+    card = cards[id]
+    animatables = SharedObjects.get_animatables()
+    animatables.append(card)
+
+    # Move card to correct position and scale
+    card.instant_scale(c.DRAW_DECK_SCALE)
+    card.instant_move(x=c.DRAW_DECK_CENTER_X, y=c.DRAW_DECK_CENTER_Y)
+
+    # Slide card from draw deck to play deck (scaling appropriately)
+    card.move(
+        new_centerx=c.PLAY_DECK_CENTER_X,
+        new_centery=c.PLAY_DECK_CENTER_Y
+    )
+
+    card.scale(
+        from_scale=c.DRAW_DECK_SCALE,
+        to_scale=c.PLAY_DECK_SCALE
+    )
+
+
+def get_focus_id():
+    """
+    Returns the id of the focus card. If the player has no cards, 
+    -1 is returned.
+    """
+    try:
+        card = hand.cards[hand.focus_index]
+    except:
+        return -1
+
+    for cid in cards:
+        if cards[cid] == card:
+            return cid
 
 
 def next_frame():

@@ -1,0 +1,171 @@
+import copy
+import math
+import pygame
+import random
+import sys
+import json
+import pygame.locals as pg
+import time
+
+from cardgame.cards import Card, Deck, Hand, ComplexEncoder
+from cardgame.player import Player
+
+from cardanim.assets import CARDS
+import cardanim.animation as animation
+
+def generate_uno_deck():
+    # Generate cards for UNO
+    cards = []
+    colors = ["Red", "Green", "Yellow", "Blue"]
+    for color in colors:
+        cards.append(Card(len(cards), str(0), color))
+        for num in range(1,10): # generate 2 cards each from [1 - 9]
+            cards.append(Card(len(cards), str(num), color))
+            cards.append(Card(len(cards), str(num), color))
+        cards.append(Card(len(cards), "draw", color))
+        cards.append(Card(len(cards), "draw", color))
+        cards.append(Card(len(cards), "skip", color))
+        cards.append(Card(len(cards), "skip", color))
+        cards.append(Card(len(cards), "reverse", color))
+        cards.append(Card(len(cards), "reverse", color))
+    cards.append(Card(len(cards), "wild", "wild"))
+    cards.append(Card(len(cards), "wild", "wild"))
+    cards.append(Card(len(cards), "wild", "wild"))
+    cards.append(Card(len(cards), "wild", "wild"))
+    cards.append(Card(len(cards), "wild_draw", "wild"))
+    cards.append(Card(len(cards), "wild_draw", "wild"))
+    cards.append(Card(len(cards), "wild_draw", "wild"))
+    cards.append(Card(len(cards), "wild_draw", "wild"))
+    for card in cards:
+        surface = f"{card.color.upper()}_{card.value.upper()}"
+        animation.track_card(CARDS[surface], card.id)
+
+    # Populate main deck and create discard
+    discard = Deck() 
+    deck = Deck(discard=discard, cards=cards)
+    deck.shuffle()
+    first_discard = deck.draw(1)
+    discard.cards = first_discard # Discard the top card of the deck
+    animation.draw_to_play_deck(first_discard[0].id)
+    return deck
+
+def check_for_key_press():
+    if len(pygame.event.get(pg.QUIT)) > 0:
+        terminate()
+
+    keyUpEvents = pygame.event.get(pg.KEYUP)
+    if len(keyUpEvents) == 0:
+        return None
+    if keyUpEvents[0].key == pg.K_ESCAPE:
+        terminate()
+    return keyUpEvents[0].key
+
+
+def terminate():
+    pygame.quit()
+    sys.exit()
+
+def player_cycle(opponents):
+    while True:
+        for opponent in opponents:
+            print(opponent.name)
+            yield opponent
+
+def opponent_turn(opponent_tracker):
+    sleep_time = random.random() + .5
+    animwait(sleep_time)
+    opponent = next(opponent_tracker)
+    deck = opponent.hand.deck
+    matches = [card for card in opponent.hand.cards if card.match(deck.getDiscard())]
+    if matches:
+        # Play Card
+        chosen_card = random.choice(matches)
+        print(chosen_card)
+        opponent.playCard(chosen_card, accept_input=False)
+        animation.opponent_play_card(opponent.name, chosen_card.id)
+    else:
+        # Draw Card
+        opponent.draw(1)
+        animation.opponent_draw_card(opponent.name)
+    animation.next_frame()
+
+def animwait(seconds):
+    goal = pygame.time.get_ticks() + seconds*1000
+    while pygame.time.get_ticks() < goal:
+        animation.next_frame()
+
+
+def main():
+    pygame.init()
+    deck = generate_uno_deck()
+
+    pygame.display.set_caption('Uno!')
+
+    opponent_names = ["Thomas", "Brendan", "Austin"]
+    opponents = [Player(name, deck) for name in opponent_names]
+    current_player = Player("Player Uno", deck)
+        
+    for opponent in opponents:
+        
+        animation.add_opponent(opponent.name)
+
+    animation.init()
+    opponent_tracker = player_cycle(opponents)
+
+    for _ in range(7):
+        card = current_player.draw(1)[0]
+        animation.draw_card(card.id)
+        animation.next_frame()
+        # pygame.time.wait(500)
+
+        for opponent in opponents:
+            opponent.draw(1)
+            animation.opponent_draw_card(opponent.name)
+            animation.next_frame()
+            # pygame.time.wait(500)
+            
+
+
+    while True:
+        check_for_key_press()
+        for event in pygame.event.get():  # event handling loop
+            if event.type == pg.KEYDOWN:
+                # Draw card
+                if event.key == pg.K_DOWN:
+                    card = current_player.draw(1)[0]
+                    animation.draw_card(card.id)
+                    opponent_turn(opponent_tracker)
+                    opponent_turn(opponent_tracker)
+                    opponent_turn(opponent_tracker)
+
+
+                # Play card
+                elif event.key == pg.K_UP:
+                    cur_card_id = animation.get_focus_id()
+                    cur_card = current_player.getCardFromID(cur_card_id)
+                    if cur_card.match(deck.getDiscard()):
+                        current_player.playCard(cur_card)
+                        animation.play_card(cur_card.id)
+                        opponent_turn(opponent_tracker)
+                        opponent_turn(opponent_tracker)
+                        opponent_turn(opponent_tracker)
+
+                    else:
+                        print("Cannot play card")
+
+                # Shift hand
+                elif event.key == pg.K_LEFT:
+                    animation.shift_hand(False)
+                elif event.key == pg.K_RIGHT:
+                    animation.shift_hand(True)
+                # Opponent draw card
+                elif event.key == pg.K_0:
+                    opponent_turn(opponent_tracker)
+
+            # print(event)
+
+        animation.next_frame()
+
+
+if __name__ == '__main__':
+    main()

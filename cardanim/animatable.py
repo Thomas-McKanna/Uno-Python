@@ -156,7 +156,7 @@ class Animatable:
 
         self.rotozoom_generators.append(generator(self.surface, angles))
 
-    def scale(self, from_scale, to_scale, duration=0.25, pulse=False):
+    def scale(self, from_scale, to_scale, duration=0.5, pulse=False):
         """
         The animatable shrinks/grows to the given scale from a given scale
 
