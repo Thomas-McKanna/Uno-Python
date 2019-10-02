@@ -5,7 +5,7 @@ from pkg_resources import resource_filename
 
 from .animatable import Animatable
 from .card import Card
-from .assets import DECK
+from .assets import DECK, WILDWHEEL_RED, WILDWHEEL_BLUE, WILDWHEEL_YELLOW, WILDWHEEL_GREEN
 from .primary_hand import PrimaryHand
 from .opponent_hand import OpponentHand
 from .shared_objects import SharedObjects
@@ -20,6 +20,8 @@ opponents = {}
 hand = PrimaryHand()
 
 clock = SharedObjects.get_clock()
+
+wildcard_quadrants = []
 
 
 def track_card(surface, id):
@@ -181,6 +183,100 @@ def next_frame():
     clock.tick(c.FPS)
 
 
+def show_wildcard_wheel():
+    """
+    The wildward wheel is displayed in the middle of the screen.
+    """
+    # Check if quadrants are already being tracked in animatables. (Checking
+    # just one quadrant should be sufficient)
+    animatables = SharedObjects.get_animatables()
+    if wildcard_quadrants[0] in animatables:
+        return
+
+    cx, cy = (c.HALF_WINWIDTH, c.HALF_WINHEIGHT)
+    # All quadrants will have the same dimensions
+    quad_w, quad_h = wildcard_quadrants[0].rect.size
+
+    quad_w /= 2
+    quad_h /= 2
+
+    # Position blue (top-right)
+    wildcard_quadrants[0].instant_move(cx + quad_w, cy - quad_h)
+    # Position blue (top-left)
+    wildcard_quadrants[1].instant_move(cx - quad_w, cy - quad_h)
+    # Position blue (bottom-left)
+    wildcard_quadrants[2].instant_move(cx - quad_w, cy + quad_h)
+    # Position blue (bottom-right)
+    wildcard_quadrants[3].instant_move(cx + quad_w, cy + quad_h)
+
+    # Start tracking quadrants in animatables
+    for q in wildcard_quadrants:
+        animatables.append(q)
+
+
+def hide_wildcard_wheel():
+    """
+    The wildcard wheel is removed from the middle of the screen. Will raise an
+    error if show_wildcard_wheel was not called before this function.
+    """
+    try:
+        animatables = SharedObjects.get_animatables()
+        for q in wildcard_quadrants:
+            animatables.remove(q)
+    except:
+        raise Exception
+
+
+def switch_wildcard_wheel_focus(quadrant):
+    """
+    The quadrant passed in move outward slightly and the rest of the quadrants
+    get tucked in. There function is purely an animation and keeping track of
+    which color is focused is up to the caller of this function.
+
+    Parameters:
+    -----------
+    quadrant: an integer representing one of the four quadrants, which are laid
+        out in the traditional mathematical way:
+            0 -> Q1 (top-right)    : Blue
+            1 -> Q2 (top-left)     : Red
+            2 -> Q3 (bottom-left)  : Yellow
+            3 -> Q4 (bottom-right) : Green
+    """
+    # Check for valid input
+    if quadrant < 0 or quadrant > 3:
+        raise Exception
+
+    # DRY violation: this code was copied from above
+
+    cx, cy = (c.HALF_WINWIDTH, c.HALF_WINHEIGHT)
+    # All quadrants will have the same dimensions
+    quad_w, quad_h = wildcard_quadrants[0].rect.size
+
+    quad_w /= 2
+    quad_h /= 2
+
+    quad_position = [(1, -1), (-1, -1), (-1, 1), (1, 1)]
+
+    tuck_in = set([0, 1, 2, 3])
+
+    tuck_in = tuck_in.difference(set([quadrant]))
+
+    for q in tuck_in:
+        x, y = quad_position[q]
+        wildcard_quadrants[q].move(
+            new_centerx=cx + x*quad_w,
+            new_centery=cy + y*quad_h,
+            duration=c.SHIFT_HAND_DURATION
+        )
+
+    x, y = quad_position[quadrant]
+    wildcard_quadrants[quadrant].move(
+        new_centerx=cx + x*quad_w + x*c.WILDCARD_WHEEL_FOCUS_DISTANCE,
+        new_centery=cy + y*quad_h + y*c.WILDCARD_WHEEL_FOCUS_DISTANCE,
+        duration=c.SHIFT_HAND_DURATION
+    )
+
+
 def init():
     """
     Sets the background upon which all animations are drawn. Should be called
@@ -210,3 +306,8 @@ def init():
     draw_deck.instant_move(c.DRAW_DECK_CENTER_X, c.DRAW_DECK_CENTER_Y)
 
     base_surf.blit(draw_deck.surface, draw_deck.rect)
+
+    # Initalize wildcard wheel quadrants
+    for color in [WILDWHEEL_BLUE, WILDWHEEL_RED, WILDWHEEL_YELLOW, WILDWHEEL_GREEN]:
+        wildcard_quadrants.append(Animatable(color, hidden=False))
+        wildcard_quadrants[-1].instant_scale(c.WILDCARD_WHEEL_SIZE)

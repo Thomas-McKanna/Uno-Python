@@ -82,5 +82,12 @@ HAND_BOUNDARY_COEF = 16
 # How many seconds it takes to move a card somewhere on the screen
 MOVE_CARD_ANI_DURATION = 0.4
 
+# For networking test
 COLOR_INACTIVE = Color('lightskyblue3')
 COLOR_ACTIVE = Color('dodgerblue2')
+
+# Size of each of the wildcard color wheel quadrants
+WILDCARD_WHEEL_SIZE = 0.00008 * WINWIDTH
+
+# How far away from the wildcard wheel the focus quadrant moves away
+WILDCARD_WHEEL_FOCUS_DISTANCE = 0.025* WINWIDTH
