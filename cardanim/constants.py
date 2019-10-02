@@ -1,8 +1,9 @@
 """
-This file contains contstant values used throughout the program.
+This file contains constant values used throughout the program.
 """
 
-from .shared_objects import SharedObjects
+from cardanim.shared_objects import SharedObjects
+
 
 surf = SharedObjects.get_surface()
 
@@ -80,3 +81,6 @@ HAND_BOUNDARY_COEF = 16
 
 # How many seconds it takes to move a card somewhere on the screen
 MOVE_CARD_ANI_DURATION = 0.4
+
+COLOR_INACTIVE = Color('lightskyblue3')
+COLOR_ACTIVE = Color('dodgerblue2')

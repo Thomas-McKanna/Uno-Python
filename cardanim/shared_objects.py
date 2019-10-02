@@ -1,7 +1,6 @@
 import copy
 import pygame
 
-
 class SharedObjects:
     """
     Class containing all objects which must be shared across multiple modules
@@ -33,8 +32,7 @@ class SharedObjects:
         drawn.
         """
         if SharedObjects.display_surf is None:
-            SharedObjects.display_surf = pygame.display.set_mode((0, 0),
-                                                               pygame.RESIZABLE)
+            SharedObjects.display_surf = pygame.display.set_mode((800, 600), pygame.RESIZABLE)
             # SharedObjects.display_surf = pygame.display.set_mode(
             #     (c.WINWIDTH, c.WINHEIGHT))
             SharedObjects.base_surf = SharedObjects.display_surf.copy()
@@ -62,3 +60,13 @@ class SharedObjects:
         if SharedObjects.animatables is None:
             SharedObjects.animatables = []
         return SharedObjects.animatables
+        
+    @staticmethod
+    def get_font():
+        """
+        Returns a pygame Font object which can be used to render text.
+        """
+        if SharedObjects.font is None:
+            SharedObjects.font = pygame.font.Font(
+                "cardanim/assets/Acme-Regular.ttf", round(0.04*SharedObjects.get_surface().get_rect().w))
+        return SharedObjects.font
