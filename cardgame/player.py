@@ -45,7 +45,7 @@ class Player:
                     for card in self.hand.cards:
                         count[card.color] = count.get(card.color, 0) + 1
                     colorChoice = max(count, key=lambda key: count[key])
-                    print("Using: ", colorChoice)
+            print("Wild played as: ", colorChoice)
             choice.color = colorChoice
         if choice.match(curDiscard):
             self.hand.discard([choice])
