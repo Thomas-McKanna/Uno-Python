@@ -14,7 +14,11 @@ class Card:
         return str(self)
 
     def match(self, other):
-        return self.color == other.color or self.value == other.value or self.value == "wild" or self.value == "wild_draw"
+        return self.color == other.color or \
+               self.value == other.value or \
+               self.value == "wild" or \
+               self.value == "wild_draw" or \
+               other.color == "wild"
     
     def reprJSON(self):
         return dict(id=self.id, value=self.value, color=self.color)
