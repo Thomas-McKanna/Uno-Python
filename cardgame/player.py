@@ -35,7 +35,7 @@ class Player:
         else:
             choice = card
         curDiscard = self.hand.deck.getDiscard()
-        if choice.value in ["wild", "+4"]:
+        if choice.value in ["wild", "wild_draw"]:
             colorChoice = ""
             while colorChoice not in ["Red", "Green", "Yellow", "Blue"]:
                 if accept_input:
