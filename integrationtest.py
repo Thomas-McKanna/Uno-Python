@@ -13,6 +13,9 @@ from cardgame.player import Player
 from cardanim.assets import CARDS
 import cardanim.animation as animation
 
+from audio.audio import *
+
+
 def generate_uno_deck():
     # Generate cards for UNO
     cards = []
@@ -44,6 +47,7 @@ def generate_uno_deck():
     discard = Deck() 
     deck = Deck(discard=discard, cards=cards)
     deck.shuffle()
+    sfx_card_shuffle.play()
     first_discard = deck.draw(1)
     discard.cards = first_discard # Discard the top card of the deck
     animation.draw_to_play_deck(first_discard[0].id)
@@ -80,11 +84,12 @@ def opponent_turn(opponent_tracker):
     if matches:
         # Play Card
         chosen_card = random.choice(matches)
-        print(chosen_card)
+        sfx_card_place.play()
         opponent.playCard(chosen_card, accept_input=False)
         animation.opponent_play_card(opponent.name, chosen_card.id)
     else:
         # Draw Card
+        sfx_card_draw.play()
         opponent.draw(1)
         animation.opponent_draw_card(opponent.name)
     animation.next_frame()
@@ -111,7 +116,7 @@ def main():
 
     animation.init()
     opponent_tracker = player_cycle(opponents)
-
+    
     for _ in range(7):
         card = current_player.draw(1)[0]
         animation.draw_card(card.id)
@@ -125,13 +130,16 @@ def main():
             # pygame.time.wait(500)
             
 
+    mixer.music.play(-1)
 
+    #GAME START SOUND
     while True:
         check_for_key_press()
         for event in pygame.event.get():  # event handling loop
             if event.type == pg.KEYDOWN:
                 # Draw card
                 if event.key == pg.K_DOWN:
+                    sfx_card_draw.play()
                     card = current_player.draw(1)[0]
                     animation.draw_card(card.id)
                     opponent_turn(opponent_tracker)
@@ -144,6 +152,7 @@ def main():
                     cur_card_id = animation.get_focus_id()
                     cur_card = current_player.getCardFromID(cur_card_id)
                     if cur_card.match(deck.getDiscard()):
+                        sfx_card_place.play()
                         current_player.playCard(cur_card)
                         animation.play_card(cur_card.id)
                         opponent_turn(opponent_tracker)
@@ -151,6 +160,7 @@ def main():
                         opponent_turn(opponent_tracker)
 
                     else:
+                        sfx_error.play()
                         print("Cannot play card")
 
                 # Shift hand
