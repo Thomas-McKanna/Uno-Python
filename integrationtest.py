@@ -87,6 +87,8 @@ def opponent_turn(opponent_tracker):
         sfx_card_place.play()
         opponent.playCard(chosen_card, accept_input=False)
         animation.opponent_play_card(opponent.name, chosen_card.id)
+        if len(opponent.hand.cards) == 1:
+            sfx_uno.play()
     else:
         # Draw Card
         sfx_card_draw.play()
@@ -155,6 +157,8 @@ def main():
                         sfx_card_place.play()
                         current_player.playCard(cur_card)
                         animation.play_card(cur_card.id)
+                        if len(current_player.hand.cards) == 1:
+                            sfx_uno.play()
                         opponent_turn(opponent_tracker)
                         opponent_turn(opponent_tracker)
                         opponent_turn(opponent_tracker)
