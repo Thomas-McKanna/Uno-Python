@@ -5,6 +5,7 @@ import random
 import sys
 import json
 import pygame.locals as pg
+import time
 
 from cardgame.cards import Card, Deck, Hand, ComplexEncoder
 from cardgame.player import Player
@@ -37,15 +38,15 @@ def generate_uno_deck():
     cards.append(Card(len(cards), "wild_draw", "wild"))
     for card in cards:
         surface = f"{card.color.upper()}_{card.value.upper()}"
-        print(surface)
         animation.track_card(CARDS[surface], card.id)
 
     # Populate main deck and create discard
     discard = Deck() 
     deck = Deck(discard=discard, cards=cards)
     deck.shuffle()
-    discard.cards = deck.draw(1) # Discard the top card of the deck
-
+    first_discard = deck.draw(1)
+    discard.cards = first_discard # Discard the top card of the deck
+    animation.draw_to_play_deck(first_discard[0].id)
     return deck
 
 def check_for_key_press():
@@ -71,6 +72,8 @@ def player_cycle(opponents):
             yield opponent
 
 def opponent_turn(opponent_tracker):
+    sleep_time = random.random() + .5
+    animwait(sleep_time)
     opponent = next(opponent_tracker)
     deck = opponent.hand.deck
     matches = [card for card in opponent.hand.cards if card.match(deck.getDiscard())]
@@ -84,6 +87,12 @@ def opponent_turn(opponent_tracker):
         # Draw Card
         opponent.draw(1)
         animation.opponent_draw_card(opponent.name)
+    animation.next_frame()
+
+def animwait(seconds):
+    goal = pygame.time.get_ticks() + seconds*1000
+    while pygame.time.get_ticks() < goal:
+        animation.next_frame()
 
 
 def main():
@@ -102,6 +111,21 @@ def main():
 
     animation.init()
     opponent_tracker = player_cycle(opponents)
+
+    for _ in range(7):
+        card = current_player.draw(1)[0]
+        animation.draw_card(card.id)
+        animation.next_frame()
+        # pygame.time.wait(500)
+
+        for opponent in opponents:
+            opponent.draw(1)
+            animation.opponent_draw_card(opponent.name)
+            animation.next_frame()
+            # pygame.time.wait(500)
+            
+
+
     while True:
         check_for_key_press()
         for event in pygame.event.get():  # event handling loop
@@ -110,15 +134,24 @@ def main():
                 if event.key == pg.K_DOWN:
                     card = current_player.draw(1)[0]
                     animation.draw_card(card.id)
-                    print(current_player.hand)
+                    opponent_turn(opponent_tracker)
+                    opponent_turn(opponent_tracker)
+                    opponent_turn(opponent_tracker)
+
 
                 # Play card
                 elif event.key == pg.K_UP:
                     cur_card_id = animation.get_focus_id()
                     cur_card = current_player.getCardFromID(cur_card_id)
-                    current_player.playCard(cur_card)
-                    animation.play_card(cur_card.id)
-                    print(current_player.hand)
+                    if cur_card.match(deck.getDiscard()):
+                        current_player.playCard(cur_card)
+                        animation.play_card(cur_card.id)
+                        opponent_turn(opponent_tracker)
+                        opponent_turn(opponent_tracker)
+                        opponent_turn(opponent_tracker)
+
+                    else:
+                        print("Cannot play card")
 
                 # Shift hand
                 elif event.key == pg.K_LEFT:
