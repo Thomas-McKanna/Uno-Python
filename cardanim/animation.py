@@ -22,6 +22,7 @@ hand = PrimaryHand()
 clock = SharedObjects.get_clock()
 
 wildcard_quadrants = []
+wildcard_background = None
 
 
 def track_card(surface, id):
@@ -193,6 +194,8 @@ def show_wildcard_wheel():
     if wildcard_quadrants[0] in animatables:
         return
 
+    animatables.append(wildcard_background)
+    
     cx, cy = (c.HALF_WINWIDTH, c.HALF_WINHEIGHT)
     # All quadrants will have the same dimensions
     quad_w, quad_h = wildcard_quadrants[0].rect.size
@@ -223,6 +226,7 @@ def hide_wildcard_wheel():
         animatables = SharedObjects.get_animatables()
         for q in wildcard_quadrants:
             animatables.remove(q)
+        animatables.remove(wildcard_background)
     except:
         raise Exception
 
@@ -282,10 +286,10 @@ def init():
     Sets the background upon which all animations are drawn. Should be called
     after adding all players and cards.
     """
+    global wildcard_background, wildcard_quadrants
+
     base_surf = SharedObjects.get_base_surface()
-    font = pygame.font.Font(
-        resource_filename('cardanim', 'assets')
-        + "/Acme-Regular.ttf", c.FONT_SIZE)
+    large_font = SharedObjects.get_large_font()
 
     # Show opponent name titles
     num_opponents = len(opponents)
@@ -295,7 +299,7 @@ def init():
         x = (i+1)/(num_opponents+1) * c.WINWIDTH
         y = (1/10) * c.WINHEIGHT
         opponents[name] = OpponentHand(x, y + (1/10) * c.WINHEIGHT)
-        name_surf = font.render(name, True, (255, 255, 255))
+        name_surf = large_font.render(name, True, (255, 255, 255))
         name_rect = name_surf.get_rect()
         name_rect.center = (x, y)
         base_surf.blit(name_surf, name_rect)
@@ -311,3 +315,37 @@ def init():
     for color in [WILDWHEEL_BLUE, WILDWHEEL_RED, WILDWHEEL_YELLOW, WILDWHEEL_GREEN]:
         wildcard_quadrants.append(Animatable(color, hidden=False))
         wildcard_quadrants[-1].instant_scale(c.WILDCARD_WHEEL_SIZE)
+
+    # Whilecard wheel background
+    dim = c.WILDCARD_WHEEL_BACKGROUND_SIZE
+
+    # Surface will be colored as border color and then filled in with
+    # the background color
+    background = pygame.Surface((dim, dim))
+    background.fill(c.WILDCARD_BACKGROUND_BORDER_COLOR)
+
+    t = c.WILDCARD_BORDER_THICKNESS
+    interior = pygame.Surface((dim*t, dim*t))
+    interior.fill(c.WILDCARD_BACKGROUND_COLOR)
+
+    # Filling in background color
+    background.blit(interior, (dim*(1-t)/2, dim*(1-t)/2))
+
+    # Write prompt
+    medium_font = SharedObjects.get_small_font()
+    prompt = medium_font.render("Pick a color:", True, (255, 255, 255))
+    background.blit(prompt, (dim*(1-t), dim*(1-t)))
+
+    confirm_msg = medium_font.render("press enter to select", True, (255, 255, 255))
+    rect = confirm_msg.get_rect()
+    # Position centered horizontally and 90% down the square
+    rect.center = (dim*10.5, dim*0.9)
+    background.blit(confirm_msg, rect)
+
+    # Make the background an animatable for future use
+    wildcard_background = Animatable(
+        surface=background,
+        centerx=c.HALF_WINWIDTH,
+        centery=c.HALF_WINHEIGHT,
+        hidden=False
+    ) 
