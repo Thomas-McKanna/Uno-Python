@@ -339,10 +339,10 @@ def init():
     confirm_msg = medium_font.render("press enter to select", True, (255, 255, 255))
     rect = confirm_msg.get_rect()
     # Position centered horizontally and 90% down the square
-    rect.center = (dim*10.5, dim*0.9)
+    rect.center = (dim*0.5, dim*0.9)
     background.blit(confirm_msg, rect)
 
-    # Make the background an animatable for future use
+    # Make the background an animatable for future drawi
     wildcard_background = Animatable(
         surface=background,
         centerx=c.HALF_WINWIDTH,
