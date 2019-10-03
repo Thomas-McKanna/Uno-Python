@@ -176,7 +176,7 @@ def main():
                     animation.shift_hand(True)
                 # Opponent draw card
                 elif event.key == pg.K_0:
-                    opponent_turn(opponent_tracker)
+                    animation.start_timer(15)
 
             # print(event)
 
