@@ -1,11 +1,12 @@
 import pygame
 import copy
+import random
 
 from pkg_resources import resource_filename
 
 from .animatable import Animatable
 from .card import Card
-from .assets import DECK
+from .assets import DECK, CARDS
 from .primary_hand import PrimaryHand
 from .opponent_hand import OpponentHand
 from .shared_objects import SharedObjects
@@ -217,3 +218,32 @@ def init():
     draw_deck.instant_move(c.DRAW_DECK_CENTER_X, c.DRAW_DECK_CENTER_Y)
 
     base_surf.blit(draw_deck.surface, draw_deck.rect)
+
+def transition_intro():
+    # Make background black
+    base_surf = SharedObjects.get_base_surface()
+    base_surf.fill((0, 0, 0))
+
+    # Get animatables and clear any previous items
+    animatables = SharedObjects.get_animatables()
+    disposable_animatables = SharedObjects.get_disposable_animatables()
+    animatables.clear()
+    disposable_animatables.queue.clear()
+
+    keys = list(CARDS.keys())
+
+    start_y = -c.WINHEIGHT / 2
+    for i in range(5):
+        card = Card(
+            surface=CARDS[random.choice(keys)], 
+            scale=c.PLAY_DECK_SCALE, 
+            hidden=False,
+        )
+        card.instant_move(c.HALF_WINWIDTH, start_y - i*(c.WINHEIGHT/2))
+        card.move(
+            new_centerx=c.HALF_WINWIDTH,
+            new_centery=2*(c.WINHEIGHT/5),
+            duration=i+1
+        )
+
+        animatables.append(card)
