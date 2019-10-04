@@ -12,7 +12,7 @@ class DisposableAnimatables:
         self.queue = []
 
     def append(self, animatable):
-        if len(self.queue) > 20:
+        if len(self.queue) > 60:
             self.queue = self.queue[1:]
         self.queue.append(animatable)
 

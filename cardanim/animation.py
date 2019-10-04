@@ -465,6 +465,43 @@ def transition_intro():
             steady=True
         )
 
-        animatables.append(card)
+        disposable_animatables.append(card)
 
     animatables.append(logo)
+
+    threading.Thread(target=_intro_anim_thread, daemon=True).start()
+
+def _intro_anim_thread():
+    # Wait for initial animation to finish
+    time.sleep(10)
+
+    animatables = SharedObjects.get_animatables()
+    disposable_animatables = SharedObjects.get_disposable_animatables()
+    keys = list(CARDS.keys())
+
+    scale = 4/10
+    
+    card_w, card_h = CARDS[keys[0]].get_rect().size
+    card_w *= scale
+    card_h *= scale
+
+    y = 0
+    while y < c.WINHEIGHT:
+        x = 0
+        while x < c.WINWIDTH:
+            card = Animatable(CARDS[random.choice(keys)], hidden=False)
+            card.instant_scale(scale)
+            card.instant_move(c.HALF_WINWIDTH, c.WINHEIGHT + card_h)
+            card.move(
+                new_centerx=x+card_w/2,
+                new_centery=y+card_h/2,
+                duration=1
+            )
+            animatables.append(card)
+            x += card_w
+        y += card_h
+
+    animatables.reverse()
+
+    extra_large_font = SharedObjects.get_extra_large_font()
+    play_surf = extra_large_font.render("Start", True, (255, 255, 255))
