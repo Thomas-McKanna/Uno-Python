@@ -106,6 +106,7 @@ def shift_hand(right=True):
     The id of the new focus card
     """
     card = hand.shift(right)
+
     for cid in cards:
         if cards[cid] == card:
             return cid
@@ -164,12 +165,18 @@ def next_frame():
     surface = SharedObjects.get_surface()
     base_surface = SharedObjects.get_base_surface()
     animatables = SharedObjects.get_animatables()
+    disposable_animatables = SharedObjects.get_disposable_animatables()
 
     # Restore background
     surface.blit(base_surface, (0, 0))
 
     frames = []
     for animatable in animatables:
+        potential_frame = animatable.get_frame()
+        if potential_frame is not None:
+            frames.append(potential_frame)
+
+    for animatable in disposable_animatables:
         potential_frame = animatable.get_frame()
         if potential_frame is not None:
             frames.append(potential_frame)
