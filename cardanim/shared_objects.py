@@ -36,6 +36,7 @@ class SharedObjects:
     display_surf = None
     base_surf = None
     animatables = None
+    disposable_animatables = None
     small_font = None
     medium_font = None
     large_font = None
