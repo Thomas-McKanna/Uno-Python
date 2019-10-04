@@ -4,6 +4,10 @@ assets_path = resource_filename('cardanim', 'assets')
 LOGO = pygame.image.load(assets_path + '/Logo.png')
 DASH = pygame.image.load(assets_path + '/Dashed_Border.png')
 DECK = pygame.image.load(assets_path + '/Deck.png')
+WILDWHEEL_RED = pygame.image.load(assets_path + '/Wildwheel_Red.png')
+WILDWHEEL_BLUE = pygame.image.load(assets_path + '/Wildwheel_Blue.png')
+WILDWHEEL_YELLOW = pygame.image.load(assets_path + '/Wildwheel_Yellow.png')
+WILDWHEEL_GREEN = pygame.image.load(assets_path + '/Wildwheel_Green.png')
 
 CARDS = {
     # Blue Cards
@@ -16,7 +20,7 @@ CARDS = {
     'BLUE_6': pygame.image.load(assets_path + '/Blue_6.png'),
     'BLUE_7': pygame.image.load(assets_path + '/Blue_7.png'),
     'BLUE_8': pygame.image.load(assets_path + '/Blue_8.png'),
-    'BLUE_9': pygame.image.load(assets_path + '/Blue_0.png'),
+    'BLUE_9': pygame.image.load(assets_path + '/Blue_9.png'),
     'BLUE_DRAW': pygame.image.load(assets_path + '/Blue_Draw.png'),
     'BLUE_REVERSE': pygame.image.load(assets_path + '/Blue_Reverse.png'),
     'BLUE_SKIP': pygame.image.load(assets_path + '/Blue_Skip.png'),
@@ -30,7 +34,7 @@ CARDS = {
     'GREEN_6': pygame.image.load(assets_path + '/Green_6.png'),
     'GREEN_7': pygame.image.load(assets_path + '/Green_7.png'),
     'GREEN_8': pygame.image.load(assets_path + '/Green_8.png'),
-    'GREEN_9': pygame.image.load(assets_path + '/Green_0.png'),
+    'GREEN_9': pygame.image.load(assets_path + '/Green_9.png'),
     'GREEN_DRAW': pygame.image.load(assets_path + '/Green_Draw.png'),
     'GREEN_REVERSE': pygame.image.load(assets_path + '/Green_Reverse.png'),
     'GREEN_SKIP': pygame.image.load(assets_path + '/Green_Skip.png'),
@@ -44,7 +48,7 @@ CARDS = {
     'RED_6': pygame.image.load(assets_path + '/Red_6.png'),
     'RED_7': pygame.image.load(assets_path + '/Red_7.png'),
     'RED_8': pygame.image.load(assets_path + '/Red_8.png'),
-    'RED_9': pygame.image.load(assets_path + '/Red_0.png'),
+    'RED_9': pygame.image.load(assets_path + '/Red_9.png'),
     'RED_DRAW': pygame.image.load(assets_path + '/Red_Draw.png'),
     'RED_REVERSE': pygame.image.load(assets_path + '/Red_Reverse.png'),
     'RED_SKIP': pygame.image.load(assets_path + '/Red_Skip.png'),
@@ -58,11 +62,11 @@ CARDS = {
     'YELLOW_6': pygame.image.load(assets_path + '/Yellow_6.png'),
     'YELLOW_7': pygame.image.load(assets_path + '/Yellow_7.png'),
     'YELLOW_8': pygame.image.load(assets_path + '/Yellow_8.png'),
-    'YELLOW_9': pygame.image.load(assets_path + '/Yellow_0.png'),
+    'YELLOW_9': pygame.image.load(assets_path + '/Yellow_9.png'),
     'YELLOW_DRAW': pygame.image.load(assets_path + '/Yellow_Draw.png'),
     'YELLOW_REVERSE': pygame.image.load(assets_path + '/Yellow_Reverse.png'),
     'YELLOW_SKIP': pygame.image.load(assets_path + '/Yellow_Skip.png'),
     # Other Cards
-    'WILD': pygame.image.load(assets_path + '/Wild.png'),
-    'WILD_DRAW': pygame.image.load(assets_path + '/Wild_Draw.png')
+    'WILD_WILD': pygame.image.load(assets_path + '/Wild.png'),
+    'WILD_WILD_DRAW': pygame.image.load(assets_path + '/Wild_Draw.png')
 }

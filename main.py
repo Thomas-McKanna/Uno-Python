@@ -11,7 +11,7 @@ import networking
 from cardanim.assets import CARDS
 
 import cardanim.animation as animation
-
+from audio.audio import *
 
 def check_for_key_press():
     if len(pygame.event.get(pg.QUIT)) > 0:
