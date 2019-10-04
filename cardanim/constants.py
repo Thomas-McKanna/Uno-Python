@@ -82,5 +82,24 @@ HAND_BOUNDARY_COEF = 16
 # How many seconds it takes to move a card somewhere on the screen
 MOVE_CARD_ANI_DURATION = 0.4
 
+# For networking test
 COLOR_INACTIVE = Color('lightskyblue3')
 COLOR_ACTIVE = Color('dodgerblue2')
+
+# Size of each of the wildcard color wheel quadrants
+WILDCARD_WHEEL_SIZE = 0.00004 * WINWIDTH
+
+# How far away from the wildcard wheel the focus quadrant moves away
+WILDCARD_WHEEL_FOCUS_DISTANCE = 0.01 * WINWIDTH
+
+# Size of the square the wildcard wheel is on
+WILDCARD_WHEEL_BACKGROUND_SIZE = 0.25 * WINWIDTH
+
+# Color of interior of square wildcard wheel is on
+WILDCARD_BACKGROUND_COLOR = Color('black')
+
+# Color of border of square wildcard wheel is on
+WILDCARD_BACKGROUND_BORDER_COLOR = Color('white')
+
+# Thickness of the border of the square wildcard wheel is on
+WILDCARD_BORDER_THICKNESS = 0.95

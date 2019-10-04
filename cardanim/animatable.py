@@ -216,13 +216,14 @@ class Animatable:
 
         self.current_scale = to_scale
 
-    def rotozoom(self, scale, angle, duration):
+    def rotoscale(self, from_scale, to_scale, angle, duration):
         """
         Rotates and zooms the animatable at the same time.
 
         Parameters:
         -----------
-        scale: how many time the size of orginal to grow to
+        from_scale: what proportional of original surface to start scaling from
+        to_scale: what proportional of original surface to scale to
         angle: integer value; positive will rotate counter-clockwise and 
             negative will rotate clockwise
         duration: how long it seconds before the rotation completes
@@ -233,27 +234,31 @@ class Animatable:
             """
             original_surf = surface.copy()
             for angle, scale in args:
+                x, y = self.rect.center
                 self.surface = pygame.transform.rotozoom(
                     original_surf, angle, scale)
+                self.rect = self.surface.get_rect()
+                self.instant_move(x, y)
                 yield True
 
         angles = [step / duration *
                   angle for step in arange(0, duration, 1 / FPS)]
         angles.append(angle)
 
-        def scale_fun(x): return (1 - scale)*(x - 1)**2 + scale
+        def scale_fun(x): return (from_scale - to_scale) * \
+            (x - 1)**2 + to_scale
 
         step_size = 1 / (duration * FPS)
         scales = [
             scale_fun(x) for x in arange(0, 1, step_size)
         ]
-        scales.append(scale)
+        scales.append(to_scale)
 
         args = zip(angles, scales)
 
         self.rotozoom_generators.append(generator(self.surface, args))
 
-        self.current_scale = scale
+        self.current_scale = to_scale
 
     ###########################################################################
     # Color Transformation Functions

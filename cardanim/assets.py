@@ -4,6 +4,10 @@ assets_path = resource_filename('cardanim', 'assets')
 LOGO = pygame.image.load(assets_path + '/Logo.png')
 DASH = pygame.image.load(assets_path + '/Dashed_Border.png')
 DECK = pygame.image.load(assets_path + '/Deck.png')
+WILDWHEEL_RED = pygame.image.load(assets_path + '/Wildwheel_Red.png')
+WILDWHEEL_BLUE = pygame.image.load(assets_path + '/Wildwheel_Blue.png')
+WILDWHEEL_YELLOW = pygame.image.load(assets_path + '/Wildwheel_Yellow.png')
+WILDWHEEL_GREEN = pygame.image.load(assets_path + '/Wildwheel_Green.png')
 
 CARDS = {
     # Blue Cards

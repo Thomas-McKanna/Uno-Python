@@ -22,7 +22,7 @@ def generate_uno_deck():
     colors = ["Red", "Green", "Yellow", "Blue"]
     for color in colors:
         cards.append(Card(len(cards), str(0), color))
-        for num in range(1,10): # generate 2 cards each from [1 - 9]
+        for num in range(1, 10):  # generate 2 cards each from [1 - 9]
             cards.append(Card(len(cards), str(num), color))
             cards.append(Card(len(cards), str(num), color))
         cards.append(Card(len(cards), "draw", color))
@@ -44,14 +44,15 @@ def generate_uno_deck():
         animation.track_card(CARDS[surface], card.id)
 
     # Populate main deck and create discard
-    discard = Deck() 
+    discard = Deck()
     deck = Deck(discard=discard, cards=cards)
     deck.shuffle()
     sfx_card_shuffle.play()
     first_discard = deck.draw(1)
-    discard.cards = first_discard # Discard the top card of the deck
+    discard.cards = first_discard  # Discard the top card of the deck
     animation.draw_to_play_deck(first_discard[0].id)
     return deck
+
 
 def check_for_key_press():
     if len(pygame.event.get(pg.QUIT)) > 0:
@@ -69,18 +70,21 @@ def terminate():
     pygame.quit()
     sys.exit()
 
+
 def player_cycle(opponents):
     while True:
         for opponent in opponents:
             print(opponent.name)
             yield opponent
 
+
 def opponent_turn(opponent_tracker):
     sleep_time = random.random() + .5
     animwait(sleep_time)
     opponent = next(opponent_tracker)
     deck = opponent.hand.deck
-    matches = [card for card in opponent.hand.cards if card.match(deck.getDiscard())]
+    matches = [card for card in opponent.hand.cards if card.match(
+        deck.getDiscard())]
     if matches:
         # Play Card
         chosen_card = random.choice(matches)
@@ -96,10 +100,11 @@ def opponent_turn(opponent_tracker):
         animation.opponent_draw_card(opponent.name)
     animation.next_frame()
 
+
 def animwait(seconds):
     goal = pygame.time.get_ticks() + seconds*1000
     while pygame.time.get_ticks() < goal:
-        
+
         animation.next_frame()
         check_for_key_press()
 
@@ -113,14 +118,14 @@ def main():
     opponent_names = ["Thomas", "Brendan", "Austin"]
     opponents = [Player(name, deck) for name in opponent_names]
     current_player = Player("Player Uno", deck)
-        
+
     for opponent in opponents:
-        
+
         animation.add_opponent(opponent.name)
 
     animation.init()
     opponent_tracker = player_cycle(opponents)
-    
+
     for _ in range(7):
         card = current_player.draw(1)[0]
         animation.draw_card(card.id)
@@ -132,11 +137,10 @@ def main():
             animation.opponent_draw_card(opponent.name)
             animation.next_frame()
             # pygame.time.wait(500)
-            
 
     # mixer.music.play(-1)
 
-    #GAME START SOUND
+    # GAME START SOUND
     while True:
         check_for_key_press()
         for event in pygame.event.get():  # event handling loop
@@ -149,7 +153,6 @@ def main():
                     opponent_turn(opponent_tracker)
                     opponent_turn(opponent_tracker)
                     opponent_turn(opponent_tracker)
-
 
                 # Play card
                 elif event.key == pg.K_UP:
@@ -174,12 +177,11 @@ def main():
                     animation.shift_hand(False)
                 elif event.key == pg.K_RIGHT:
                     animation.shift_hand(True)
-                # Opponent draw card
+                # Testing wildcard wheel
+                elif event.key == pg.K_9:
+                    animation.show_wildcard_wheel()
                 elif event.key == pg.K_0:
-                    print(1111)
                     animation.transition_intro()
-
-            # print(event)
 
         animation.next_frame()
 
