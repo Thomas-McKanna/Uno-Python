@@ -9,7 +9,7 @@ from .util import circle_transform
 
 
 class Animatable:
-    def __init__(self, surface, centerx=0, centery=0, hidden=True):
+    def __init__(self, surface, centerx=0, centery=0, hidden=True, chain_movements=False):
         """
         Initializes an Surface for animation.
         Parameters:
@@ -18,6 +18,8 @@ class Animatable:
         centerx: x-position of center of rectangle
         centery: y-position of center of rectangle
         hidden: whether or not the surface is displayed on screen
+        chain_movements: if True, movements will be queued, otherwise, new
+            movement requests will interrupt the current movement
         """
         self.surface = surface.copy()
         self.original_surface = surface.copy()
@@ -27,6 +29,8 @@ class Animatable:
         self.rect.centery = centery  # y position for top left corner
 
         self.hidden = hidden
+
+        self.chain_movements = chain_movements
 
         self.position_animation_queue = Queue()
 
@@ -259,7 +263,7 @@ class Animatable:
     # Color Transformation Functions
     ###########################################################################
 
-    def flash(self, duration, intensity):
+    def flash(self, RGB, duration, intensity):
         """
         Flashes a surfaces, drawing the user's eye.
 
@@ -281,7 +285,7 @@ class Animatable:
             orig_rect = original_surf.get_rect()
             flash_surf = pygame.Surface((orig_rect.w, orig_rect.h))
             flash_surf = flash_surf.convert_alpha()
-            r, g, b = (255, 255, 255)
+            r, g, b = RGB
 
             for intensity in intensities:
                 surface.blit(original_surf, (0, 0))
@@ -303,7 +307,7 @@ class Animatable:
 
         self.color_generators.append(generator(self.surface, intensities))
 
-    def fade_to_color(self, RGB, duration):
+    def fade_to_color(self, RGB, from_alpha, to_alpha, duration):
         """
         Fades the surface to the given RGB color tuple. The surface is not
         restored to its original color after the animation, but the original
@@ -319,24 +323,33 @@ class Animatable:
             Generator function that alters this animatable's surface.
             """
             original_surf = self.surface
-            orig_rect = original_surf.get_rect()
-            flash_surf = pygame.Surface((orig_rect.w, orig_rect.h))
-            flash_surf = flash_surf.convert_alpha()
-            r, g, b, _ = RGB
+            r, g, b = RGB
+            original_surf.fill((r, g, b))      
             for val in alpha_vals:
-                flash_surf.fill((r, g, b, val))
-                self.surface.blit(flash_surf, (0, 0))
+                original_surf.set_alpha(val)
                 yield True
 
         step_size = 1 / (duration * FPS)
+
+        if from_alpha < to_alpha:
+            minimum = from_alpha
+            maximum = to_alpha
+        else:
+            minimum = to_alpha
+            maximum = from_alpha
+        
         steps = [
-            (x/1) * 255 for x in arange(0, 1, step_size)
+            (x/1) * 255 for x in arange(minimum/255, maximum/255, step_size)
         ]
+
+        if minimum == to_alpha:
+            steps.reverse()
 
         alpha_vals = []
         for step in steps:
             alpha_vals.append(step)
-        alpha_vals.append(255)
+        alpha_vals.append(to_alpha)
+
 
         self.color_generators.append(generator(alpha_vals))
 
@@ -359,7 +372,8 @@ class Animatable:
             # No movement required
             return None
 
-        self.position_animation_queue = Queue()
+        if not self.chain_movements:
+            self.position_animation_queue = Queue()
 
         args = (self.surface, new_centerx, new_centery, duration)
         self.position_animation_queue.put(
