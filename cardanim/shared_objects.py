@@ -36,6 +36,9 @@ class SharedObjects:
     display_surf = None
     base_surf = None
     animatables = None
+    small_font = None
+    medium_font = None
+    large_font = None
     disposable_animatables = None
     font = None
 
@@ -55,7 +58,7 @@ class SharedObjects:
         drawn.
         """
         if SharedObjects.display_surf is None:
-            SharedObjects.display_surf = pygame.display.set_mode((800, 600), pygame.RESIZABLE)
+            SharedObjects.display_surf = pygame.display.set_mode((0, 0), pygame.RESIZABLE)
             # SharedObjects.display_surf = pygame.display.set_mode(
             #     (c.WINWIDTH, c.WINHEIGHT))
             SharedObjects.base_surf = SharedObjects.display_surf.copy()
@@ -97,11 +100,31 @@ class SharedObjects:
         return SharedObjects.disposable_animatables
         
     @staticmethod
-    def get_font():
+    def get_small_font():
         """
         Returns a pygame Font object which can be used to render text.
         """
-        if SharedObjects.font is None:
-            SharedObjects.font = pygame.font.Font(
+        if SharedObjects.small_font is None:
+            SharedObjects.small_font = pygame.font.Font(
+                "cardanim/assets/Acme-Regular.ttf", round(0.02*SharedObjects.get_surface().get_rect().w))
+        return SharedObjects.small_font
+
+    @staticmethod
+    def get_medium_font():
+        """
+        Returns a pygame Font object which can be used to render text.
+        """
+        if SharedObjects.medium_font is None:
+            SharedObjects.medium_font = pygame.font.Font(
+                "cardanim/assets/Acme-Regular.ttf", round(0.03*SharedObjects.get_surface().get_rect().w))
+        return SharedObjects.medium_font
+
+    @staticmethod
+    def get_large_font():
+        """
+        Returns a pygame Font object which can be used to render text.
+        """
+        if SharedObjects.large_font is None:
+            SharedObjects.large_font = pygame.font.Font(
                 "cardanim/assets/Acme-Regular.ttf", round(0.04*SharedObjects.get_surface().get_rect().w))
-        return SharedObjects.font
+        return SharedObjects.large_font

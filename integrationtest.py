@@ -174,9 +174,19 @@ def main():
                     animation.shift_hand(False)
                 elif event.key == pg.K_RIGHT:
                     animation.shift_hand(True)
-                # Opponent draw card
+                # Testing wildcard wheel
+                elif event.key == pg.K_9:
+                    animation.show_wildcard_wheel()
                 elif event.key == pg.K_0:
-                    opponent_turn(opponent_tracker)
+                    animation.hide_wildcard_wheel()
+                elif event.key == pg.K_1:
+                    animation.switch_wildcard_wheel_focus(0)
+                elif event.key == pg.K_2:
+                    animation.switch_wildcard_wheel_focus(1)
+                elif event.key == pg.K_3:
+                    animation.switch_wildcard_wheel_focus(2)
+                elif event.key == pg.K_4:
+                    animation.switch_wildcard_wheel_focus(3)
 
             # print(event)
 
