@@ -168,9 +168,11 @@ class PrimaryHand():
 
         self.cards.remove(card)
 
-        # Move the card to the top of the animatable list so that it appears on
-        # top of the play deck
-        bring_to_front(card)
+        disposable_animatables = SharedObjects.get_disposable_animatables()
+        disposable_animatables.append(card)
+        
+        animatables = SharedObjects.get_animatables()
+        animatables.remove(card)
 
         if self.focus_index >= len(self.cards):
             self.focus_index -= 1
