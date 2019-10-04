@@ -99,6 +99,7 @@ def opponent_turn(opponent_tracker):
 def animwait(seconds):
     goal = pygame.time.get_ticks() + seconds*1000
     while pygame.time.get_ticks() < goal:
+        
         animation.next_frame()
         check_for_key_press()
 
@@ -132,7 +133,8 @@ def main():
             animation.next_frame()
             # pygame.time.wait(500)
             
-    mixer.music.play(-1)
+
+    # mixer.music.play(-1)
 
     #GAME START SOUND
     while True:

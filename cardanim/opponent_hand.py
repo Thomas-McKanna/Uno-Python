@@ -90,10 +90,11 @@ class OpponentHand():
         animatables.remove(old_card)
         self.cards.remove(old_card)
 
-        if not card in animatables:
-            animatables.append(card)
+        if card in animatables:
+            animatables.remove(card)
 
-        bring_to_front(card)
+        disposable_animatables = SharedObjects.get_disposable_animatables()
+        disposable_animatables.append(card)
 
         card.move(
             new_centerx=c.PLAY_DECK_CENTER_X,
