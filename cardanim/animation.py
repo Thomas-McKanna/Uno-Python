@@ -418,36 +418,53 @@ def transition_intro():
 
     keys = list(CARDS.keys())
 
+    # Zoom in on logo animation
+    logo = Animatable(DECK, hidden=False)
+    logo.instant_move(c.HALF_WINWIDTH, c.HALF_WINHEIGHT)
+    logo.scale(0.001, 0.8, 15)
 
-
+    # Circular card chain intro animation
     start_x = -c.WINWIDTH / 2
-    for i in range(17):
-        card = Card(
+    speed = 2
+    for i in range(60):
+        card = Animatable(
             surface=CARDS[random.choice(keys)],
-            scale=c.DEFAULT_CARD_SCALE/3,
-            hidden=False
+            hidden=False,
+            chain_movements=True
         )
 
-        card.instant_move(start_x - i*(c.WINWIDTH/2), 1*(c.WINHEIGHT/5))
+        card.instant_scale(c.DEFAULT_CARD_SCALE/3)
+        
+        card.instant_move(start_x - c.WINWIDTH/2, c.WINHEIGHT * 1/6)
+
+        for j in range(i):
+            card.move(
+                new_centerx=start_x - c.WINWIDTH/2 + j + 1,
+                new_centery=c.WINHEIGHT * 1/6,
+                duration=speed/80
+            )
+
         card.move(
             new_centerx=c.HALF_WINWIDTH,
-            new_centery=1*(c.WINHEIGHT/6),
-            duration=(i+1)/2,
+            new_centery=c.WINHEIGHT * 1/6,
+            duration=speed,
+            steady=True
         )
 
         card.circle(
             c.HALF_WINWIDTH,
             c.HALF_WINHEIGHT,
-            360,
-            5
+            720,
+            speed*2
         )
 
-        card.move(c.WINWIDTH * 3/2, c.WINHEIGHT * 1/5)
+        card.move(
+            new_centerx=c.WINWIDTH * 3/2,
+            new_centery=c.WINHEIGHT * 1/6,
+            duration=speed,
+            steady=True
+        )
 
         animatables.append(card)
-
-    logo = Animatable(DECK, hidden=False)
-    logo.instant_move(c.HALF_WINWIDTH, c.HALF_WINHEIGHT)
-    logo.scale(0.001, 0.8, 15)
 
     animatables.append(logo)

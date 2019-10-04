@@ -9,7 +9,7 @@ from .util import circle_transform
 
 
 class Animatable:
-    def __init__(self, surface, centerx=0, centery=0, hidden=True):
+    def __init__(self, surface, centerx=0, centery=0, hidden=True, chain_movements=False):
         """
         Initializes an Surface for animation.
         Parameters:
@@ -18,6 +18,8 @@ class Animatable:
         centerx: x-position of center of rectangle
         centery: y-position of center of rectangle
         hidden: whether or not the surface is displayed on screen
+        chain_movements: if True, movements will be queued, otherwise, new
+            movement requests will interrupt the current movement
         """
         self.surface = surface.copy()
         self.original_surface = surface.copy()
@@ -27,6 +29,8 @@ class Animatable:
         self.rect.centery = centery  # y position for top left corner
 
         self.hidden = hidden
+
+        self.chain_movements = chain_movements
 
         self.position_animation_queue = Queue()
 
@@ -349,7 +353,7 @@ class Animatable:
     # Position-Related Animation Functions
     ###########################################################################
 
-    def move(self, new_centerx, new_centery, duration=0.5):
+    def move(self, new_centerx, new_centery, duration=0.5, steady=False):
         """
         Moves a card from one position to another.
         Parameters:
@@ -364,14 +368,15 @@ class Animatable:
             # No movement required
             return None
 
-        self.position_animation_queue = Queue()
+        if not self.chain_movements:
+            self.position_animation_queue = Queue()
 
-        args = (self.surface, new_centerx, new_centery, duration)
+        args = (self.surface, new_centerx, new_centery, duration, steady)
         self.position_animation_queue.put(
             (args, self._calculate_move_positions)
         )
 
-    def _calculate_move_positions(self, surface, end_centerx, end_centery, duration):
+    def _calculate_move_positions(self, surface, end_centerx, end_centery, duration, steady):
         """
         Calculates a list of positions (x-, y-coordinates) which a surface
         should take to get from one point to another.
@@ -395,7 +400,10 @@ class Animatable:
         x_unit, y_unit = (x_diff/magnitude, y_diff/magnitude)
 
         # Function to determine velocity of moving surface
-        def mvt_fun(x): return -x**2 + 1
+        if steady:
+            def mvt_fun(x): return 1 - x
+        else:
+            def mvt_fun(x): return -x**2 + 1
 
         step_size = 1 / (duration * FPS)
         steps = [
@@ -422,6 +430,10 @@ class Animatable:
         duration: how long the animation should take
         """
         args = (center_x, center_y, angle, duration)
+
+        if not self.chain_movements:
+            self.position_animation_queue = Queue()
+
         self.position_animation_queue.put(
             (args, self._calculate_circle_positions)
         )
