@@ -134,7 +134,7 @@ def main():
             # pygame.time.wait(500)
             
 
-    mixer.music.play(-1)
+    # mixer.music.play(-1)
 
     #GAME START SOUND
     while True:

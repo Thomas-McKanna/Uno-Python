@@ -1,6 +1,28 @@
 import copy
 import pygame
 
+class DisposableAnimatables:
+    """
+    Holds a limited sized list of animatables. Once the queue is full, new
+    additions will push out the oldest element. The purpose of this class is
+    to prevent a large buildup of unused and covered up animatables over the
+    course of a game.
+    """
+    def __init__(self):
+        self.queue = []
+
+    def append(self, animatable):
+        if len(self.queue) > 20:
+            self.queue = self.queue[1:]
+        self.queue.append(animatable)
+
+    def __iter__(self):
+        return self.queue.__iter__()
+
+    def __len__(self):
+        return len(self.queue)
+        
+
 class SharedObjects:
     """
     Class containing all objects which must be shared across multiple modules
@@ -14,6 +36,7 @@ class SharedObjects:
     display_surf = None
     base_surf = None
     animatables = None
+    disposable_animatables = None
     font = None
 
     @staticmethod
@@ -60,6 +83,18 @@ class SharedObjects:
         if SharedObjects.animatables is None:
             SharedObjects.animatables = []
         return SharedObjects.animatables
+
+    @staticmethod
+    def get_disposable_animatables():
+        """
+        Returns a list of animatable objects. Every object in this list will be
+        redraw on every frame according to its get_frame method. If you wish
+        for something to stop being animated, you must remove it from this
+        list.
+        """
+        if SharedObjects.disposable_animatables is None:
+            SharedObjects.disposable_animatables = DisposableAnimatables()
+        return SharedObjects.disposable_animatables
         
     @staticmethod
     def get_font():
