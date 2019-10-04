@@ -1,5 +1,7 @@
 import pygame
 import copy
+import threading
+import time
 
 from pkg_resources import resource_filename
 
@@ -189,6 +191,50 @@ def next_frame():
 
     pygame.display.update()
     clock.tick(c.FPS)
+
+def _timer_thread(seconds):
+    white = (255, 255, 255)
+    red = (255, 0, 0)
+
+    large_font = SharedObjects.get_extra_large_font()
+    
+    number = large_font.render(str(seconds), True, white)
+    animatables = SharedObjects.get_animatables()
+
+    timer = Animatable(number, (9/10)*c.WINWIDTH, (9/10)*c.WINHEIGHT, hidden=False)
+
+    animatables.append(timer)
+
+    while seconds > 0:
+        time.sleep(1)
+        seconds -= 1
+
+        if seconds <= 10:
+            number = large_font.render(str(seconds), True, red)
+        else:
+            number = large_font.render(str(seconds), True, white)
+            
+
+        timer.original_surface = number
+        timer.surface = number
+
+    animatables.remove(timer)
+
+
+def start_timer(seconds):
+    """
+    Displays a timer in the bottom right corner of the screen that counts down
+    to zero.
+    Parameters:
+    -----------
+    seconds: int value specifying how many seconds to count down from
+    Returns:
+    --------
+    time of when timer started
+    """
+    now = time.time()
+    threading.Thread(target=_timer_thread, args=[seconds], daemon=True).start()
+    return now
 
 
 def show_wildcard_wheel():

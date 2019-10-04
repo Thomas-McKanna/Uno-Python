@@ -178,6 +178,8 @@ def main():
                 elif event.key == pg.K_9:
                     animation.show_wildcard_wheel()
                 elif event.key == pg.K_0:
+                    animation.start_timer(15)
+                elif event.key == pg.K_8:
                     animation.hide_wildcard_wheel()
                 elif event.key == pg.K_1:
                     animation.switch_wildcard_wheel_focus(0)

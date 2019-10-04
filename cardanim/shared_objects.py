@@ -39,8 +39,7 @@ class SharedObjects:
     small_font = None
     medium_font = None
     large_font = None
-    disposable_animatables = None
-    font = None
+    extra_large_font = None
 
     @staticmethod
     def get_clock():
@@ -128,3 +127,13 @@ class SharedObjects:
             SharedObjects.large_font = pygame.font.Font(
                 "cardanim/assets/Acme-Regular.ttf", round(0.04*SharedObjects.get_surface().get_rect().w))
         return SharedObjects.large_font
+
+    @staticmethod
+    def get_extra_large_font():
+        """
+        Returns a pygame Font object which can be used to render text.
+        """
+        if SharedObjects.extra_large_font is None:
+            SharedObjects.extra_large_font = pygame.font.Font(
+                "cardanim/assets/Acme-Regular.ttf", round(0.06*SharedObjects.get_surface().get_rect().w))
+        return SharedObjects.extra_large_font
