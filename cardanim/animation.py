@@ -507,6 +507,7 @@ def transition_intro():
 
     medium_font = SharedObjects.get_medium_font()
 
+    # Credits text and the card it is on
     txt = medium_font.render("Credits", True, (255, 255, 255))
     start_txt = Animatable(txt, hidden=False)
     start_txt.instant_move(c.WINWIDTH * 1/4, c.WINHEIGHT * 3/2)
@@ -528,6 +529,7 @@ def transition_intro():
     animatables.append(start_card)
     animatables.append(start_txt)
 
+    # Start text and the card it is on
     txt = medium_font.render("Start", True, (255, 255, 255))
     credits_txt = Animatable(txt, hidden=False)
     credits_txt.instant_move(c.WINWIDTH * 3/4, c.WINHEIGHT * 3/2)
@@ -553,12 +555,23 @@ def transition_intro():
 def _intro_anim_thread():
     base=SharedObjects.get_base_surface()
 
-    animatables=SharedObjects.get_animatables()
-    disposable_animatables=SharedObjects.get_disposable_animatables()
+    surf = pygame.Surface((c.WINWIDTH, c.WINHEIGHT * 3/4))
+    surf.fill(pygame.Color("dodgerblue3"))
+    rect = surf.get_rect()
+    rect.center = (c.HALF_WINWIDTH, c.HALF_WINHEIGHT)
+
+    base.blit(surf, rect)
+
+    surf = pygame.Surface((c.WINWIDTH, c.WINHEIGHT * 3/4 * 0.95))
+    surf.fill(pygame.Color("navyblue"))
+    rect = surf.get_rect()
+    rect.center = (c.HALF_WINWIDTH, c.HALF_WINHEIGHT)
+
+    base.blit(surf, rect)
 
     keys=list(CARDS.keys())
 
-    scale=10/100
+    scale=24/100
 
     card_w, card_h=CARDS[keys[0]].get_rect().size
     card_w *= scale
@@ -566,14 +579,22 @@ def _intro_anim_thread():
 
     buffer=50
 
-    y=0
-    while y < c.WINHEIGHT:
-        x=0
-        while x < c.WINWIDTH:
-            card=Animatable(DECK, hidden=False)
-            card.instant_scale(scale)
-            card.instant_move(x+card_w/2, y+card_h/2)
-            card.instant_rotate(random.randint(-60, 60))
-            base.blit(card.surface, card.rect)
-            x += card_w + buffer
-        y += card_h + buffer
+    # Top row
+    x=0
+    while x < c.WINWIDTH:
+        card=Animatable(CARDS[random.choice(keys)], hidden=False)
+        card.instant_scale(scale)
+        card.instant_move(x+card_w/2, card_h / 2)
+        base.blit(card.surface, card.rect)
+        x += card_w
+        time.sleep(0.1)
+
+    # Bottom row
+    x=0
+    while x < c.WINWIDTH:
+        card=Animatable(CARDS[random.choice(keys)], hidden=False)
+        card.instant_scale(scale)
+        card.instant_move(x+card_w/2, c.WINHEIGHT - card_h / 2)
+        base.blit(card.surface, card.rect)
+        x += card_w
+        time.sleep(0.1)
