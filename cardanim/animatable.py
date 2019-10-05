@@ -128,6 +128,18 @@ class Animatable:
         flash_surf.fill((r, g, b, a))
         self.surface.blit(flash_surf, (0, 0))
 
+    def instant_rotate(self, angle):
+        """
+        Instantly rotates the surface by the given degree
+        Parameters:
+        -----------
+        angle: degrees to rotate
+        """
+        x, y = self.rect.center
+        self.surface = pygame.transform.rotate(self.surface, angle)
+        self.rect = self.surface.get_rect()
+        self.instant_move(x, y)
+
     ###########################################################################
     # Rotozoom Transformation Functions
     ###########################################################################
@@ -152,6 +164,8 @@ class Animatable:
             original_surf = surface.copy()
             for angle in angles:
                 self.surface = pygame.transform.rotate(original_surf, angle)
+                self.rect = self.surface.get_rect()
+                self.instant_move(x, y)
                 yield True
 
         angles = [step / duration *

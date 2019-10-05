@@ -3,7 +3,7 @@ from .shared_objects import SharedObjects
 from .opponent_hand import OpponentHand
 from .primary_hand import PrimaryHand
 from .assets import WILDWHEEL_RED, WILDWHEEL_BLUE, WILDWHEEL_YELLOW, WILDWHEEL_GREEN
-from .assets import DECK, CARDS
+from .assets import DECK, CARDS, BLANK
 from .card import Card
 from .animatable import Animatable
 from pkg_resources import resource_filename
@@ -28,12 +28,12 @@ wildcard_background = None
 
 def track_card(surface, id):
     """
-    This function can be used to tell the animation module to start tracking a 
+    This function can be used to tell the animation module to start tracking a
     card, opening up several animation functions.
     Parameters:
     -----------
     surface: a pygame.Surface object
-    id: a unique identifier for this card (you must keep track of this 
+    id: a unique identifier for this card (you must keep track of this
     identifier!)
     """
     cards[id] = Card(surface)
@@ -44,7 +44,7 @@ def add_opponent(name):
     Adds an opponent to visual layer of game.
     Parameters:
     -----------
-    name: a string that will subsequently be used as a lookup key for 
+    name: a string that will subsequently be used as a lookup key for
         modifying the visuals of this opponent
     """
     # Temporary value: calling init will set each opponent to a position tuple.
@@ -147,7 +147,7 @@ def draw_to_play_deck(id):
 
 def get_focus_id():
     """
-    Returns the id of the focus card. If the player has no cards, 
+    Returns the id of the focus card. If the player has no cards,
     -1 is returned.
     """
     try:
@@ -406,9 +406,19 @@ def init():
 
 
 def transition_intro():
+    ###################################################
+    # Constants for Intro Scene
+    ###################################################
+    MAIN_CARD_SIZE = 0.6
+    SECONDARY_CARD_SIZE = 0.3
+    CIRCLE_CARD_SIZE = 0.2
+    CIRCLE_CARD_HEIGHT = 1/4
+    SPEED = 4
+    NUM_CARDS = 10
+
     # Make background black
     base_surf = SharedObjects.get_base_surface()
-    base_surf.fill((0, 0, 0))
+    base_surf.fill(pygame.Color("black"))
 
     # Get animatables and clear any previous items
     animatables = SharedObjects.get_animatables()
@@ -418,90 +428,152 @@ def transition_intro():
 
     keys = list(CARDS.keys())
 
-    # Zoom in on logo animation
-    logo = Animatable(DECK, hidden=False)
-    logo.instant_move(c.HALF_WINWIDTH, c.HALF_WINHEIGHT)
-    logo.scale(0.001, 0.8, 15)
-
     # Circular card chain intro animation
     start_x = -c.WINWIDTH / 2
-    speed = 2
-    for i in range(60):
+    for i in range(NUM_CARDS):
         card = Animatable(
             surface=CARDS[random.choice(keys)],
             hidden=False,
             chain_movements=True
         )
 
-        card.instant_scale(c.DEFAULT_CARD_SCALE/3)
-        
-        card.instant_move(start_x - c.WINWIDTH/2, c.WINHEIGHT * 1/6)
+        card.instant_scale(CIRCLE_CARD_SIZE)
+
+        card.instant_move(start_x - c.WINWIDTH/2,
+                          c.WINHEIGHT * CIRCLE_CARD_HEIGHT)
 
         for j in range(i):
             card.move(
                 new_centerx=start_x - c.WINWIDTH/2 + j + 1,
-                new_centery=c.WINHEIGHT * 1/6,
-                duration=speed/80
+                new_centery=c.WINHEIGHT * CIRCLE_CARD_HEIGHT,
+                duration=SPEED/10
             )
 
-        card.move(
-            new_centerx=c.HALF_WINWIDTH,
-            new_centery=c.WINHEIGHT * 1/6,
-            duration=speed,
-            steady=True
-        )
+        for _ in range(20):
+            card.move(
+                new_centerx=c.HALF_WINWIDTH,
+                new_centery=c.WINHEIGHT * CIRCLE_CARD_HEIGHT,
+                duration=SPEED,
+                steady=True
+            )
 
-        card.circle(
-            c.HALF_WINWIDTH,
-            c.HALF_WINHEIGHT,
-            720,
-            speed*2
-        )
+            card.circle(
+                c.HALF_WINWIDTH,
+                c.HALF_WINHEIGHT,
+                720,
+                SPEED*2
+            )
+            
+            card.move(
+                new_centerx=c.WINWIDTH * 9/8,
+                new_centery=c.WINHEIGHT * CIRCLE_CARD_HEIGHT,
+                duration=SPEED,
+                steady=True
+            )
 
-        card.move(
-            new_centerx=c.WINWIDTH * 3/2,
-            new_centery=c.WINHEIGHT * 1/6,
-            duration=speed,
-            steady=True
-        )
+            # Move up (out of sight)
+            card.move(
+                new_centerx=c.WINWIDTH * 9/8,
+                new_centery=-c.WINHEIGHT * 1/8,
+                duration=1,
+                steady=True
+            )
+
+            # Move left (out of sight)
+            card.move(
+                new_centerx=-c.WINWIDTH * 1/8,
+                new_centery=-c.WINHEIGHT * 1/8,
+                duration=1,
+                steady=True
+            )
+
+            # Move down (out of sight)
+            card.move(
+                new_centerx=-c.WINWIDTH * 1/8,
+                new_centery=c.WINHEIGHT * CIRCLE_CARD_HEIGHT,
+                duration=1,
+                steady=True
+            )
 
         disposable_animatables.append(card)
 
-    animatables.append(logo)
+    # Zoom in on logo animation
+    logo = Animatable(DECK, hidden=False)
+    logo.instant_move(c.HALF_WINWIDTH, c.HALF_WINHEIGHT)
+    logo.scale(0.001, MAIN_CARD_SIZE, SPEED*2)
+    disposable_animatables.append(logo)
 
     threading.Thread(target=_intro_anim_thread, daemon=True).start()
 
+    medium_font = SharedObjects.get_medium_font()
+
+    txt = medium_font.render("Credits", True, (255, 255, 255))
+    start_txt = Animatable(txt, hidden=False)
+    start_txt.instant_move(c.WINWIDTH * 1/4, c.WINHEIGHT * 3/2)
+    start_txt.move(
+        new_centerx=c.WINWIDTH * 1/4,
+        new_centery=c.HALF_WINHEIGHT,
+        duration=1
+    )
+
+    start_card = Animatable(BLANK, hidden=False)
+    start_card.instant_scale(MAIN_CARD_SIZE)
+    start_card.instant_move(c.WINWIDTH * 1/4, c.WINHEIGHT * 3/2)
+    start_card.move(
+        new_centerx=c.WINWIDTH * 1/4,
+        new_centery=c.HALF_WINHEIGHT,
+        duration=1
+    )
+
+    animatables.append(start_card)
+    animatables.append(start_txt)
+
+    txt = medium_font.render("Start", True, (255, 255, 255))
+    credits_txt = Animatable(txt, hidden=False)
+    credits_txt.instant_move(c.WINWIDTH * 3/4, c.WINHEIGHT * 3/2)
+    credits_txt.move(
+        new_centerx=c.WINWIDTH * 3/4,
+        new_centery=c.HALF_WINHEIGHT,
+        duration=1
+    )
+
+    credits_card = Animatable(BLANK, hidden=False)
+    credits_card.instant_scale(MAIN_CARD_SIZE)
+    credits_card.instant_move(c.WINWIDTH * 3/4, c.WINHEIGHT * 3/2)
+    credits_card.move(
+        new_centerx=c.WINWIDTH * 3/4,
+        new_centery=c.HALF_WINHEIGHT,
+        duration=1
+    )
+
+    animatables.append(credits_card)
+    animatables.append(credits_txt)
+
+
 def _intro_anim_thread():
-    # Wait for initial animation to finish
-    time.sleep(10)
+    base=SharedObjects.get_base_surface()
 
-    animatables = SharedObjects.get_animatables()
-    disposable_animatables = SharedObjects.get_disposable_animatables()
-    keys = list(CARDS.keys())
+    animatables=SharedObjects.get_animatables()
+    disposable_animatables=SharedObjects.get_disposable_animatables()
 
-    scale = 4/10
-    
-    card_w, card_h = CARDS[keys[0]].get_rect().size
+    keys=list(CARDS.keys())
+
+    scale=10/100
+
+    card_w, card_h=CARDS[keys[0]].get_rect().size
     card_w *= scale
     card_h *= scale
 
-    y = 0
+    buffer=50
+
+    y=0
     while y < c.WINHEIGHT:
-        x = 0
+        x=0
         while x < c.WINWIDTH:
-            card = Animatable(CARDS[random.choice(keys)], hidden=False)
+            card=Animatable(DECK, hidden=False)
             card.instant_scale(scale)
-            card.instant_move(c.HALF_WINWIDTH, c.WINHEIGHT + card_h)
-            card.move(
-                new_centerx=x+card_w/2,
-                new_centery=y+card_h/2,
-                duration=1
-            )
-            animatables.append(card)
-            x += card_w
-        y += card_h
-
-    animatables.reverse()
-
-    extra_large_font = SharedObjects.get_extra_large_font()
-    play_surf = extra_large_font.render("Start", True, (255, 255, 255))
+            card.instant_move(x+card_w/2, y+card_h/2)
+            card.instant_rotate(random.randint(-60, 60))
+            base.blit(card.surface, card.rect)
+            x += card_w + buffer
+        y += card_h + buffer
