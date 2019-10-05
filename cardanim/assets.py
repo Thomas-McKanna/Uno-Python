@@ -5,10 +5,14 @@ LOGO = pygame.image.load(assets_path + '/Logo.png')
 DASH = pygame.image.load(assets_path + '/Dashed_Border.png')
 DECK = pygame.image.load(assets_path + '/Deck.png')
 BLANK = pygame.image.load(assets_path + '/Blank.png')
-WILDWHEEL_RED = pygame.image.load(assets_path + '/Wildwheel_Red.png')
-WILDWHEEL_BLUE = pygame.image.load(assets_path + '/Wildwheel_Blue.png')
-WILDWHEEL_YELLOW = pygame.image.load(assets_path + '/Wildwheel_Yellow.png')
-WILDWHEEL_GREEN = pygame.image.load(assets_path + '/Wildwheel_Green.png')
+
+# Used for choosing wildcard color
+WILDWHEEL = {
+    'BLUE': pygame.image.load(assets_path + '/Wildwheel_Blue.png'),
+    'RED':  pygame.image.load(assets_path + '/Wildwheel_Red.png'),
+    'YELLOW': pygame.image.load(assets_path + '/Wildwheel_Yellow.png'),
+    'GREEN': pygame.image.load(assets_path + '/Wildwheel_Green.png')
+}
 
 CARDS = {
     # Blue Cards

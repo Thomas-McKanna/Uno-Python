@@ -1,17 +1,19 @@
-from . import constants as c
-from .shared_objects import SharedObjects
-from .opponent_hand import OpponentHand
-from .primary_hand import PrimaryHand
-from .assets import WILDWHEEL_RED, WILDWHEEL_BLUE, WILDWHEEL_YELLOW, WILDWHEEL_GREEN
-from .assets import DECK, CARDS, BLANK
-from .card import Card
-from .animatable import Animatable
-from pkg_resources import resource_filename
 import time
 import threading
 import random
 import pygame
 import copy
+
+from pkg_resources import resource_filename
+
+from . import constants as c
+from .shared_objects import SharedObjects
+from .opponent_hand import OpponentHand
+from .primary_hand import PrimaryHand
+from .assets import WILDWHEEL
+from .assets import DECK, CARDS, BLANK
+from .card import Card
+from .animatable import Animatable
 
 # Maps id => Card
 cards = {}
@@ -364,8 +366,15 @@ def init():
 
     base_surf.blit(draw_deck.surface, draw_deck.rect)
 
+    colors = [
+        WILDWHEEL["BLUE"],
+        WILDWHEEL["RED"],
+        WILDWHEEL["YELLOW"],
+        WILDWHEEL["GREEN"]
+    ]
+
     # Initalize wildcard wheel quadrants
-    for color in [WILDWHEEL_BLUE, WILDWHEEL_RED, WILDWHEEL_YELLOW, WILDWHEEL_GREEN]:
+    for color in colors:
         wildcard_quadrants.append(Animatable(color, hidden=False))
         wildcard_quadrants[-1].instant_scale(c.WILDCARD_WHEEL_SIZE)
 
@@ -455,7 +464,7 @@ def transition_intro():
     top_border = (
         -c.HALF_WINWIDTH * 1/8,     # start_x
         card_h / 2                  # start_y
-    ) 
+    )
 
     bottom_border = (
         c.WINWIDTH * 9/8,           # start_x
