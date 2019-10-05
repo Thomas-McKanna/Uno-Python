@@ -10,8 +10,7 @@ import time
 from cardgame.cards import Card, Deck, Hand, ComplexEncoder
 from cardgame.player import Player
 
-from cardanim.assets import CARDS
-import cardanim.animation as animation
+import animation
 
 from audio.audio import *
 
@@ -41,7 +40,7 @@ def generate_uno_deck():
     cards.append(Card(len(cards), "wild_draw", "wild"))
     for card in cards:
         surface = f"{card.color.upper()}_{card.value.upper()}"
-        animation.track_card(CARDS[surface], card.id)
+        animation.game.track_card(animation.assets.CARDS[surface], card.id)
 
     # Populate main deck and create discard
     discard = Deck()
@@ -50,7 +49,7 @@ def generate_uno_deck():
     sfx_card_shuffle.play()
     first_discard = deck.draw(1)
     discard.cards = first_discard  # Discard the top card of the deck
-    animation.draw_to_play_deck(first_discard[0].id)
+    animation.game.draw_to_play_deck(first_discard[0].id)
     return deck
 
 
@@ -90,14 +89,14 @@ def opponent_turn(opponent_tracker):
         chosen_card = random.choice(matches)
         sfx_card_place.play()
         opponent.playCard(chosen_card, accept_input=False)
-        animation.opponent_play_card(opponent.name, chosen_card.id)
+        animation.game.opponent_play_card(opponent.name, chosen_card.id)
         if len(opponent.hand.cards) == 1:
             sfx_uno.play()
     else:
         # Draw Card
         sfx_card_draw.play()
         opponent.draw(1)
-        animation.opponent_draw_card(opponent.name)
+        animation.game.opponent_draw_card(opponent.name)
     animation.next_frame()
 
 
@@ -121,20 +120,20 @@ def main():
 
     for opponent in opponents:
 
-        animation.add_opponent(opponent.name)
+        animation.game.add_opponent(opponent.name)
 
-    animation.init()
+    animation.game.show()
     opponent_tracker = player_cycle(opponents)
 
     for _ in range(7):
         card = current_player.draw(1)[0]
-        animation.draw_card(card.id)
+        animation.game.draw_card(card.id)
         animation.next_frame()
         # pygame.time.wait(500)
 
         for opponent in opponents:
             opponent.draw(1)
-            animation.opponent_draw_card(opponent.name)
+            animation.game.opponent_draw_card(opponent.name)
             animation.next_frame()
             # pygame.time.wait(500)
 
@@ -149,19 +148,19 @@ def main():
                 if event.key == pg.K_DOWN:
                     sfx_card_draw.play()
                     card = current_player.draw(1)[0]
-                    animation.draw_card(card.id)
+                    animation.game.draw_card(card.id)
                     opponent_turn(opponent_tracker)
                     opponent_turn(opponent_tracker)
                     opponent_turn(opponent_tracker)
 
                 # Play card
                 elif event.key == pg.K_UP:
-                    cur_card_id = animation.get_focus_id()
+                    cur_card_id = animation.game.get_focus_id()
                     cur_card = current_player.getCardFromID(cur_card_id)
                     if cur_card.match(deck.getDiscard()):
                         sfx_card_place.play()
                         current_player.playCard(cur_card)
-                        animation.play_card(cur_card.id)
+                        animation.game.play_card(cur_card.id)
                         if len(current_player.hand.cards) == 1:
                             sfx_uno.play()
                         opponent_turn(opponent_tracker)
@@ -174,14 +173,16 @@ def main():
 
                 # Shift hand
                 elif event.key == pg.K_LEFT:
-                    animation.shift_hand(False)
+                    animation.game.shift_hand(False)
                 elif event.key == pg.K_RIGHT:
-                    animation.shift_hand(True)
+                    animation.game.shift_hand(True)
                 # Testing wildcard wheel
                 elif event.key == pg.K_9:
-                    animation.show_wildcard_wheel()
+                    animation.game.show_wildcard_wheel()
                 elif event.key == pg.K_0:
-                    animation.transition_intro()
+                    animation.intro.show()
+                elif event.key == pg.K_1:
+                    animation.game.show()
 
         animation.next_frame()
 

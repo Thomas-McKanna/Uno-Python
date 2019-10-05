@@ -2,7 +2,7 @@
 This file contains constant values used throughout the program.
 """
 
-from cardanim.shared_objects import SharedObjects
+from .shared_objects import SharedObjects
 
 
 surf = SharedObjects.get_surface()

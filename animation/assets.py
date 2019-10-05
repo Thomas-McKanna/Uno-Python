@@ -1,6 +1,6 @@
 import pygame
 from pkg_resources import resource_filename
-assets_path = resource_filename('cardanim', 'assets')
+assets_path = resource_filename('animation', 'assets')
 LOGO = pygame.image.load(assets_path + '/Logo.png')
 DASH = pygame.image.load(assets_path + '/Dashed_Border.png')
 DECK = pygame.image.load(assets_path + '/Deck.png')
