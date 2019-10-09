@@ -6,6 +6,48 @@ from .. import constants as c
 from ..shared_objects import SharedObjects
 from ..animatable import Animatable
 
+_start_card = None
+_credits_card = None
+
+
+def _set_start_card(card):
+    global _start_card
+    _start_card = card
+
+
+def _set_credits_card(card):
+    global _credits_card
+    _credits_card = card
+
+
+def clicked_start(point):
+    """
+    Checks if the point collides with the start card on the intro screen.
+    Parameters:
+    -----------
+    point: (x, y) tuple
+    """
+    if _start_card is not None:
+        rect = _start_card.rect
+        return rect.collidepoint(point)
+    else:
+        return False
+
+
+def clicked_credits(point):
+    """
+    Checks if the point collides with the credits card on the intro screen.
+    Parameters:
+    -----------
+    point: (x, y) tuple
+    """
+    if _credits_card is not None:
+        rect = _credits_card.rect
+        return rect.collidepoint(point)
+    else:
+        return False
+
+
 def show():
     ###################################################
     # Constants for Intro Scene
@@ -164,7 +206,8 @@ def show():
         -c.WINWIDTH * 1/2,  # start x
         c.HALF_WINHEIGHT,   # start y
         c.WINWIDTH * 1/4,   # end x
-        c.HALF_WINHEIGHT    # end y
+        c.HALF_WINHEIGHT,   # end y
+        _set_credits_card   # global name
     )
 
     start_card = (
@@ -172,7 +215,8 @@ def show():
         c.WINWIDTH * 3/2,   # start x
         c.HALF_WINHEIGHT,   # start y
         c.WINWIDTH * 3/4,   # end x
-        c.HALF_WINHEIGHT    # end y
+        c.HALF_WINHEIGHT,   # end y
+        _set_start_card     # global name
     )
 
     # Used for the text on the cards
@@ -180,7 +224,7 @@ def show():
 
     # Make the text and cards and slide them in
     for info in [credits_card, start_card]:
-        string, start_x, start_y, end_x, end_y = info
+        string, start_x, start_y, end_x, end_y, set_name = info
 
         raw_txt = medium_font.render(string, True, TEXT_COLOR)
         txt = Animatable(raw_txt, hidden=False)
@@ -206,6 +250,8 @@ def show():
             new_centery=end_y,
             duration=1
         )
+
+        set_name(card)
 
         animatables.append(card)
         animatables.append(txt)
