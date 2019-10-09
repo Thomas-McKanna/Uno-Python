@@ -2,7 +2,7 @@
 This file contains constant values used throughout the program.
 """
 
-from cardanim.shared_objects import SharedObjects
+from .shared_objects import SharedObjects
 
 
 surf = SharedObjects.get_surface()
@@ -103,3 +103,4 @@ WILDCARD_BACKGROUND_BORDER_COLOR = Color('white')
 
 # Thickness of the border of the square wildcard wheel is on
 WILDCARD_BORDER_THICKNESS = 0.95
+

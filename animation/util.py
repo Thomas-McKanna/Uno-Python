@@ -8,7 +8,8 @@ from . import constants as c
 surface = SharedObjects.get_surface()
 base_surface = SharedObjects.get_base_surface()
 animatables = SharedObjects.get_animatables()
-
+disposable_animatables = SharedObjects.get_disposable_animatables()
+clock = SharedObjects.get_clock()
 
 def circle_transform(point_x, point_y, center_x, center_y, angle):
     angle = math.radians(angle)
@@ -19,10 +20,13 @@ def circle_transform(point_x, point_y, center_x, center_y, angle):
     return (x_prime + center_x, y_prime + center_y)
 
 
-def draw_next_frame():
+def next_frame():
     """
-    Draws the next frame for each of the animatables.
+    Draws the next frame in the game. Should be called continuously at every
+    framerate interval.
     """
+    global clock, surface, base_surface, animatables, disposable_animatables
+
     # Restore background
     surface.blit(base_surface, (0, 0))
 
@@ -32,8 +36,16 @@ def draw_next_frame():
         if potential_frame is not None:
             frames.append(potential_frame)
 
+    for animatable in disposable_animatables:
+        potential_frame = animatable.get_frame()
+        if potential_frame is not None:
+            frames.append(potential_frame)
+
     # Draw animatables on top of background
     surface.blits(frames)
+
+    pygame.display.update()
+    clock.tick(c.FPS)
 
 def bring_to_front(animatable):
     """

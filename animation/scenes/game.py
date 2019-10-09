@@ -1,18 +1,15 @@
-import pygame
-import copy
-import threading
 import time
+import threading
+import pygame
 
-from pkg_resources import resource_filename
-
-from .animatable import Animatable
-from .card import Card
-from .assets import DECK, WILDWHEEL_RED, WILDWHEEL_BLUE, WILDWHEEL_YELLOW, WILDWHEEL_GREEN
-from .primary_hand import PrimaryHand
-from .opponent_hand import OpponentHand
-from .shared_objects import SharedObjects
-
-from . import constants as c
+from .. import constants as c
+from ..shared_objects import SharedObjects
+from ..opponent_hand import OpponentHand
+from ..primary_hand import PrimaryHand
+from ..assets import WILDWHEEL
+from ..assets import DECK, CARDS
+from ..card import Card
+from ..animatable import Animatable
 
 # Maps id => Card
 cards = {}
@@ -21,20 +18,18 @@ opponents = {}
 
 hand = PrimaryHand()
 
-clock = SharedObjects.get_clock()
-
 wildcard_quadrants = []
 wildcard_background = None
 
 
 def track_card(surface, id):
     """
-    This function can be used to tell the animation module to start tracking a 
+    This function can be used to tell the animation module to start tracking a
     card, opening up several animation functions.
     Parameters:
     -----------
     surface: a pygame.Surface object
-    id: a unique identifier for this card (you must keep track of this 
+    id: a unique identifier for this card (you must keep track of this
     identifier!)
     """
     cards[id] = Card(surface)
@@ -45,7 +40,7 @@ def add_opponent(name):
     Adds an opponent to visual layer of game.
     Parameters:
     -----------
-    name: a string that will subsequently be used as a lookup key for 
+    name: a string that will subsequently be used as a lookup key for
         modifying the visuals of this opponent
     """
     # Temporary value: calling init will set each opponent to a position tuple.
@@ -148,7 +143,7 @@ def draw_to_play_deck(id):
 
 def get_focus_id():
     """
-    Returns the id of the focus card. If the player has no cards, 
+    Returns the id of the focus card. If the player has no cards,
     -1 is returned.
     """
     try:
@@ -161,47 +156,17 @@ def get_focus_id():
             return cid
 
 
-def next_frame():
-    """
-    Draws the next frame in the game. Should be called continuously at every
-    framerate interval.
-    """
-    global clock
-    surface = SharedObjects.get_surface()
-    base_surface = SharedObjects.get_base_surface()
-    animatables = SharedObjects.get_animatables()
-    disposable_animatables = SharedObjects.get_disposable_animatables()
-
-    # Restore background
-    surface.blit(base_surface, (0, 0))
-
-    frames = []
-    for animatable in animatables:
-        potential_frame = animatable.get_frame()
-        if potential_frame is not None:
-            frames.append(potential_frame)
-
-    for animatable in disposable_animatables:
-        potential_frame = animatable.get_frame()
-        if potential_frame is not None:
-            frames.append(potential_frame)
-
-    # Draw animatables on top of background
-    surface.blits(frames)
-
-    pygame.display.update()
-    clock.tick(c.FPS)
-
 def _timer_thread(seconds):
     white = (255, 255, 255)
     red = (255, 0, 0)
 
     large_font = SharedObjects.get_extra_large_font()
-    
+
     number = large_font.render(str(seconds), True, white)
     animatables = SharedObjects.get_animatables()
 
-    timer = Animatable(number, (9/10)*c.WINWIDTH, (9/10)*c.WINHEIGHT, hidden=False)
+    timer = Animatable(number, (9/10)*c.WINWIDTH, (9/10)
+                       * c.WINHEIGHT, hidden=False)
 
     animatables.append(timer)
 
@@ -213,7 +178,6 @@ def _timer_thread(seconds):
             number = large_font.render(str(seconds), True, red)
         else:
             number = large_font.render(str(seconds), True, white)
-            
 
         timer.original_surface = number
         timer.surface = number
@@ -248,7 +212,7 @@ def show_wildcard_wheel():
         return
 
     animatables.append(wildcard_background)
-    
+
     cx, cy = (c.HALF_WINWIDTH, c.HALF_WINHEIGHT)
     # All quadrants will have the same dimensions
     quad_w, quad_h = wildcard_quadrants[0].rect.size
@@ -334,14 +298,22 @@ def switch_wildcard_wheel_focus(quadrant):
     )
 
 
-def init():
+def show():
     """
     Sets the background upon which all animations are drawn. Should be called
     after adding all players and cards.
     """
     global wildcard_background, wildcard_quadrants
 
+    # Get animatables and clear any previous items
+    animatables = SharedObjects.get_animatables()
+    disposable_animatables = SharedObjects.get_disposable_animatables()
+    animatables.clear()
+    disposable_animatables.queue.clear()
+
     base_surf = SharedObjects.get_base_surface()
+    base_surf.fill((0, 0, 0))
+
     large_font = SharedObjects.get_large_font()
 
     # Show opponent name titles
@@ -358,14 +330,21 @@ def init():
         base_surf.blit(name_surf, name_rect)
 
     # Show draw deck
-    draw_deck = Animatable(DECK.copy())
+    draw_deck = Animatable(DECK)
     draw_deck.instant_scale(c.DRAW_DECK_SCALE)
     draw_deck.instant_move(c.DRAW_DECK_CENTER_X, c.DRAW_DECK_CENTER_Y)
 
     base_surf.blit(draw_deck.surface, draw_deck.rect)
 
+    colors = [
+        WILDWHEEL["BLUE"],
+        WILDWHEEL["RED"],
+        WILDWHEEL["YELLOW"],
+        WILDWHEEL["GREEN"]
+    ]
+
     # Initalize wildcard wheel quadrants
-    for color in [WILDWHEEL_BLUE, WILDWHEEL_RED, WILDWHEEL_YELLOW, WILDWHEEL_GREEN]:
+    for color in colors:
         wildcard_quadrants.append(Animatable(color, hidden=False))
         wildcard_quadrants[-1].instant_scale(c.WILDCARD_WHEEL_SIZE)
 
@@ -389,7 +368,8 @@ def init():
     prompt = medium_font.render("Pick a color:", True, (255, 255, 255))
     background.blit(prompt, (dim*(1-t), dim*(1-t)))
 
-    confirm_msg = medium_font.render("press enter to select", True, (255, 255, 255))
+    confirm_msg = medium_font.render(
+        "press enter to select", True, (255, 255, 255))
     rect = confirm_msg.get_rect()
     # Position centered horizontally and 90% down the square
     rect.center = (dim*0.5, dim*0.9)
@@ -401,4 +381,4 @@ def init():
         centerx=c.HALF_WINWIDTH,
         centery=c.HALF_WINHEIGHT,
         hidden=False
-    ) 
+    )

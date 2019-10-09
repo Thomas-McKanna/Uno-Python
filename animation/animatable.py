@@ -128,6 +128,18 @@ class Animatable:
         flash_surf.fill((r, g, b, a))
         self.surface.blit(flash_surf, (0, 0))
 
+    def instant_rotate(self, angle):
+        """
+        Instantly rotates the surface by the given degree
+        Parameters:
+        -----------
+        angle: degrees to rotate
+        """
+        x, y = self.rect.center
+        self.surface = pygame.transform.rotate(self.surface, angle)
+        self.rect = self.surface.get_rect()
+        self.instant_move(x, y)
+
     ###########################################################################
     # Rotozoom Transformation Functions
     ###########################################################################
@@ -152,6 +164,8 @@ class Animatable:
             original_surf = surface.copy()
             for angle in angles:
                 self.surface = pygame.transform.rotate(original_surf, angle)
+                self.rect = self.surface.get_rect()
+                self.instant_move(x, y)
                 yield True
 
         angles = [step / duration *
@@ -220,13 +234,14 @@ class Animatable:
 
         self.current_scale = to_scale
 
-    def rotozoom(self, scale, angle, duration):
+    def rotoscale(self, from_scale, to_scale, angle, duration):
         """
         Rotates and zooms the animatable at the same time.
 
         Parameters:
         -----------
-        scale: how many time the size of orginal to grow to
+        from_scale: what proportional of original surface to start scaling from
+        to_scale: what proportional of original surface to scale to
         angle: integer value; positive will rotate counter-clockwise and 
             negative will rotate clockwise
         duration: how long it seconds before the rotation completes
@@ -237,27 +252,31 @@ class Animatable:
             """
             original_surf = surface.copy()
             for angle, scale in args:
+                x, y = self.rect.center
                 self.surface = pygame.transform.rotozoom(
                     original_surf, angle, scale)
+                self.rect = self.surface.get_rect()
+                self.instant_move(x, y)
                 yield True
 
         angles = [step / duration *
                   angle for step in arange(0, duration, 1 / FPS)]
         angles.append(angle)
 
-        def scale_fun(x): return (1 - scale)*(x - 1)**2 + scale
+        def scale_fun(x): return (from_scale - to_scale) * \
+            (x - 1)**2 + to_scale
 
         step_size = 1 / (duration * FPS)
         scales = [
             scale_fun(x) for x in arange(0, 1, step_size)
         ]
-        scales.append(scale)
+        scales.append(to_scale)
 
         args = zip(angles, scales)
 
         self.rotozoom_generators.append(generator(self.surface, args))
 
-        self.current_scale = scale
+        self.current_scale = to_scale
 
     ###########################################################################
     # Color Transformation Functions
@@ -357,7 +376,7 @@ class Animatable:
     # Position-Related Animation Functions
     ###########################################################################
 
-    def move(self, new_centerx, new_centery, duration=0.5):
+    def move(self, new_centerx, new_centery, duration=0.5, steady=False):
         """
         Moves a card from one position to another.
         Parameters:
@@ -375,12 +394,12 @@ class Animatable:
         if not self.chain_movements:
             self.position_animation_queue = Queue()
 
-        args = (self.surface, new_centerx, new_centery, duration)
+        args = (self.surface, new_centerx, new_centery, duration, steady)
         self.position_animation_queue.put(
             (args, self._calculate_move_positions)
         )
 
-    def _calculate_move_positions(self, surface, end_centerx, end_centery, duration):
+    def _calculate_move_positions(self, surface, end_centerx, end_centery, duration, steady):
         """
         Calculates a list of positions (x-, y-coordinates) which a surface
         should take to get from one point to another.
@@ -404,7 +423,10 @@ class Animatable:
         x_unit, y_unit = (x_diff/magnitude, y_diff/magnitude)
 
         # Function to determine velocity of moving surface
-        def mvt_fun(x): return -x**2 + 1
+        if steady:
+            def mvt_fun(x): return 1 - x
+        else:
+            def mvt_fun(x): return -x**2 + 1
 
         step_size = 1 / (duration * FPS)
         steps = [
@@ -431,6 +453,10 @@ class Animatable:
         duration: how long the animation should take
         """
         args = (center_x, center_y, angle, duration)
+
+        if not self.chain_movements:
+            self.position_animation_queue = Queue()
+
         self.position_animation_queue.put(
             (args, self._calculate_circle_positions)
         )
