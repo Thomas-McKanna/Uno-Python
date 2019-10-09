@@ -182,7 +182,13 @@ def main():
                 elif event.key == pg.K_0:
                     animation.intro.show()
                 elif event.key == pg.K_1:
+                    animation.lobby.show()
+                elif event.key == pg.K_2:
                     animation.game.show()
+
+                if chr(event.key) != '1':
+                    animation.lobby.append_char_to_name(chr(event.key))
+
             # Testing intro scene card buttons
             elif event.type == pg.MOUSEBUTTONDOWN:
                 position = pygame.mouse.get_pos()
