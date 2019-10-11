@@ -317,16 +317,6 @@ def show():
 
             cards.append(card)
 
-    # #################################################
-    # Random shuffle
-    # #################################################
-    random_shuffle_iterations = 5
-    for card in cards:
-        for i in range(random_shuffle_iterations):
-            card.move(random.randint(0, c.WINWIDTH),
-                        random.randint(0, c.HALF_WINHEIGHT))
-            card.move(center_x, center_y)
-
     ################################################
     # Infinity shape
     ################################################
@@ -353,8 +343,16 @@ def show():
                 card.circle(center_x + (i * infinity_step), center_y, -
                             360, infinity_duration + i * 1/100)
 
-    for i, card in enumerate(cards):
-        card.freeze(times.pop())
+    for i in range(infinity_iterations)[::-1]:
+        for j, card in enumerate(cards):
+            # Left
+            if i % 2 == 0:
+                card.circle(center_x - (i * infinity_step), center_y,
+                            360, infinity_duration + i * 1/100)
+            # Right
+            else:
+                card.circle(center_x + (i * infinity_step), center_y, -
+                            360, infinity_duration + i * 1/100)
 
     #################################################
     # Increasing circles
@@ -364,52 +362,86 @@ def show():
     icircle_duration = 1
     icircle_anim_sleep_dur = 0.05
 
-    times = []
-    for i, card in enumerate(cards):
-        time = i * icircle_anim_sleep_dur
-        times.append(time)
-        card.freeze(i * icircle_anim_sleep_dur)
+    for i in range(icircle_iterations):
+        for j, card in enumerate(cards):
+            card.circle(center_x - (i * icircle_step), center_y,
+                        360, icircle_duration + i * 1/100)
 
     for i in range(icircle_iterations):
         for j, card in enumerate(cards):
-            # Left circles
-            if j % 2 == 0:
-                card.circle(center_x - (i * icircle_step), center_y,
-                            360, icircle_duration + i * 1/100)
+            card.circle(center_x + (i * icircle_step), center_y,
+                        360, icircle_duration + i * 1/100)
 
-            # Right circles
-            else:
-                card.circle(center_x + (i * icircle_step),
-                            center_y, -360, icircle_duration + i * 1/100)
+    #################################################
+    # Random location
+    #################################################
+    rlocation_iterations = 10
+    for i in range(rlocation_iterations):
+        rx = random.randint(c.WINWIDTH * 1/4, c.WINWIDTH * 3/4)
+        ry = random.randint(0, c.HALF_WINHEIGHT)
+        for card in cards:
+            card.move(rx, ry, 1)
 
-    for i, card in enumerate(cards):
-        card.freeze(times.pop())
+    for card in cards:
+        card.move(center_x, center_y)
 
     ################################################
-    # Spin in circle faster and faster
+    # Four corners
     ################################################
-    radius = c.WINWIDTH * 1/10
-    circle_iterations = 8
-    for i, card in enumerate(cards):
-        x, y = circle_transform(
-            center_x + radius, center_y, center_x, center_y, 360 * (i/len(cards)))
-        card.move(x, y)
-        for j in range(circle_iterations):
-            card.circle(center_x, center_y, 360, circle_iterations/(j+4))
+    fc_iterations = 3
+    fc_duration = 2
+
+    fc_positions = [
+        (c.WINWIDTH * 1/4, c.HALF_WINHEIGHT * 1/4),
+        (c.WINWIDTH * 3/4, c.HALF_WINHEIGHT * 1/4),
+        (c.WINWIDTH * 3/4, c.HALF_WINHEIGHT),
+        (c.WINWIDTH * 1/4, c.HALF_WINHEIGHT),
+    ]
+
+    for i in range(fc_iterations)[::-1]:
+        dur = random.random() * 2
+        for card in cards:
+            for x, y in fc_positions:
+                card.move(x, y, dur)
+
+    for card in cards:
         card.move(center_x, center_y)
 
     #################################################
-    # Explode cards out
+    # Spiral
     #################################################
-    freeze_time = 2
-    move_to_center_dur = 3
-    for i, card in enumerate(cards):
-        card.move(
-            random.random() * c.WINWIDTH,
-            random.random() * c.WINHEIGHT,
-        )
-        card.freeze(freeze_time)
-        card.move(center_x, center_y, move_to_center_dur, steady=True)
+    spoints = 10
+    sradius = c.WINHEIGHT * 1/5
+
+    slocations = [
+        circle_transform(c.HALF_WINWIDTH, sradius,
+                         center_x, center_y, 360 * ((i + 1) / spoints)) for i in range(spoints)
+    ]
+
+    for x, y in slocations:
+        for card in cards:
+            card.circle(x, y, 360, 1)
+
+    #################################################
+    # Vortex
+    #################################################
+    vinterations = 10
+    vstart_radius = c.WINHEIGHT * 1/8
+
+    vx_positions = [
+        vstart_radius + (center_y - vstart_radius) * (i/vinterations) for i in range(vinterations)
+    ]
+
+    for card in cards:
+        card.move(c.HALF_WINWIDTH, vstart_radius)
+
+    for i, x in enumerate(vx_positions):
+        for card in cards:
+            card.move(c.HALF_WINWIDTH, x, 0.04)
+            card.circle(center_x, center_y, 360, 1.5)
+
+    for card in cards:
+        card.move(center_x, center_y)  
 
     # #################################################
     # Random shuffle
@@ -417,12 +449,16 @@ def show():
     random_shuffle_iterations = 100
     for card in cards:
         for i in range(random_shuffle_iterations):
-            card.move(random.randint(0, c.WINWIDTH),
-                        random.randint(0, c.HALF_WINHEIGHT), random.randint(1, 3))
+            card.move(random.randint(c.WINWIDTH * 1/4, c.WINWIDTH * 3/4),
+                      random.randint(0, c.HALF_WINHEIGHT), random.randint(1, 3))
             card.freeze(random.randint(1, 3))
             card.move(center_x, center_y, random.randint(1, 3))
 
+    for i, card in enumerate(cards):
+        card.freeze(times.pop())
+
     animatables = SharedObjects.get_animatables()
 
+    cards.reverse()
     for card in cards:
         animatables.append(card)
