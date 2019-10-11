@@ -1,8 +1,11 @@
 import pygame
+import random
 
+from ..assets import DECK
 from .. import constants as c
 from ..shared_objects import SharedObjects
 from ..animatable import Animatable
+from ..util import circle_transform
 
 TEXT_COLOR = pygame.Color("white")
 INACTIVE_COLOR = pygame.Color("midnightblue")
@@ -294,3 +297,132 @@ def show():
     # Additional animations
     #############################################################
 
+    cards = []
+    center_x = c.HALF_WINWIDTH
+    center_y = c.WINHEIGHT * 1/3
+
+    num_cards_per_side = 10
+
+    #################################################
+    # Creation and initialize movement inwards
+    #################################################
+    for i in range(num_cards_per_side):
+        for x in [-1/8, 9/8]:
+            card = Animatable(DECK, c.WINWIDTH * x, 0,
+                              hidden=False, chain_movements=True)
+
+            card.instant_scale(c.DEFAULT_CARD_SCALE)
+            card.move(center_x, center_y, (i + 1) / 8)
+            card.freeze((num_cards_per_side - i + 1) / 8)
+
+            cards.append(card)
+
+    # #################################################
+    # Random shuffle
+    # #################################################
+    random_shuffle_iterations = 5
+    for card in cards:
+        for i in range(random_shuffle_iterations):
+            card.move(random.randint(0, c.WINWIDTH),
+                        random.randint(0, c.HALF_WINHEIGHT))
+            card.move(center_x, center_y)
+
+    ################################################
+    # Infinity shape
+    ################################################
+    infinity_iterations = 6  # 6 works well
+    infinity_step = c.WINWIDTH * 1/50
+    infinity_duration = 1
+
+    ininity_anim_sleep_dur = 0.05
+
+    times = []
+    for i, card in enumerate(cards):
+        time = i * ininity_anim_sleep_dur
+        times.append(time)
+        card.freeze(i * ininity_anim_sleep_dur)
+
+    for i in range(infinity_iterations):
+        for j, card in enumerate(cards):
+            # Left
+            if i % 2 == 0:
+                card.circle(center_x - (i * infinity_step), center_y,
+                            360, infinity_duration + i * 1/100)
+            # Right
+            else:
+                card.circle(center_x + (i * infinity_step), center_y, -
+                            360, infinity_duration + i * 1/100)
+
+    for i, card in enumerate(cards):
+        card.freeze(times.pop())
+
+    #################################################
+    # Increasing circles
+    #################################################
+    icircle_iterations = 6   # 6 works well
+    icircle_step = c.WINWIDTH * 1/50
+    icircle_duration = 1
+    icircle_anim_sleep_dur = 0.05
+
+    times = []
+    for i, card in enumerate(cards):
+        time = i * icircle_anim_sleep_dur
+        times.append(time)
+        card.freeze(i * icircle_anim_sleep_dur)
+
+    for i in range(icircle_iterations):
+        for j, card in enumerate(cards):
+            # Left circles
+            if j % 2 == 0:
+                card.circle(center_x - (i * icircle_step), center_y,
+                            360, icircle_duration + i * 1/100)
+
+            # Right circles
+            else:
+                card.circle(center_x + (i * icircle_step),
+                            center_y, -360, icircle_duration + i * 1/100)
+
+    for i, card in enumerate(cards):
+        card.freeze(times.pop())
+
+    ################################################
+    # Spin in circle faster and faster
+    ################################################
+    radius = c.WINWIDTH * 1/10
+    circle_iterations = 8
+    for i, card in enumerate(cards):
+        x, y = circle_transform(
+            center_x + radius, center_y, center_x, center_y, 360 * (i/len(cards)))
+        card.move(x, y)
+        for j in range(circle_iterations):
+            card.circle(center_x, center_y, 360, circle_iterations/(j+4))
+        card.move(center_x, center_y)
+
+    #################################################
+    # Explode cards out
+    #################################################
+    freeze_time = 2
+    move_to_center_dur = 3
+    for i, card in enumerate(cards):
+        card.move(
+            random.random() * c.WINWIDTH,
+            random.random() * c.WINHEIGHT,
+        )
+        card.freeze(freeze_time)
+        card.move(center_x, center_y, move_to_center_dur, steady=True)
+
+    # #################################################
+    # Random shuffle
+    # #################################################
+    random_shuffle_iterations = 100
+    for card in cards:
+        for i in range(random_shuffle_iterations):
+            card.move(random.randint(0, c.WINWIDTH),
+                        random.randint(0, c.HALF_WINHEIGHT), random.randint(1, 3))
+            card.freeze(random.randint(1, 3))
+            card.move(center_x, center_y, random.randint(1, 3))
+
+    animatables = SharedObjects.get_animatables()
+
+    for card in cards:
+        animatables.append(card)

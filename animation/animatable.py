@@ -489,3 +489,38 @@ class Animatable:
             positions.append(position)
 
         return positions
+
+    def freeze(self, duration=0.5):
+            """
+            Card stays in place. Useful for chained animations.
+            Parameters:
+            -----------
+            duration: indicates how long in seconds that the
+                animation should last.
+            """
+            if duration == 0:
+                return
+                
+            if not self.chain_movements:
+                self.position_animation_queue = Queue()
+
+            args = (self.surface, duration)
+            self.position_animation_queue.put(
+                (args, self._calc_freeze_positions)
+            )
+
+    def _calc_freeze_positions(self, surface, duration):
+        """
+        Calculates a list of positions (x-, y-coordinates).
+        """
+        rect = self.rect
+
+        step_size = 1 / (duration * FPS)
+
+        x, y = rect.center
+
+        positions = [
+            (x, y) for i in arange(0, 1 - step_size, step_size)
+        ]
+
+        return positions
