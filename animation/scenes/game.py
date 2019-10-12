@@ -297,6 +297,14 @@ def switch_wildcard_wheel_focus(quadrant):
         duration=c.SHIFT_HAND_DURATION
     )
 
+def reset():
+    global wildcard_quadrants
+    global cards, opponents, hand
+
+    wildcard_quadrants.clear()
+    cards.clear()
+    opponents.clear()
+    hand = PrimaryHand()
 
 def show():
     """

@@ -12,6 +12,7 @@ INACTIVE_COLOR = pygame.Color("midnightblue")
 ACTIVE_COLOR = pygame.Color("dodgerblue3")
 JOIN_GAME_BACKGROUND_COLOR = pygame.Color("forestgreen")
 CANCEL_GAME_BACKGROUND_COLOR = pygame.Color("firebrick")
+WAITING_BACKGROUND_COLOR = pygame.Color("lightsalmon")
 
 FORM_X = c.HALF_WINWIDTH
 FORM_Y = c.WINHEIGHT * 3/4
@@ -132,10 +133,20 @@ class TextField:
         """
         return self.text
 
+    def set_text(self, txt):
+        """
+        Immediately changes the text to the passed in string.
+        Parameters:
+        -----------
+        txt: string
+        """
+        self.text = txt
+        self._update_animatable()
+
     def get_animatable(self):
         return self.animatable
 
-    def collide(point):
+    def collide(self, point):
         """
         Returns true if the point is within the text field.
         Parameters:
@@ -143,6 +154,7 @@ class TextField:
         point: (x, y) tuple of the point
         """
         rect = self.animatable.rect
+        self.animatable.move(*rect.center)
         return rect.collidepoint(point)
 
 
@@ -186,6 +198,10 @@ def clicked_cancel(point):
     point: (x, y) tuple for the point
     """
     return cancel_button.collide(point)
+
+def join_button_to_waiting():
+    join_button.active_color = WAITING_BACKGROUND_COLOR
+    join_button.set_text("waiting")
 
 
 def show():

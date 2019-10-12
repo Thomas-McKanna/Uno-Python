@@ -6,6 +6,7 @@ import sys
 import json
 import pygame.locals as pg
 import time
+import enum
 
 from cardgame.cards import Card, Deck, Hand, ComplexEncoder
 from cardgame.player import Player
@@ -13,6 +14,13 @@ from cardgame.player import Player
 import animation
 
 from audio.audio import *
+
+
+class Modes(enum.Enum):
+    INTRO = 1
+    LOBBY = 2
+    GAME = 3
+    CREDITS = 4
 
 
 def generate_uno_deck():
@@ -47,10 +55,13 @@ def generate_uno_deck():
     deck = Deck(discard=discard, cards=cards)
     deck.shuffle()
     sfx_card_shuffle.play()
-    first_discard = deck.draw(1)
-    discard.cards = first_discard  # Discard the top card of the deck
-    animation.game.draw_to_play_deck(first_discard[0].id)
     return deck
+
+
+DECK = None
+CURRENT_MODE = None
+CURRENT_PLAYER = None
+OPPONENT_TRACKER = None
 
 
 def check_for_key_press():
@@ -109,96 +120,135 @@ def animwait(seconds):
 
 
 def main():
+    global CURRENT_MODE
+
     pygame.init()
-    deck = generate_uno_deck()
 
     pygame.display.set_caption('Uno!')
 
+    mixer.music.play(-1)
+
+    CURRENT_MODE = Modes.INTRO
+    animation.intro.show()
+
+    while True:
+        check_for_key_press()
+        if CURRENT_MODE == Modes.INTRO:
+            do_intro_iteration()
+        elif CURRENT_MODE == Modes.LOBBY:
+            do_lobby_iteration()
+        elif CURRENT_MODE == Modes.GAME:
+            do_game_iteration()
+        animation.next_frame()
+
+
+def do_intro_iteration():
+    global CURRENT_MODE
+    for event in pygame.event.get():  # event handling loop
+        if event.type == pg.MOUSEBUTTONDOWN:
+            position = pygame.mouse.get_pos()
+            if animation.intro.clicked_start(position):
+                print("Clicked start card!")
+                CURRENT_MODE = Modes.LOBBY
+                animation.lobby.show()
+            elif animation.intro.clicked_credits(position):
+                print("Clicked credits card!")
+
+
+def init_game():
+    global DECK
+    DECK = generate_uno_deck()
+
     opponent_names = ["Thomas", "Brendan", "Austin"]
-    opponents = [Player(name, deck) for name in opponent_names]
-    current_player = Player("Player Uno", deck)
+    opponents = [Player(name, DECK) for name in opponent_names]
 
     for opponent in opponents:
-
         animation.game.add_opponent(opponent.name)
 
+    global OPPONENT_TRACKER
+    OPPONENT_TRACKER = player_cycle(opponents)
+
+    global CURRENT_PLAYER
+    CURRENT_PLAYER = Player("Player Uno", DECK)
+
     animation.game.show()
-    opponent_tracker = player_cycle(opponents)
 
     for _ in range(7):
-        card = current_player.draw(1)[0]
+        card = CURRENT_PLAYER.draw(1)[0]
         animation.game.draw_card(card.id)
+        check_for_key_press()
         animation.next_frame()
-        # pygame.time.wait(500)
 
         for opponent in opponents:
             opponent.draw(1)
             animation.game.opponent_draw_card(opponent.name)
+            check_for_key_press()
             animation.next_frame()
-            # pygame.time.wait(500)
 
-    # mixer.music.play(-1)
+    first_discard = DECK.draw(1)
+    animation.game.draw_to_play_deck(first_discard[0].id)
 
-    # GAME START SOUND
-    while True:
-        check_for_key_press()
-        for event in pygame.event.get():  # event handling loop
-            if event.type == pg.KEYDOWN:
-                # Draw card
-                if event.key == pg.K_DOWN:
-                    sfx_card_draw.play()
-                    card = current_player.draw(1)[0]
-                    animation.game.draw_card(card.id)
-                    opponent_turn(opponent_tracker)
-                    opponent_turn(opponent_tracker)
-                    opponent_turn(opponent_tracker)
 
-                # Play card
-                elif event.key == pg.K_UP:
-                    cur_card_id = animation.game.get_focus_id()
-                    cur_card = current_player.getCardFromID(cur_card_id)
-                    if cur_card.match(deck.getDiscard()):
-                        sfx_card_place.play()
-                        current_player.playCard(cur_card)
-                        animation.game.play_card(cur_card.id)
-                        if len(current_player.hand.cards) == 1:
-                            sfx_uno.play()
-                        opponent_turn(opponent_tracker)
-                        opponent_turn(opponent_tracker)
-                        opponent_turn(opponent_tracker)
+def do_lobby_iteration():
+    global CURRENT_MODE
+    for event in pygame.event.get():  # event handling loop
+        if event.type == pg.MOUSEBUTTONDOWN:
+            position = pygame.mouse.get_pos()
+            if animation.lobby.clicked_join_game(position):
+                print("Clicked join game button!")
+                animation.lobby.join_button_to_waiting()
+                CURRENT_MODE = Modes.GAME
+                init_game()
+            elif animation.lobby.clicked_cancel(position):
+                print("Clicked cancel button!")
+                CURRENT_MODE = Modes.INTRO
+                animation.intro.show()
+        elif event.type == pg.KEYDOWN:
+            animation.lobby.append_char_to_name(chr(event.key))
 
-                    else:
-                        sfx_error.play()
-                        print("Cannot play card")
 
-                # Shift hand
-                elif event.key == pg.K_LEFT:
-                    animation.game.shift_hand(False)
-                elif event.key == pg.K_RIGHT:
-                    animation.game.shift_hand(True)
-                # Testing wildcard wheel
-                elif event.key == pg.K_9:
-                    animation.game.show_wildcard_wheel()
-                elif event.key == pg.K_0:
-                    animation.intro.show()
-                elif event.key == pg.K_1:
-                    animation.lobby.show()
-                elif event.key == pg.K_2:
-                    animation.game.show()
+def do_game_iteration():
+    global CURRENT_MODE
+    for event in pygame.event.get():  # event handling loop
+        if event.type == pg.KEYDOWN:
+            # Draw card
+            if event.key == pg.K_DOWN:
+                sfx_card_draw.play()
+                card = CURRENT_PLAYER.draw(1)[0]
+                animation.game.draw_card(card.id)
+                opponent_turn(OPPONENT_TRACKER)
+                opponent_turn(OPPONENT_TRACKER)
+                opponent_turn(OPPONENT_TRACKER)
 
-                if chr(event.key) != '1':
-                    animation.lobby.append_char_to_name(chr(event.key))
+            # Play card
+            elif event.key == pg.K_UP:
+                cur_card_id = animation.game.get_focus_id()
+                cur_card = CURRENT_PLAYER.getCardFromID(cur_card_id)
+                if cur_card.match(DECK.getDiscard()):
+                    sfx_card_place.play()
+                    CURRENT_PLAYER.playCard(cur_card)
+                    animation.game.play_card(cur_card.id)
+                    if len(CURRENT_PLAYER.hand.cards) == 1:
+                        sfx_uno.play()
+                    opponent_turn(OPPONENT_TRACKER)
+                    opponent_turn(OPPONENT_TRACKER)
+                    opponent_turn(OPPONENT_TRACKER)
+                else:
+                    sfx_error.play()
+                    print("Cannot play card")
 
-            # Testing intro scene card buttons
-            elif event.type == pg.MOUSEBUTTONDOWN:
-                position = pygame.mouse.get_pos()
-                if animation.intro.clicked_start(position):
-                    print("Clicked start card!")
-                    animation.game.show()
-                elif animation.intro.clicked_credits(position):
-                    print("Clicked credits card!")
-
-        animation.next_frame()
+            # Shift hand
+            elif event.key == pg.K_LEFT:
+                animation.game.shift_hand(False)
+            elif event.key == pg.K_RIGHT:
+                animation.game.shift_hand(True)
+            # Testing wildcard wheel
+            elif event.key == pg.K_9:
+                animation.game.show_wildcard_wheel()
+            elif event.key == pg.K_0:
+                CURRENT_MODE = Modes.INTRO
+                animation.intro.show()
+                animation.game.reset()
 
 
 if __name__ == '__main__':
