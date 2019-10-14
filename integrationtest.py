@@ -186,6 +186,7 @@ def init_game():
             animation.next_frame()
 
     first_discard = DECK.draw(1)
+    DECK.discard(first_discard)
     animation.game.draw_to_play_deck(first_discard[0].id)
 
 
