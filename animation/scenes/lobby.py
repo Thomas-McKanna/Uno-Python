@@ -79,10 +79,10 @@ def clicked_cancel(point):
 
 
 def join_button_to_waiting():
-    join_button.active_color = c.LOBBY_WAITING_BACKGROUND_COLOR
+    join_button.unfocus()
     join_button.set_text("waiting")
 
-    show_text("Waiting for others", 5)
+    show_text("Finding other players...", 5)
 
 
 def show():
@@ -170,7 +170,9 @@ def show():
 
     # Using a text field for buttons because they provide similar functionality
     join_button = TextField(JOIN_BUTTON_X, JOIN_BUTTON_Y, JOIN_BUTTON_W,
-                            inactive_color=c.LOBBY_JOIN_GAME_BACKGROUND_COLOR, placeholder="Join Game!")
+                            active_color=c.LOBBY_JOIN_GAME_BACKGROUND_COLOR,
+                            inactive_color=c.LOBBY_WAITING_BACKGROUND_COLOR, placeholder="Join Game!")
+    join_button.focus()
     join_button.instant_move(c.WINWIDTH * 9/8, JOIN_BUTTON_Y)
     join_button.move(JOIN_BUTTON_X, JOIN_BUTTON_Y)
 

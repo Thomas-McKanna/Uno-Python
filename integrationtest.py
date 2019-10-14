@@ -151,6 +151,7 @@ def do_intro_iteration():
                 print("Clicked start card!")
                 CURRENT_MODE = Modes.LOBBY
                 animation.lobby.show()
+                animation.start_timer(120)
             elif animation.intro.clicked_credits(position):
                 print("Clicked credits card!")
 
@@ -198,8 +199,9 @@ def do_lobby_iteration():
             if animation.lobby.clicked_join_game(position):
                 print("Clicked join game button!")
                 animation.lobby.join_button_to_waiting()
-                # CURRENT_MODE = Modes.GAME
-                # init_game()
+                animwait(10)
+                CURRENT_MODE = Modes.GAME
+                init_game()
             elif animation.lobby.clicked_cancel(position):
                 print("Clicked cancel button!")
                 CURRENT_MODE = Modes.INTRO
