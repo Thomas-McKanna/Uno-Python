@@ -198,8 +198,8 @@ def do_lobby_iteration():
             if animation.lobby.clicked_join_game(position):
                 print("Clicked join game button!")
                 animation.lobby.join_button_to_waiting()
-                CURRENT_MODE = Modes.GAME
-                init_game()
+                # CURRENT_MODE = Modes.GAME
+                # init_game()
             elif animation.lobby.clicked_cancel(position):
                 print("Clicked cancel button!")
                 CURRENT_MODE = Modes.INTRO

@@ -5,7 +5,8 @@ from ..assets import DECK
 from .. import constants as c
 from ..shared_objects import SharedObjects
 from ..animatable import Animatable
-from ..util import circle_transform
+from ..math_helpers import circle_transform
+from ..util import show_text
 
 TEXT_COLOR = pygame.Color("white")
 INACTIVE_COLOR = pygame.Color("midnightblue")
@@ -202,6 +203,8 @@ def clicked_cancel(point):
 def join_button_to_waiting():
     join_button.active_color = WAITING_BACKGROUND_COLOR
     join_button.set_text("waiting")
+
+    show_text("Waiting for others", 5)
 
 
 def show():

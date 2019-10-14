@@ -1,6 +1,6 @@
-import math
 import pygame
 
+from .animatable import Animatable
 from .shared_objects import SharedObjects
 
 from . import constants as c
@@ -10,14 +10,6 @@ base_surface = SharedObjects.get_base_surface()
 animatables = SharedObjects.get_animatables()
 disposable_animatables = SharedObjects.get_disposable_animatables()
 clock = SharedObjects.get_clock()
-
-def circle_transform(point_x, point_y, center_x, center_y, angle):
-    angle = math.radians(angle)
-    x_origin = point_x - center_x
-    y_origin = point_y - center_y
-    x_prime = round(x_origin * math.cos(angle) - y_origin * math.sin(angle), 2)
-    y_prime = round(y_origin * math.cos(angle) + x_origin * math.sin(angle), 2)
-    return (x_prime + center_x, y_prime + center_y)
 
 
 def next_frame():
@@ -54,3 +46,41 @@ def bring_to_front(animatable):
     """
     SharedObjects.get_animatables().remove(animatable)
     SharedObjects.get_animatables().append(animatable)
+
+def show_text(msg, duration, bg_color=c.MESSAGE_BACKGROUND_COLOR):
+    """
+    A message is shown in the middle of the screen in large font.
+    Parameters:
+    -----------
+    msg: a str indicating the text to display
+    bg_color: (R,G,B) tuple indicating background color
+    duration: a float indicating the number of seconds to display the message
+    """
+    # Message portion
+    extra_large_font = SharedObjects.get_extra_large_font()
+    msg_surf = extra_large_font.render(msg, True, c.MESSAGE_TEXT_COLOR)
+
+    msg = Animatable(msg_surf, hidden=False, chain_movements=True)
+
+    msg.instant_move(0 - msg.rect.w / 2, c.HALF_WINHEIGHT)
+
+    msg.move(c.HALF_WINWIDTH, c.HALF_WINHEIGHT, 1/5*duration)
+    msg.move(c.HALF_WINWIDTH+1, c.HALF_WINHEIGHT, 3/5*duration)
+    msg.move(c.WINWIDTH+msg.rect.w, c.HALF_WINHEIGHT, 1/5*duration)
+
+    # Background portion
+    surf = pygame.Surface((c.WINWIDTH, c.WINHEIGHT/5))
+    surf.fill(bg_color)
+
+    background = Animatable(
+        surf, -c.WINWIDTH, c.HALF_WINHEIGHT, hidden=False, chain_movements=True)
+
+    background.move(c.HALF_WINWIDTH, c.HALF_WINHEIGHT, 1/5*duration)
+    background.move(c.HALF_WINWIDTH+1, c.HALF_WINHEIGHT, 3/5*duration)
+    background.move(2*c.WINWIDTH, c.HALF_WINHEIGHT, 1/5*duration)
+
+    disposable_animatables = SharedObjects.get_disposable_animatables()
+
+    # Add background and them message to animatables
+    disposable_animatables.append(background)
+    disposable_animatables.append(msg)

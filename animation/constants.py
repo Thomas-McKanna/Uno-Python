@@ -104,3 +104,9 @@ WILDCARD_BACKGROUND_BORDER_COLOR = Color('white')
 # Thickness of the border of the square wildcard wheel is on
 WILDCARD_BORDER_THICKNESS = 0.95
 
+# Font color for scrolling text messages
+MESSAGE_TEXT_COLOR = Color('white')
+
+# Background color for scrolling text messages
+MESSAGE_BACKGROUND_COLOR = Color('navyblue')
+
