@@ -108,7 +108,7 @@ WILDCARD_BORDER_THICKNESS = 0.95
 MESSAGE_TEXT_COLOR = Color('white')
 
 # Background color for scrolling text messages
-MESSAGE_BACKGROUND_COLOR = Color('navyblue')
+MESSAGE_BACKGROUND_COLOR = Color('palegreen4')
 
 # Text color for buttons in the lobby
 LOBBY_TEXT_COLOR = Color("white")
@@ -126,5 +126,5 @@ LOBBY_JOIN_GAME_BACKGROUND_COLOR = Color("forestgreen")
 LOBBY_CANCEL_GAME_BACKGROUND_COLOR = Color("firebrick")
 
 # Background color for "Waiting" label in lobby
-LOBBY_WAITING_BACKGROUND_COLOR = Color("lightsalmon")
+LOBBY_WAITING_BACKGROUND_COLOR = Color("seashell4")
 
