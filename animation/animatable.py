@@ -5,7 +5,7 @@ from queue import Queue
 from numpy import arange
 from .shared_objects import SharedObjects
 from .constants import FPS
-from .math_helpers import circle_transform
+from .helpers import circle_transform
 
 
 class Animatable:

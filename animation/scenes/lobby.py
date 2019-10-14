@@ -5,7 +5,7 @@ from ..assets import DECK
 from .. import constants as c
 from ..shared_objects import SharedObjects
 from ..animatable import Animatable
-from ..math_helpers import circle_transform
+from ..helpers import circle_transform, put_felt_background
 from ..util import show_text
 from ..text_field import TextField
 
@@ -101,6 +101,7 @@ def show():
     # Make background black (clean slate)
     base_surf = SharedObjects.get_base_surface()
     base_surf.fill(pygame.Color("black"))
+    base_surf = put_felt_background(base_surf)
 
     # Get animatables and clear any previous items
     animatables = SharedObjects.get_animatables()

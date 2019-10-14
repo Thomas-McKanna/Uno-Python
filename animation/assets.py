@@ -5,6 +5,7 @@ LOGO = pygame.image.load(assets_path + '/Logo.png')
 DASH = pygame.image.load(assets_path + '/Dashed_Border.png')
 DECK = pygame.image.load(assets_path + '/Deck.png')
 BLANK = pygame.image.load(assets_path + '/Blank.png')
+FELT = pygame.image.load(assets_path + '/Green_Felt.jpg')
 
 # Used for choosing wildcard color
 WILDWHEEL = {

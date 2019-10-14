@@ -8,6 +8,7 @@ from ..assets import WILDWHEEL
 from ..assets import DECK, CARDS
 from ..card import Card
 from ..animatable import Animatable
+from ..helpers import put_felt_background
 
 # Maps id => Card
 cards = {}
@@ -273,7 +274,7 @@ def show():
     disposable_animatables.queue.clear()
 
     base_surf = SharedObjects.get_base_surface()
-    base_surf.fill((0, 0, 0))
+    base_surf = put_felt_background(base_surf)
 
     large_font = SharedObjects.get_large_font()
 

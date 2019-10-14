@@ -5,6 +5,7 @@ from ..assets import DECK, CARDS, BLANK
 from .. import constants as c
 from ..shared_objects import SharedObjects
 from ..animatable import Animatable
+from ..helpers import put_felt_background
 
 _start_card = None
 _credits_card = None
@@ -75,7 +76,7 @@ def show():
 
     # Background border surface
     surf = pygame.Surface((c.WINWIDTH, c.WINHEIGHT * 3/4))
-    surf.fill(BACKGROUND_BORDER_COLOR)
+    surf.fill(pygame.Color("darkgreen"))
     rect = surf.get_rect()
     rect.center = (c.HALF_WINWIDTH, c.HALF_WINHEIGHT)
 
@@ -83,7 +84,7 @@ def show():
 
     # Background surface
     surf = pygame.Surface((c.WINWIDTH, c.WINHEIGHT * 3/4 * 0.95))
-    surf.fill(BACKGROUND_COLOR)
+    surf = put_felt_background(surf)
     rect = surf.get_rect()
     rect.center = (c.HALF_WINWIDTH, c.HALF_WINHEIGHT)
 
