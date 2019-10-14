@@ -104,9 +104,27 @@ WILDCARD_BACKGROUND_BORDER_COLOR = Color('white')
 # Thickness of the border of the square wildcard wheel is on
 WILDCARD_BORDER_THICKNESS = 0.95
 
-# Font color for scrolling text messages
+# Text color for scrolling text messages
 MESSAGE_TEXT_COLOR = Color('white')
 
 # Background color for scrolling text messages
 MESSAGE_BACKGROUND_COLOR = Color('navyblue')
+
+# Text color for buttons in the lobby
+LOBBY_TEXT_COLOR = Color("white")
+
+# Background color for inactive text fields in the lobby
+LOBBY_INACTIVE_COLOR = Color("midnightblue")
+
+# Background color for active text fields in the lobby
+LOBBY_ACTIVE_COLOR = Color("dodgerblue3")
+
+# Background color for "Join Game" button in lobby
+LOBBY_JOIN_GAME_BACKGROUND_COLOR = Color("forestgreen")
+
+# Background color for "Cancel" button in lobby
+LOBBY_CANCEL_GAME_BACKGROUND_COLOR = Color("firebrick")
+
+# Background color for "Waiting" label in lobby
+LOBBY_WAITING_BACKGROUND_COLOR = Color("lightsalmon")
 

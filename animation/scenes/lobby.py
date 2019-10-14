@@ -7,13 +7,8 @@ from ..shared_objects import SharedObjects
 from ..animatable import Animatable
 from ..math_helpers import circle_transform
 from ..util import show_text
+from ..text_field import TextField
 
-TEXT_COLOR = pygame.Color("white")
-INACTIVE_COLOR = pygame.Color("midnightblue")
-ACTIVE_COLOR = pygame.Color("dodgerblue3")
-JOIN_GAME_BACKGROUND_COLOR = pygame.Color("forestgreen")
-CANCEL_GAME_BACKGROUND_COLOR = pygame.Color("firebrick")
-WAITING_BACKGROUND_COLOR = pygame.Color("lightsalmon")
 
 FORM_X = c.HALF_WINWIDTH
 FORM_Y = c.WINHEIGHT * 3/4
@@ -39,124 +34,6 @@ CANCEL_BUTTON_W = c.WINWIDTH * 9/64
 name_field = None
 join_button = None
 cancel_button = None
-
-
-class TextField:
-    def __init__(self, x, y, width, active_color=ACTIVE_COLOR, inactive_color=INACTIVE_COLOR,  placeholder=None):
-        """
-        Parameters:
-        -----------
-        x: center x position
-        y: center y position
-        width: how wide in pixels the text field
-        active_color: color of background when focused
-        inactive_color: color of backgorund when not focused
-        placeholder: the original string that this text field has
-        """
-        self.x = x
-        self.y = y
-        self.font = SharedObjects.get_medium_font()
-        self.width = width
-        self.height = self.font.render(
-            "I", True, TEXT_COLOR).get_rect().h
-        self.active_color = active_color
-        self.inactive_color = inactive_color
-        self.is_active = False
-
-        if placeholder is not None:
-            self.text = placeholder
-        else:
-            self.text = ""
-
-        surf = self._make_surface()
-
-        self.animatable = Animatable(surf, x, y, hidden=False)
-
-    def _make_surface(self):
-        """
-        Internal function used to make the surface of the text field.
-        """
-        background_surf = pygame.Surface((self.width, self.height))
-
-        if self.is_active:
-            background_surf.fill(self.active_color)
-        else:
-            background_surf.fill(self.inactive_color)
-
-        center = background_surf.get_rect().center
-
-        text_surf = self.font.render(self.text, True, TEXT_COLOR)
-        rect = text_surf.get_rect()
-        rect.center = center
-
-        background_surf.blit(text_surf, rect)
-
-        return background_surf
-
-    def _update_animatable(self):
-        surf = self._make_surface()
-
-        self.animatable.original_surface = surf
-        self.animatable.surface = surf
-
-    def focus(self):
-        """
-        The background changes to the active color.
-        """
-        self.is_active = True
-        self._update_animatable()
-
-    def unfocus(self):
-        """
-        The background changes to the inactive color.
-        """
-        self.is_active = False
-        self._update_animatable()
-
-    def append_char(self, char):
-        """
-        Sets the text of the text field.
-        Parameters:
-        -----------
-        char: a character to append to the string (can be backspace)
-        """
-        if char == '\b':
-            if len(self.text):
-                self.text = self.text[:-1]
-        else:
-            self.text += char
-
-        self._update_animatable()
-
-    def get_text(self):
-        """
-        Returns the current text value of the text field.
-        """
-        return self.text
-
-    def set_text(self, txt):
-        """
-        Immediately changes the text to the passed in string.
-        Parameters:
-        -----------
-        txt: string
-        """
-        self.text = txt
-        self._update_animatable()
-
-    def get_animatable(self):
-        return self.animatable
-
-    def collide(self, point):
-        """
-        Returns true if the point is within the text field.
-        Parameters:
-        -----------
-        point: (x, y) tuple of the point
-        """
-        rect = self.animatable.rect
-        self.animatable.move(*rect.center)
-        return rect.collidepoint(point)
 
 
 def append_char_to_name(char):
@@ -200,8 +77,9 @@ def clicked_cancel(point):
     """
     return cancel_button.collide(point)
 
+
 def join_button_to_waiting():
-    join_button.active_color = WAITING_BACKGROUND_COLOR
+    join_button.active_color = c.LOBBY_WAITING_BACKGROUND_COLOR
     join_button.set_text("waiting")
 
     show_text("Waiting for others", 5)
@@ -266,7 +144,7 @@ def show():
 
     # Username label
     medium_font = SharedObjects.get_medium_font()
-    name_label = medium_font.render("Enter username", True, TEXT_COLOR)
+    name_label = medium_font.render("Enter username", True, c.LOBBY_TEXT_COLOR)
     name_label = Animatable(name_label, c.WINWIDTH * -
                             1/8, NAME_LABEL_Y, hidden=False)
 
@@ -282,35 +160,32 @@ def show():
 
     name_field = TextField(NAME_FIELD_X, NAME_FIELD_Y, NAME_FIELD_W)
     name_field.focus()
-    name_field_ani = name_field.get_animatable()
-    name_field_ani.instant_move(c.WINWIDTH * -1/8, NAME_FIELD_Y)
-    name_field_ani.move(NAME_FIELD_X, NAME_FIELD_Y)
+    name_field.instant_move(c.WINWIDTH * -1/8, NAME_FIELD_Y)
+    name_field.move(NAME_FIELD_X, NAME_FIELD_Y)
 
-    animatables.append(name_field.get_animatable())
+    animatables.append(name_field)
 
     # Join game button
     global join_button
 
     # Using a text field for buttons because they provide similar functionality
     join_button = TextField(JOIN_BUTTON_X, JOIN_BUTTON_Y, JOIN_BUTTON_W,
-                            inactive_color=JOIN_GAME_BACKGROUND_COLOR, placeholder="Join Game!")
-    join_button_ani = join_button.get_animatable()
-    join_button_ani.instant_move(c.WINWIDTH * 9/8, JOIN_BUTTON_Y)
-    join_button_ani.move(JOIN_BUTTON_X, JOIN_BUTTON_Y)
+                            inactive_color=c.LOBBY_JOIN_GAME_BACKGROUND_COLOR, placeholder="Join Game!")
+    join_button.instant_move(c.WINWIDTH * 9/8, JOIN_BUTTON_Y)
+    join_button.move(JOIN_BUTTON_X, JOIN_BUTTON_Y)
 
-    animatables.append(join_button.get_animatable())
+    animatables.append(join_button)
 
     # Cancel from lobby button
     global cancel_button
 
     # Using a text field for buttons because they provide similar functionality
     cancel_button = TextField(
-        CANCEL_BUTTON_X, CANCEL_BUTTON_Y, CANCEL_BUTTON_W, inactive_color=CANCEL_GAME_BACKGROUND_COLOR, placeholder="Cancel")
-    cancel_button_ani = cancel_button.get_animatable()
-    cancel_button_ani.instant_move(c.WINWIDTH * 9/8, CANCEL_BUTTON_Y)
-    cancel_button_ani.move(CANCEL_BUTTON_X, CANCEL_BUTTON_Y)
+        CANCEL_BUTTON_X, CANCEL_BUTTON_Y, CANCEL_BUTTON_W, inactive_color=c.LOBBY_CANCEL_GAME_BACKGROUND_COLOR, placeholder="Cancel")
+    cancel_button.instant_move(c.WINWIDTH * 9/8, CANCEL_BUTTON_Y)
+    cancel_button.move(CANCEL_BUTTON_X, CANCEL_BUTTON_Y)
 
-    animatables.append(cancel_button.get_animatable())
+    animatables.append(cancel_button)
 
     #############################################################
     # Additional animations
@@ -460,7 +335,7 @@ def show():
             card.circle(center_x, center_y, 360, 1.5)
 
     for card in cards:
-        card.move(center_x, center_y)  
+        card.move(center_x, center_y)
 
     # #################################################
     # Random shuffle
