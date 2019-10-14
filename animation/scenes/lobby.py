@@ -1,7 +1,7 @@
 import pygame
 import random
 
-from ..assets import DECK
+from ..assets import BDECK as DECK
 from .. import constants as c
 from ..shared_objects import SharedObjects
 from ..animatable import Animatable
@@ -93,8 +93,8 @@ def show():
     # Constants for Lobby Scene
     ###################################################
 
-    BACKGROUND_COLOR = pygame.Color("navyblue")
-    BACKGROUND_BORDER_COLOR = pygame.Color("dodgerblue3")
+    BACKGROUND_COLOR = pygame.Color("darkgreen")
+    BACKGROUND_BORDER_COLOR = pygame.Color("white")
 
     LABEL_OFFSET = 1/8
 
@@ -159,7 +159,7 @@ def show():
     # Name field
     global name_field
 
-    name_field = TextField(NAME_FIELD_X, NAME_FIELD_Y, NAME_FIELD_W)
+    name_field = TextField(NAME_FIELD_X, NAME_FIELD_Y, NAME_FIELD_W, active_color=pygame.Color("forestgreen"))
     name_field.focus()
     name_field.instant_move(c.WINWIDTH * -1/8, NAME_FIELD_Y)
     name_field.move(NAME_FIELD_X, NAME_FIELD_Y)
