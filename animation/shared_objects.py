@@ -58,7 +58,7 @@ class SharedObjects:
         drawn.
         """
         if SharedObjects.display_surf is None:
-            SharedObjects.display_surf = pygame.display.set_mode((0, 0), pygame.RESIZABLE)
+            SharedObjects.display_surf = pygame.display.set_mode((0,0),pygame.FULLSCREEN)
             # SharedObjects.display_surf = pygame.display.set_mode(
             #     (c.WINWIDTH, c.WINHEIGHT))
             SharedObjects.base_surf = SharedObjects.display_surf.copy()

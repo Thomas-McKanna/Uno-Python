@@ -1,5 +1,3 @@
-import time
-import threading
 import pygame
 
 from .. import constants as c
@@ -10,6 +8,7 @@ from ..assets import WILDWHEEL
 from ..assets import DECK, CARDS
 from ..card import Card
 from ..animatable import Animatable
+from ..helpers import put_felt_background
 
 # Maps id => Card
 cards = {}
@@ -156,51 +155,6 @@ def get_focus_id():
             return cid
 
 
-def _timer_thread(seconds):
-    white = (255, 255, 255)
-    red = (255, 0, 0)
-
-    large_font = SharedObjects.get_extra_large_font()
-
-    number = large_font.render(str(seconds), True, white)
-    animatables = SharedObjects.get_animatables()
-
-    timer = Animatable(number, (9/10)*c.WINWIDTH, (9/10)
-                       * c.WINHEIGHT, hidden=False)
-
-    animatables.append(timer)
-
-    while seconds > 0:
-        time.sleep(1)
-        seconds -= 1
-
-        if seconds <= 10:
-            number = large_font.render(str(seconds), True, red)
-        else:
-            number = large_font.render(str(seconds), True, white)
-
-        timer.original_surface = number
-        timer.surface = number
-
-    animatables.remove(timer)
-
-
-def start_timer(seconds):
-    """
-    Displays a timer in the bottom right corner of the screen that counts down
-    to zero.
-    Parameters:
-    -----------
-    seconds: int value specifying how many seconds to count down from
-    Returns:
-    --------
-    time of when timer started
-    """
-    now = time.time()
-    threading.Thread(target=_timer_thread, args=[seconds], daemon=True).start()
-    return now
-
-
 def show_wildcard_wheel():
     """
     The wildward wheel is displayed in the middle of the screen.
@@ -297,6 +251,14 @@ def switch_wildcard_wheel_focus(quadrant):
         duration=c.SHIFT_HAND_DURATION
     )
 
+def reset():
+    global wildcard_quadrants
+    global cards, opponents, hand
+
+    wildcard_quadrants.clear()
+    cards.clear()
+    opponents.clear()
+    hand = PrimaryHand()
 
 def show():
     """
@@ -312,7 +274,7 @@ def show():
     disposable_animatables.queue.clear()
 
     base_surf = SharedObjects.get_base_surface()
-    base_surf.fill((0, 0, 0))
+    base_surf = put_felt_background(base_surf)
 
     large_font = SharedObjects.get_large_font()
 
