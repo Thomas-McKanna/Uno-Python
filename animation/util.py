@@ -113,7 +113,8 @@ def _timer_thread(seconds):
         timer.original_surface = number
         timer.surface = number
 
-    animatables.remove(timer)
+    if timer in animatables:
+        animatables.remove(timer)
 
 
 def start_timer(seconds):
