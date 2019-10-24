@@ -16,6 +16,13 @@ WILDWHEEL = {
     'GREEN': pygame.image.load(assets_path + '/Wildwheel_Green.png')
 }
 
+WILDMORPH = {
+    'BLUE_WILD': pygame.image.load(assets_path + '/Blue_Wild.png'),
+    'RED_WILD': pygame.image.load(assets_path + '/Red_Wild.png'),
+    'GREEN_WILD': pygame.image.load(assets_path + '/Green_Wild.png'),
+    'YELLOW_WILD': pygame.image.load(assets_path + '/Yellow_Wild.png'),
+}
+
 CARDS = {
     # Blue Cards
     'BLUE_0': pygame.image.load(assets_path + '/Blue_0.png'),

@@ -1,4 +1,5 @@
 from .cards import Hand,Deck
+
 class Player: 
     def __init__(self, name, deck: Deck):
         self.name = name
@@ -35,16 +36,11 @@ class Player:
         else:
             choice = card
         curDiscard = self.hand.deck.getDiscard()
-        if choice.value in ["wild", "wild_draw"]:
-            colorChoice = ""
-            while colorChoice not in ["Red", "Green", "Yellow", "Blue"]:
-                if accept_input:
-                    colorChoice = input("Which color would you like to play as? ") 
-                else:
-                    count = {}
-                    for card in self.hand.cards:
-                        count[card.color] = count.get(card.color, 0) + 1
-                    colorChoice = max(count, key=lambda key: count[key])
+        if choice.value in ["wild", "wild_draw"] and not accept_input:
+            count = {}
+            for card in self.hand.cards:
+                count[card.color] = count.get(card.color, 0) + 1
+            colorChoice = max(count, key=lambda key: count[key])
             print("Wild played as: ", colorChoice)
             choice.color = colorChoice
         if choice.match(curDiscard):

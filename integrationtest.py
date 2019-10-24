@@ -229,8 +229,42 @@ def do_game_iteration():
                 cur_card = CURRENT_PLAYER.getCardFromID(cur_card_id)
                 if cur_card.match(DECK.getDiscard()):
                     sfx_card_place.play()
+                    # Handle playing of wild card
+                    if cur_card.value in ["wild", "wild_draw"]:
+                        curr = 0
+                        animation.game.show_wildcard_wheel()
+                        animation.game.switch_wildcard_wheel_focus(curr)
+                        enter_pressed = False
+                        while not enter_pressed:
+                            for event in pygame.event.get():
+                                if event.type == pg.KEYDOWN:
+                                    if event.key == pg.K_LEFT:
+                                        curr = (curr + 1) % 4
+                                    if event.key == pg.K_RIGHT:
+                                        curr = (curr - 1) % 4
+                                    if event.key == pg.K_RETURN:
+                                        enter_pressed = True
+                                    animation.game.switch_wildcard_wheel_focus(
+                                        curr)
+                            animation.next_frame()
+                        
+                        animation.game.hide_wildcard_wheel()
+
+                        if curr == 0:
+                            cur_card.color = "Blue"
+                        elif curr == 1:
+                            cur_card.color = "Red"
+                        elif curr == 2:
+                            cur_card.color = "Yellow"
+                        else:
+                            cur_card.color = "Green"
+
+                        animation.game.play_card(cur_card.id, wild_color=curr)
+                    else:
+                        # Play non-wild card
+                        animation.game.play_card(cur_card.id)
+
                     CURRENT_PLAYER.playCard(cur_card)
-                    animation.game.play_card(cur_card.id)
                     if len(CURRENT_PLAYER.hand.cards) == 1:
                         sfx_uno.play()
                     opponent_turn(OPPONENT_TRACKER)
