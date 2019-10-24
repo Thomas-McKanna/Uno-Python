@@ -76,6 +76,13 @@ def draw_card(id):
     id: integer value uniquely identifying a card
     """
     card = cards[id]
+
+    # Avoid a card being in animatables list more than once if it has been
+    # recycled
+    animatables = SharedObjects.get_animatables()
+    if card in animatables:
+        animatables.remove(card)
+
     hand.draw(card)
 
 
