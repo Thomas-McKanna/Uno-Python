@@ -8,7 +8,7 @@ from ..animatable import Animatable
 from ..helpers import put_felt_background
 
 _start_card = None
-_credits_card = None
+_exit_card = None
 
 
 def _set_start_card(card):
@@ -16,9 +16,9 @@ def _set_start_card(card):
     _start_card = card
 
 
-def _set_credits_card(card):
-    global _credits_card
-    _credits_card = card
+def _set_exit_card(card):
+    global _exit_card
+    _exit_card = card
 
 
 def clicked_start(point):
@@ -35,15 +35,15 @@ def clicked_start(point):
         return False
 
 
-def clicked_credits(point):
+def clicked_exit(point):
     """
-    Checks if the point collides with the credits card on the intro screen.
+    Checks if the point collides with the exit card on the intro screen.
     Parameters:
     -----------
     point: (x, y) tuple
     """
-    if _credits_card is not None:
-        rect = _credits_card.rect
+    if _exit_card is not None:
+        rect = _exit_card.rect
         return rect.collidepoint(point)
     else:
         return False
@@ -53,13 +53,13 @@ def show():
     ###################################################
     # Constants for Intro Scene
     ###################################################
-    MAIN_CARD_SIZE = 0.6
-    SECONDARY_CARD_SIZE = 0.3
-    CIRCLE_CARD_SIZE = 0.2
+    MAIN_CARD_SIZE = c.WINHEIGHT*0.0006
+    SECONDARY_CARD_SIZE = c.WINHEIGHT*0.008
+    CIRCLE_CARD_SIZE = c.WINHEIGHT*0.00018
     CIRCLE_CARD_HEIGHT = 1/4
-    SPEED = 4
+    SPEED = 6
     NUM_CARDS = 10
-    BORDER_CARD_SCALE = c.WINWIDTH*0.000125
+    BORDER_CARD_SCALE = c.WINHEIGHT*0.000218
     TEXT_COLOR = pygame.Color("white")
     BACKGROUND_COLOR = pygame.Color("navyblue")
     BACKGROUND_BORDER_COLOR = pygame.Color("dodgerblue3")
@@ -202,13 +202,13 @@ def show():
     logo.scale(0.001, MAIN_CARD_SIZE, SPEED*2)
     animatables.append(logo)
 
-    credits_card = (
-        "Credits",          # text
+    exit_card = (
+        "Exit",             # text
         -c.WINWIDTH * 1/2,  # start x
         c.HALF_WINHEIGHT,   # start y
         c.WINWIDTH * 1/4,   # end x
         c.HALF_WINHEIGHT,   # end y
-        _set_credits_card   # global name
+        _set_exit_card   # global name
     )
 
     start_card = (
@@ -224,7 +224,7 @@ def show():
     medium_font = SharedObjects.get_medium_font()
 
     # Make the text and cards and slide them in
-    for info in [credits_card, start_card]:
+    for info in [exit_card, start_card]:
         string, start_x, start_y, end_x, end_y, set_name = info
 
         raw_txt = medium_font.render(string, True, TEXT_COLOR)

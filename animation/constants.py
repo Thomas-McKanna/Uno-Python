@@ -35,10 +35,10 @@ FOCUS_CARD_X = WINWIDTH // 2
 FOCUS_CARD_Y = 5 * WINHEIGHT // 6
 
 # Size of focused card compared to original asset size
-FOCUS_CARD_SCALE = 0.00026 * WINWIDTH
+FOCUS_CARD_SCALE = 0.0004 * WINHEIGHT
 
 # Size of cards compared to original asset size
-DEFAULT_CARD_SCALE = 0.0002 * WINWIDTH
+DEFAULT_CARD_SCALE = 0.00035 * WINHEIGHT
 
 # How many seconds it should take for rotate hand by one card
 SHIFT_HAND_DURATION = 0.15
@@ -50,7 +50,7 @@ PLAY_DECK_CENTER_X = 5 * WINWIDTH // 8
 PLAY_DECK_CENTER_Y = WINHEIGHT // 2
 
 # Size of play deck card compared to original asset size
-PLAY_DECK_SCALE = 0.00026 * WINWIDTH
+PLAY_DECK_SCALE = 0.0004 * WINHEIGHT
 
 # X-position of center of draw deck (deck that players draw cards from)
 DRAW_DECK_CENTER_X = 3 * WINWIDTH // 8
@@ -59,17 +59,17 @@ DRAW_DECK_CENTER_X = 3 * WINWIDTH // 8
 DRAW_DECK_CENTER_Y = WINHEIGHT // 2
 
 # Size of card deck card compared to original asset size
-DRAW_DECK_SCALE = 0.00026 * WINWIDTH
+DRAW_DECK_SCALE = 0.0004 * WINHEIGHT
 
 # The size of font rendered onto the screen
-FONT_SIZE = round(0.04*WINWIDTH)
+FONT_SIZE = round(0.04*WINHEIGHT)
 
 # The color of the font rendered onto the screen
 from pygame import Color
 FONT_COLOR = Color('white')
 
 # Size of spread deck cards compared to original asset size
-OPPONENT_SPREAD_DECK_CARD_SCALE = 0.00013 * WINWIDTH
+OPPONENT_SPREAD_DECK_CARD_SCALE = 0.00025 * WINHEIGHT
 
 # Absolute number of pixel away from the center of an opponent card spread
 # the center of any card in the spread can be
@@ -87,13 +87,13 @@ COLOR_INACTIVE = Color('lightskyblue3')
 COLOR_ACTIVE = Color('dodgerblue2')
 
 # Size of each of the wildcard color wheel quadrants
-WILDCARD_WHEEL_SIZE = 0.00004 * WINWIDTH
+WILDCARD_WHEEL_SIZE = 0.000075 * WINHEIGHT
 
 # How far away from the wildcard wheel the focus quadrant moves away
-WILDCARD_WHEEL_FOCUS_DISTANCE = 0.01 * WINWIDTH
+WILDCARD_WHEEL_FOCUS_DISTANCE = 0.02 * WINHEIGHT
 
 # Size of the square the wildcard wheel is on
-WILDCARD_WHEEL_BACKGROUND_SIZE = 0.25 * WINWIDTH
+WILDCARD_WHEEL_BACKGROUND_SIZE = 0.5 * WINHEIGHT
 
 # Color of interior of square wildcard wheel is on
 WILDCARD_BACKGROUND_COLOR = Color('black')

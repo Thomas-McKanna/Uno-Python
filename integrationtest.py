@@ -20,7 +20,6 @@ class Modes(enum.Enum):
     INTRO = 1
     LOBBY = 2
     GAME = 3
-    CREDITS = 4
 
 
 def generate_uno_deck():
@@ -152,8 +151,9 @@ def do_intro_iteration():
                 CURRENT_MODE = Modes.LOBBY
                 animation.lobby.show()
                 animation.start_timer(120)
-            elif animation.intro.clicked_credits(position):
-                print("Clicked credits card!")
+            elif animation.intro.clicked_exit(position):
+                print("Clicked exit card!")
+                terminate()
 
 
 def init_game():
