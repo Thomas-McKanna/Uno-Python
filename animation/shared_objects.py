@@ -1,6 +1,7 @@
 import copy
 import pygame
 
+
 class DisposableAnimatables:
     """
     Holds a limited sized list of animatables. Once the queue is full, new
@@ -8,6 +9,7 @@ class DisposableAnimatables:
     to prevent a large buildup of unused and covered up animatables over the
     course of a game.
     """
+
     def __init__(self):
         self.queue = []
 
@@ -16,12 +18,15 @@ class DisposableAnimatables:
             self.queue = self.queue[1:]
         self.queue.append(animatable)
 
+    def remove(self, animatable):
+        self.queue.remove(animatable)
+
     def __iter__(self):
         return self.queue.__iter__()
 
     def __len__(self):
         return len(self.queue)
-        
+
 
 class SharedObjects:
     """
@@ -58,7 +63,8 @@ class SharedObjects:
         drawn.
         """
         if SharedObjects.display_surf is None:
-            SharedObjects.display_surf = pygame.display.set_mode((0,0),pygame.FULLSCREEN)
+            SharedObjects.display_surf = pygame.display.set_mode(
+                (0, 0), pygame.FULLSCREEN)
             # SharedObjects.display_surf = pygame.display.set_mode(
             #     (c.WINWIDTH, c.WINHEIGHT))
             SharedObjects.base_surf = SharedObjects.display_surf.copy()
@@ -98,7 +104,7 @@ class SharedObjects:
         if SharedObjects.disposable_animatables is None:
             SharedObjects.disposable_animatables = DisposableAnimatables()
         return SharedObjects.disposable_animatables
-        
+
     @staticmethod
     def get_small_font():
         """

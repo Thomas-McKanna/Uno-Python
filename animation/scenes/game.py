@@ -1,10 +1,13 @@
 import pygame
+import threading
+import time
 
 from .. import constants as c
 from ..shared_objects import SharedObjects
 from ..opponent_hand import OpponentHand
 from ..primary_hand import PrimaryHand
 from ..assets import WILDWHEEL
+from ..assets import WILDMORPH
 from ..assets import DECK, CARDS
 from ..card import Card
 from ..animatable import Animatable
@@ -46,16 +49,22 @@ def add_opponent(name):
     opponents[name] = None
 
 
-def play_card(id):
+def play_card(id, wild_color=None):
     """
     Moves the card with the given id to the play deck. This function operates
     on the primary player in the game.
     Parameters:
     -----------
     id: integer value uniquely identifying a card
+    wild_color: (optional) int 0, 1, 2, or 3 (see _wildcard_morph)
     """
     card = cards[id]
     hand.play(card)
+
+    if wild_color is not None:
+        args = [wild_color, c.WILDCARD_MORPH_WAIT_TIME]
+        threading.Thread(target=_wildcard_morph,
+                        args=args, daemon=True).start()
 
 
 def draw_card(id):
@@ -88,17 +97,23 @@ def opponent_draw_card(opponent_id):
     opponent_hand.draw()
 
 
-def opponent_play_card(opponent_id, card_id):
+def opponent_play_card(opponent_id, card_id, wild_color=None):
     """
     The card is revealed and moved to the play deck.
     Parameters:
     -----------
     opponent_id: integer value uniquely identifying an opponent
     card_id: integer value uniquely identifying a card
+    wild_color: (optional) int 0, 1, 2, or 3 (see _wildcard_morph)
     """
     opponent_hand = opponents[opponent_id]
     card = cards[card_id]
     opponent_hand.play(card)
+
+    if wild_color is not None:
+        args = [wild_color, c.WILDCARD_MORPH_WAIT_TIME]
+        threading.Thread(target=_wildcard_morph,
+                         args=args, daemon=True).start()
 
 
 def shift_hand(right=True):
@@ -162,17 +177,53 @@ def get_focus_id():
             return cid
 
 
+def _wildcard_morph(color, wait):
+    """
+    The wildcard morphs into the chosen color after the given wait time. Use 
+    after the player has picked their color from the wildcard wheel.
+    Parameters:
+    -----------
+    color: 0 -> blue, 1 -> red, 2 -> yellow, 3 -> green
+    wait: duration in seconds
+    """
+    if color == 0:
+        surf = WILDMORPH["BLUE_WILD"]
+    elif color == 1:
+        surf = WILDMORPH["RED_WILD"]
+    elif color == 2:
+        surf = WILDMORPH["YELLOW_WILD"]
+    elif color == 3:
+        surf = WILDMORPH["GREEN_WILD"]
+    else:
+        raise Exception
+
+    if wait < 0:
+        raise Exception
+
+    time.sleep(wait)
+
+    blank_card = Card(surf, c.PLAY_DECK_SCALE)
+    blank_card.instant_move(c.PLAY_DECK_CENTER_X, c.PLAY_DECK_CENTER_Y)
+    blank_card.scale(
+        from_scale=0.0001,
+        to_scale=c.PLAY_DECK_SCALE,
+        duration=1
+    )
+
+    SharedObjects.get_disposable_animatables().append(blank_card)
+
+
 def show_wildcard_wheel():
     """
     The wildward wheel is displayed in the middle of the screen.
     """
     # Check if quadrants are already being tracked in animatables. (Checking
     # just one quadrant should be sufficient)
-    animatables = SharedObjects.get_animatables()
-    if wildcard_quadrants[0] in animatables:
+    disposable_animatables = SharedObjects.get_disposable_animatables()
+    if wildcard_quadrants[0] in disposable_animatables:
         return
 
-    animatables.append(wildcard_background)
+    disposable_animatables.append(wildcard_background)
 
     cx, cy = (c.HALF_WINWIDTH, c.HALF_WINHEIGHT)
     # All quadrants will have the same dimensions
@@ -192,7 +243,7 @@ def show_wildcard_wheel():
 
     # Start tracking quadrants in animatables
     for q in wildcard_quadrants:
-        animatables.append(q)
+        disposable_animatables.append(q)
 
 
 def hide_wildcard_wheel():
@@ -201,10 +252,10 @@ def hide_wildcard_wheel():
     error if show_wildcard_wheel was not called before this function.
     """
     try:
-        animatables = SharedObjects.get_animatables()
+        disposable_animatables = SharedObjects.get_disposable_animatables()
         for q in wildcard_quadrants:
-            animatables.remove(q)
-        animatables.remove(wildcard_background)
+            disposable_animatables.remove(q)
+        disposable_animatables.remove(wildcard_background)
     except:
         raise Exception
 
@@ -258,6 +309,7 @@ def switch_wildcard_wheel_focus(quadrant):
         duration=c.SHIFT_HAND_DURATION
     )
 
+
 def reset():
     global wildcard_quadrants
     global cards, opponents, hand
@@ -266,6 +318,7 @@ def reset():
     cards.clear()
     opponents.clear()
     hand = PrimaryHand()
+
 
 def show():
     """
