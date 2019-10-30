@@ -114,7 +114,7 @@ def show():
     #############################################################
 
     # Background of form
-    border_w = c.WINWIDTH * 0.0125  # border ratio
+    border_w = c.WINHEIGHT * 0.0125  # border ratio
 
     surf = pygame.Surface((FORM_W, FORM_H))
     surf.fill(BACKGROUND_BORDER_COLOR)
