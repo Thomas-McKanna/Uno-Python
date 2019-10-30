@@ -1,6 +1,7 @@
 import pygame
 import threading
 import time
+import random
 
 from .. import constants as c
 from ..shared_objects import SharedObjects
@@ -8,7 +9,7 @@ from ..opponent_hand import OpponentHand
 from ..primary_hand import PrimaryHand
 from ..assets import WILDWHEEL
 from ..assets import WILDMORPH
-from ..assets import DECK, CARDS
+from ..assets import DECK, CARDS, BDECK
 from ..card import Card
 from ..animatable import Animatable
 from ..helpers import put_felt_background
@@ -58,8 +59,13 @@ def play_card(id, wild_color=None):
     id: integer value uniquely identifying a card
     wild_color: (optional) int 0, 1, 2, or 3 (see _wildcard_morph)
     """
+    if wild_color is not None:
+        random_offset = False
+    else:
+        random_offset = True
+
     card = cards[id]
-    hand.play(card)
+    hand.play(card, random_offset)
 
     if wild_color is not None:
         args = [wild_color, c.WILDCARD_MORPH_WAIT_TIME]
@@ -106,9 +112,14 @@ def opponent_play_card(opponent_id, card_id, wild_color=None):
     card_id: integer value uniquely identifying a card
     wild_color: (optional) int 0, 1, 2, or 3 (see _wildcard_morph)
     """
+    if wild_color is not None:
+        random_offset = False
+    else:
+        random_offset = True
+
     opponent_hand = opponents[opponent_id]
     card = cards[card_id]
-    opponent_hand.play(card)
+    opponent_hand.play(card, random_offset)
 
     if wild_color is not None:
         args = [wild_color, c.WILDCARD_MORPH_WAIT_TIME]
@@ -352,11 +363,16 @@ def show():
         base_surf.blit(name_surf, name_rect)
 
     # Show draw deck
-    draw_deck = Animatable(DECK)
+    draw_deck = Animatable(BDECK)
     draw_deck.instant_scale(c.DRAW_DECK_SCALE)
     draw_deck.instant_move(c.DRAW_DECK_CENTER_X, c.DRAW_DECK_CENTER_Y)
 
-    base_surf.blit(draw_deck.surface, draw_deck.rect)
+    rect = draw_deck.rect
+    for i in range(5, 0, -1):
+        base_surf.blit(draw_deck.surface, (rect.x - i, rect.y + 3*i))
+
+    # No offset
+    base_surf.blit(draw_deck.surface, rect)
 
     colors = [
         WILDWHEEL["BLUE"],
@@ -387,7 +403,7 @@ def show():
 
     # Write prompt
     medium_font = SharedObjects.get_small_font()
-    prompt = medium_font.render("Pick a color:", True, (255, 255, 255))
+    prompt = medium_font.render("Pick a color (use arrow keys): ", True, (255, 255, 255))
     background.blit(prompt, (dim*(1-t), dim*(1-t)))
 
     confirm_msg = medium_font.render(

@@ -4,6 +4,7 @@ from . import constants as c
 from .shared_objects import SharedObjects
 
 import time
+import random
 
 
 class PrimaryHand():
@@ -140,7 +141,7 @@ class PrimaryHand():
 
         return angles
 
-    def play(self, card):
+    def play(self, card, random_offset=True):
         """
         Moves that card in the focus card position to the play deck and moves
         one of the remaining cards into the focus card position.
@@ -153,10 +154,17 @@ class PrimaryHand():
             # This function should only be called with default parameter, since
             # only the focus card can be played
             raise Exception
+        
+        if (random_offset):
+            x_offset = random.randint(-20, 20)
+            y_offset = random.randint(-20, 20)
+        else:
+            x_offset = 0
+            y_offset = 0
 
         card.move(
-            new_centerx=c.PLAY_DECK_CENTER_X,
-            new_centery=c.PLAY_DECK_CENTER_Y,
+            new_centerx=c.PLAY_DECK_CENTER_X + x_offset,
+            new_centery=c.PLAY_DECK_CENTER_Y + y_offset,
             duration=c.MOVE_CARD_ANI_DURATION
         )
 

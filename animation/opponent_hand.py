@@ -1,5 +1,6 @@
 import copy
 import pygame
+import random
 
 from .card import Card
 from .shared_objects import SharedObjects
@@ -69,7 +70,7 @@ class OpponentHand():
             duration=c.MOVE_CARD_ANI_DURATION
         )
 
-    def play(self, card):
+    def play(self, card, random_offset=True):
         """
         Pops the top card off of the stack.
         Parameters:
@@ -96,9 +97,16 @@ class OpponentHand():
         disposable_animatables = SharedObjects.get_disposable_animatables()
         disposable_animatables.append(card)
 
+        if (random_offset):
+            x_offset = random.randint(-20, 20)
+            y_offset = random.randint(-20, 20)
+        else:
+            x_offset = 0
+            y_offset = 0
+
         card.move(
-            new_centerx=c.PLAY_DECK_CENTER_X,
-            new_centery=c.PLAY_DECK_CENTER_Y,
+            new_centerx=c.PLAY_DECK_CENTER_X + x_offset,
+            new_centery=c.PLAY_DECK_CENTER_Y + y_offset,
             duration=c.MOVE_CARD_ANI_DURATION
         )
 
