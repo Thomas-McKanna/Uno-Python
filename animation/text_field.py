@@ -20,7 +20,7 @@ class TextField(Animatable):
         """
         self.x = x
         self.y = y
-        self.font = SharedObjects.get_medium_font()
+        self.font = SharedObjects.get_small_font()
         self.width = width
         self.height = self.font.render(
             "I", True, text_color).get_rect().h

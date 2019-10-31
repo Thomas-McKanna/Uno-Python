@@ -144,8 +144,8 @@ def show():
     animatables.append(background)
 
     # Username label
-    medium_font = SharedObjects.get_medium_font()
-    name_label = medium_font.render("Enter username", True, c.LOBBY_TEXT_COLOR)
+    small_font = SharedObjects.get_small_font()
+    name_label = small_font.render("Enter username", True, c.LOBBY_TEXT_COLOR)
     name_label = Animatable(name_label, c.WINWIDTH * -
                             1/8, NAME_LABEL_Y, hidden=False)
 
@@ -159,7 +159,8 @@ def show():
     # Name field
     global name_field
 
-    name_field = TextField(NAME_FIELD_X, NAME_FIELD_Y, NAME_FIELD_W, active_color=pygame.Color("forestgreen"))
+    name_field = TextField(NAME_FIELD_X, NAME_FIELD_Y,
+                           NAME_FIELD_W, active_color=pygame.Color("forestgreen"))
     name_field.focus()
     name_field.instant_move(c.WINWIDTH * -1/8, NAME_FIELD_Y)
     name_field.move(NAME_FIELD_X, NAME_FIELD_Y)
