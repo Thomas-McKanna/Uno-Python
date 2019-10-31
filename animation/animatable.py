@@ -163,8 +163,8 @@ class Animatable:
             """
             original_surf = surface.copy()
             for angle in angles:
+                x, y = self.rect.center
                 self.surface = pygame.transform.rotate(original_surf, angle)
-                self.rect = self.surface.get_rect()
                 self.instant_move(x, y)
                 yield True
 

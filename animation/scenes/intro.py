@@ -57,8 +57,8 @@ def show():
     SECONDARY_CARD_SIZE = c.WINHEIGHT*0.008
     CIRCLE_CARD_SIZE = c.WINHEIGHT*0.00018
     CIRCLE_CARD_HEIGHT = 1/4
-    SPEED = 6
-    NUM_CARDS = 10
+    SPEED = 12
+    NUM_CARDS = 60
     BORDER_CARD_SCALE = c.WINHEIGHT*0.000218
     TEXT_COLOR = pygame.Color("white")
     BACKGROUND_COLOR = pygame.Color("navyblue")
@@ -136,37 +136,63 @@ def show():
         card.instant_move(start_x - c.WINWIDTH/2,
                           c.WINHEIGHT * CIRCLE_CARD_HEIGHT)
 
+        card.rotate(9000, 300)
+
         # Delays cards that are farther behind in the sequence
         for j in range(i):
             card.move(
                 new_centerx=start_x - c.WINWIDTH/2 + j + 1,
                 new_centery=c.WINHEIGHT * CIRCLE_CARD_HEIGHT,
-                duration=SPEED/10
+                duration=SPEED/150
             )
 
         # This sequence of movements will happen 20 times
         for _ in range(20):
             # Move card to center from left
             card.move(
-                new_centerx=c.HALF_WINWIDTH,
+                new_centerx=c.WINWIDTH * 11/12,
                 new_centery=c.WINHEIGHT * CIRCLE_CARD_HEIGHT,
                 duration=SPEED,
                 steady=True
             )
 
-            # Circle twice around the uno card
-            card.circle(
-                c.HALF_WINWIDTH,
-                c.HALF_WINHEIGHT,
-                720,
-                SPEED*2
+            # Move card down
+            card.move(
+                new_centerx=c.WINWIDTH * 11/12,
+                new_centery=c.WINHEIGHT * 3/4,
+                duration=(SPEED / 3),
+                steady=True
+            )
+
+            # Move card to the left
+            card.move(
+                new_centerx=c.WINWIDTH * 1/12,
+                new_centery=c.WINHEIGHT * 3/4,
+                duration=(SPEED / 2),
+                steady=True
+            )
+
+            # Move card up
+            card.move(
+                new_centerx=c.WINWIDTH * 1/12,
+                new_centery=c.WINHEIGHT * CIRCLE_CARD_HEIGHT,
+                duration=(SPEED / 3),
+                steady=True
+            )
+
+            # Move card to the right
+            card.move(
+                new_centerx=c.HALF_WINWIDTH,
+                new_centery=c.WINHEIGHT * CIRCLE_CARD_HEIGHT,
+                duration=(SPEED / 4),
+                steady=True
             )
 
             # Move off screen to right
             card.move(
                 new_centerx=c.WINWIDTH * 9/8,
                 new_centery=c.WINHEIGHT * CIRCLE_CARD_HEIGHT,
-                duration=SPEED,
+                duration=(SPEED / 2),
                 steady=True
             )
 
