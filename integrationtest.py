@@ -62,7 +62,7 @@ DECK = None
 CURRENT_MODE = None
 CURRENT_PLAYER = None
 OPPONENT_TRACKER = None
-
+turnOrder=None
 
 def check_for_key_press():
     if len(pygame.event.get(pg.QUIT)) > 0:
@@ -177,6 +177,7 @@ def do_intro_iteration(searching):
 
 def init_game():
     global DECK
+    global turnOrder
     DECK = generate_uno_deck()
     
     #Determine lobby leader is responsible for shuffling the deck and creating the turn order
@@ -193,7 +194,8 @@ def init_game():
     
     if lobbyLeader:
       networking.turnSend(turn, turnOrder, DECK) #send the others the necessary info for the turn order and whose turn it is    
-    else:      
+    else:    
+      animwait(2)    
       t=networking.turnRec() #everyone else reads the data for turn info
       turn = t.get("data")["state"]["turn"]
       turnOrder = t.get("data")["state"]["order"]
@@ -251,15 +253,16 @@ def do_lobby_iteration(searching):
                 animation.intro.show()
         elif event.type == pg.KEYDOWN and searching==False:
             animation.lobby.append_char_to_name(chr(event.key))
-        if networking.playersDone and searching==True: #playersDone==True, so server is ready
-            searching=False
-            CURRENT_MODE = Modes.GAME                   
-            init_game()            
+    if networking.playersDone and searching==True: #playersDone==True, so server is ready
+        searching=False
+        CURRENT_MODE = Modes.GAME                   
+        init_game()            
     return searching
 
 
 def do_game_iteration():
     global CURRENT_MODE
+    global turnOrder
     for event in pygame.event.get():  # event handling loop
         if event.type == pg.KEYDOWN:
             # Draw card

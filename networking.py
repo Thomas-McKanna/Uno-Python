@@ -16,6 +16,7 @@ playersDone = False #specifies when the other thread has finished fetching clien
 PID = None        #personal ID for this client
 threadStop=False  #inter-thread message to stop when the game is being closed
 servConnect=None
+turnDir=1 #0:left, 1:right
 
 HOST = '127.0.0.1' #hardcoded host and port for now
 PORT = 8000
@@ -73,7 +74,7 @@ def turnSend(turn, turnOrder, deck):
 
 #used for the initial turn order sending  
 def turnRec():
-  global serv   
+  global serv  
   while True:
     ready_to_read, ready_to_write, in_error = \
      select.select(
@@ -104,19 +105,32 @@ def turnRec():
 
   
 #returns the next player whose turn it should be
-def getNextPlayer(id, turnOrder):
-  index=turnOrder.index(id)
-  if index==-1:
-    raise exception("Invalid player ID")
-  index+=1
-  if index >= len(turnOrder):
-    index=0
-  return turnOrder[index]
-  
+def getNextPlayer(id, turnOrder, cardValue):
+  global turnDir
+  skip=False  
+  ind=turnOrder.index(id)
+  if (cardValue=="reverse"):
+    if turnDir==1:
+      turnDir=-1
+    else:
+      turnDir=1
+  elif (cardValue=="skip"):
+    skip=True
+  if skip:
+    ind=ind+2*turnDir
+  else:
+    ind=ind+turnDir  
+  if ind<0:
+    ind=ind+len(turnOrder)
+  elif ind>=len(turnOrder):
+    ind=ind-len(turnOrder)
+  return turnOrder[ind]
   
 #check for messages from the current player  
 def checkMoves():
   global serv   
+  global turnDir
+  global PID
   ready_to_read, ready_to_write, in_error = \
                select.select(
                   [serv],
@@ -126,11 +140,17 @@ def checkMoves():
   if len(ready_to_read)==1:
     message = recv_json(serv)    
     if message.get('messageType') in ("game-state", "disconnect", "error", "game-finished"):
+      if message.get('messageType')=="game-state" and message.get('messageType')["data"]["state"]["sender"]!=PID:
+        if message.get('messageType')["data"]["state"]["reverseOrder"]==True:
+          if turnDir==1:
+            turnDir=-1
+          else:
+            turnDir=1
       return message                            
   return None
   
 #send move to other players  
-def sendMove(s,d,c,v):  
+def sendMove(s,d,c,v,p):  
   global serv, PID  
   move = json.dumps({
         "messageType": "game-state",
@@ -140,6 +160,8 @@ def sendMove(s,d,c,v):
                 "dest": d,
                 "color": c,
                 "value": v,
+                "reverseOrder": (v=="reverse" and dest=="discard"),
+                "nextPlayer": p,
                 "sender": PID #designates who sent the message
             }
         }
