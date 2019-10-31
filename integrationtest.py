@@ -7,10 +7,11 @@ import json
 import pygame.locals as pg
 import time
 import enum
-
+import networking
+import threading
 from cardgame.cards import Card, Deck, Hand, ComplexEncoder
 from cardgame.player import Player
-
+from animation.util import show_text
 import animation
 
 from audio.audio import *
@@ -76,6 +77,7 @@ def check_for_key_press():
 
 
 def terminate():
+    networking.threadStop=True
     pygame.quit()
     sys.exit()
 
@@ -130,37 +132,77 @@ def main():
     CURRENT_MODE = Modes.INTRO
     animation.intro.show()
 
+    searching=False
     while True:
         check_for_key_press()
         if CURRENT_MODE == Modes.INTRO:
-            do_intro_iteration()
+            searching=do_intro_iteration(searching)
         elif CURRENT_MODE == Modes.LOBBY:
-            do_lobby_iteration()
+            searching=do_lobby_iteration(searching)
         elif CURRENT_MODE == Modes.GAME:
             do_game_iteration()
         animation.next_frame()
 
 
-def do_intro_iteration():
-    global CURRENT_MODE
+def do_intro_iteration(searching):
+    global CURRENT_MODE        
     for event in pygame.event.get():  # event handling loop
         if event.type == pg.MOUSEBUTTONDOWN:
             position = pygame.mouse.get_pos()
             if animation.intro.clicked_start(position):
-                print("Clicked start card!")
-                CURRENT_MODE = Modes.LOBBY
-                animation.lobby.show()
-                animation.start_timer(120)
+                if searching==False:
+                  searching=True
+                  print("Clicked start card!")
+                  show_text("Connecting to Server...", 3)
+                  networking.servConnect=None
+                  #networking.connect()     
+                  networking.threadStop=False
+                  threading.Thread(target = networking.connect).start()                        
             elif animation.intro.clicked_exit(position):
                 print("Clicked exit card!")
                 terminate()
+        if networking.servConnect==1:  
+            searching=False
+            networking.servConnect=None
+            CURRENT_MODE = Modes.LOBBY
+            animation.lobby.show()
+            animation.start_timer(120)
+        elif networking.servConnect==0:
+            searching=False
+            networking.servConnect=None
+            show_text("No Servers Available", 3)            
+    return searching
+                
 
 
 def init_game():
     global DECK
     DECK = generate_uno_deck()
+    
+    #Determine lobby leader is responsible for shuffling the deck and creating the turn order
+    
+    lobbyLeader=None    
+    turnOrder = [] #order for game using server PIDs
+    turn = None
+    for thing in networking.players.get("data"):            
+      turnOrder=turnOrder+[thing["id"]] #append id to turn order
+      if thing["id"]==networking.PID:
+        lobbyLeader=thing["isLobbyLeader"] #set lobbyleader bool
+      if lobbyLeader:
+        turn=networking.PID #for now, lobby leader always goes first    
+    
+    if lobbyLeader:
+      networking.turnSend(turn, turnOrder, DECK) #send the others the necessary info for the turn order and whose turn it is    
+    else:      
+      t=networking.turnRec() #everyone else reads the data for turn info
+      turn = t.get("data")["state"]["turn"]
+      turnOrder = t.get("data")["state"]["order"]
+      print(t.get("data")["state"]["deck"])
+      DECK.loadJSON(json.dumps(t.get("data")["state"]["deck"],cls=ComplexEncoder))
 
-    opponent_names = ["Thomas", "Brendan", "Austin"]
+    opponent_names = networking.opponentInit() #retrieve list of opponent names
+    
+    
     opponents = [Player(name, DECK) for name in opponent_names]
 
     for opponent in opponents:
@@ -170,8 +212,8 @@ def init_game():
     OPPONENT_TRACKER = player_cycle(opponents)
 
     global CURRENT_PLAYER
-    CURRENT_PLAYER = Player("Player Uno", DECK)
-
+    CURRENT_PLAYER = Player(opponent_names[turnOrder.index(turn)], DECK)
+    print(CURRENT_PLAYER)
     animation.game.show()
 
     for _ in range(7):
@@ -191,23 +233,29 @@ def init_game():
     animation.game.draw_to_play_deck(first_discard[0].id)
 
 
-def do_lobby_iteration():
+def do_lobby_iteration(searching):
     global CURRENT_MODE
     for event in pygame.event.get():  # event handling loop
         if event.type == pg.MOUSEBUTTONDOWN:
             position = pygame.mouse.get_pos()
-            if animation.lobby.clicked_join_game(position):
+            if animation.lobby.clicked_join_game(position) and searching==False:
+                searching=True
                 print("Clicked join game button!")
                 animation.lobby.join_button_to_waiting()
-                animwait(10)
-                CURRENT_MODE = Modes.GAME
-                init_game()
+                #animwait(10)
+                threading.Thread(target = networking.serverConnect, args = (animation.lobby.get_name(),)).start()  #start connection thread
             elif animation.lobby.clicked_cancel(position):
                 print("Clicked cancel button!")
+                networking.threadStop=True #kill the thread that was looking for a server
                 CURRENT_MODE = Modes.INTRO
                 animation.intro.show()
-        elif event.type == pg.KEYDOWN:
+        elif event.type == pg.KEYDOWN and searching==False:
             animation.lobby.append_char_to_name(chr(event.key))
+        if networking.playersDone and searching==True: #playersDone==True, so server is ready
+            searching=False
+            CURRENT_MODE = Modes.GAME                   
+            init_game()            
+    return searching
 
 
 def do_game_iteration():
