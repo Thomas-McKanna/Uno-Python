@@ -98,7 +98,7 @@ class PrimaryHand():
             if self.focus_index - 1 == -1:
                 return self.cards[self.focus_index]
             offset = -1
-        
+
         self.cards[self.focus_index].scale(
             c.FOCUS_CARD_SCALE,
             c.DEFAULT_CARD_SCALE,
@@ -154,10 +154,12 @@ class PrimaryHand():
             # This function should only be called with default parameter, since
             # only the focus card can be played
             raise Exception
-        
+
         if (random_offset):
-            x_offset = random.randint(-20, 20)
-            y_offset = random.randint(-20, 20)
+            x_offset = random.randint(-c.RANDOM_PLAY_OFFSET_RANGE,
+                                      c.RANDOM_PLAY_OFFSET_RANGE)
+            y_offset = random.randint(-c.RANDOM_PLAY_OFFSET_RANGE,
+                                      c.RANDOM_PLAY_OFFSET_RANGE)
         else:
             x_offset = 0
             y_offset = 0
@@ -178,7 +180,7 @@ class PrimaryHand():
 
         disposable_animatables = SharedObjects.get_disposable_animatables()
         disposable_animatables.append(card)
-        
+
         animatables = SharedObjects.get_animatables()
         animatables.remove(card)
 
@@ -224,7 +226,8 @@ class PrimaryHand():
         )
 
         if self.focus_index != 0:
-            index = SharedObjects.get_animatables().index(self.cards[self.focus_index - 1])
+            index = SharedObjects.get_animatables().index(
+                self.cards[self.focus_index - 1])
             SharedObjects.get_animatables().insert(index, card)
         else:
             SharedObjects.get_animatables().insert(0, card)

@@ -130,3 +130,5 @@ LOBBY_WAITING_BACKGROUND_COLOR = Color("seashell4")
 
 # How long to wait before morphing wildcard color
 WILDCARD_MORPH_WAIT_TIME = MOVE_CARD_ANI_DURATION
+
+RANDOM_PLAY_OFFSET_RANGE = 10

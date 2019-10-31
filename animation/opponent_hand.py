@@ -98,8 +98,10 @@ class OpponentHand():
         disposable_animatables.append(card)
 
         if (random_offset):
-            x_offset = random.randint(-20, 20)
-            y_offset = random.randint(-20, 20)
+            x_offset = random.randint(-c.RANDOM_PLAY_OFFSET_RANGE,
+                                      c.RANDOM_PLAY_OFFSET_RANGE)
+            y_offset = random.randint(-c.RANDOM_PLAY_OFFSET_RANGE,
+                                      c.RANDOM_PLAY_OFFSET_RANGE)
         else:
             x_offset = 0
             y_offset = 0
