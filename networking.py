@@ -150,18 +150,27 @@ def checkMoves():
   return None
   
 #send move to other players  
-def sendMove(s,d,c,v,p):  
+def sendMove(source,destination,color,value,nextPlayer):
+  """
+  Parameters:
+  -----------
+  source: can be "deck", "discard", or an integer specifying player id
+  destination: "discard", or an integer specifying player id
+  color: string
+  value: string
+  nextPlayer: integer specifying player id
+  """
   global serv, PID  
   move = json.dumps({
         "messageType": "game-state",
         "data": {
             "state": {
-                "source": s,
-                "dest": d,
-                "color": c,
-                "value": v,
-                "reverseOrder": (v=="reverse" and dest=="discard"),
-                "nextPlayer": p,
+                "source": source,
+                "dest": destination,
+                "color": color,
+                "value": value,
+                "reverseOrder": (value=="reverse" and destination=="discard"),
+                "nextPlayer": nextPlayer,
                 "sender": PID #designates who sent the message
             }
         }
