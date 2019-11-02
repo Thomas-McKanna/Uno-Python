@@ -63,6 +63,7 @@ CURRENT_MODE = None
 CURRENT_PLAYER = None
 OPPONENT_TRACKER = None
 turnOrder=None
+turn = None
 
 def check_for_key_press():
     if len(pygame.event.get(pg.QUIT)) > 0:
@@ -178,6 +179,7 @@ def do_intro_iteration(searching):
 def init_game():
     global DECK
     global turnOrder
+    global turn
     DECK = generate_uno_deck()
     
     #Determine lobby leader is responsible for shuffling the deck and creating the turn order
@@ -263,19 +265,19 @@ def do_lobby_iteration(searching):
 def do_game_iteration():
     global CURRENT_MODE
     global turnOrder
+    global turn
     for event in pygame.event.get():  # event handling loop
         if event.type == pg.KEYDOWN:
             # Draw card
-            if event.key == pg.K_DOWN:
+            if event.key == pg.K_DOWN and turn == networking.PID:
                 sfx_card_draw.play()
                 card = CURRENT_PLAYER.draw(1)[0]
                 animation.game.draw_card(card.id)
-                opponent_turn(OPPONENT_TRACKER)
-                opponent_turn(OPPONENT_TRACKER)
-                opponent_turn(OPPONENT_TRACKER)
+				#send the draw event to the other players
+                networking.sendMove("deck",networking.PID,card.color,card.value,networking.getNextPlayer(networking.PID,turnOrder,card.value))
 
             # Play card
-            elif event.key == pg.K_UP:
+            elif event.key == pg.K_UP and turn == networking.PID:
                 cur_card_id = animation.game.get_focus_id()
                 cur_card = CURRENT_PLAYER.getCardFromID(cur_card_id)
                 if cur_card.match(DECK.getDiscard()):
@@ -316,28 +318,45 @@ def do_game_iteration():
                         animation.game.play_card(cur_card.id)
 
                     CURRENT_PLAYER.playCard(cur_card)
+					#send the play event to the other players
+                    networking.sendMove(networking.PID,"discard",cur_card.color,cur_card.value,networking.getNextPlayer(networking.PID,turnOrder,cur_card.value))
                     if len(CURRENT_PLAYER.hand.cards) == 1:
                         sfx_uno.play()
-                    opponent_turn(OPPONENT_TRACKER)
-                    opponent_turn(OPPONENT_TRACKER)
-                    opponent_turn(OPPONENT_TRACKER)
+						
                 else:
                     sfx_error.play()
                     print("Cannot play card")
 
             # Shift hand
             elif event.key == pg.K_LEFT:
-                animation.game.shift_hand(False)
+              animation.game.shift_hand(False)
             elif event.key == pg.K_RIGHT:
-                animation.game.shift_hand(True)
+              animation.game.shift_hand(True)
             # Testing wildcard wheel
             elif event.key == pg.K_9:
                 animation.game.show_wildcard_wheel()
             elif event.key == pg.K_0:
+                networking.threadStop = True
                 CURRENT_MODE = Modes.INTRO
                 animation.intro.show()
                 animation.game.reset()
-
-
+    #recieve networking events from other players
+    if (turn != networking.PID):
+      move = networking.checkMoves()
+      #only read messages from other players
+      if(move != None and move["data"]["state"]["sender"] != networking.PID):
+        if(move.get("messageType") == "disconnect" or move.get("messageType") == "game-finished"):
+          networking.threadStop = True
+          CURRENT_MODE = Modes.INTRO
+          animation.intro.show()
+          animation.game.reset()
+        elif(move.get("messageType") == "error"):
+          raise Exception(move.get('data'))
+        else: #update the clients for a game move
+          if(move["data"]["state"]["source"]=="deck"):#draw
+            pass
+          elif (move["data"]["state"]["dest"]=="discard"):#play
+            pass
+				
 if __name__ == '__main__':
     main()
