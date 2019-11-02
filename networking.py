@@ -18,7 +18,7 @@ threadStop=False  #inter-thread message to stop when the game is being closed
 servConnect=None
 turnDir=1 #0:left, 1:right
 
-HOST = '127.0.0.1' #hardcoded host and port for now
+HOST = '169.254.227.222' #hardcoded host and port for now
 PORT = 8000
 
 #provided receive function
@@ -140,8 +140,8 @@ def checkMoves():
   if len(ready_to_read)==1:
     message = recv_json(serv)    
     if message.get('messageType') in ("game-state", "disconnect", "error", "game-finished"):
-      if message.get('messageType')=="game-state" and message.get('messageType')["data"]["state"]["sender"]!=PID:
-        if message.get('messageType')["data"]["state"]["reverseOrder"]==True:
+      if message.get('messageType')=="game-state" and message["data"]["state"]["sender"]!=PID:
+        if message["data"]["state"]["reverseOrder"]==True:
           if turnDir==1:
             turnDir=-1
           else:
