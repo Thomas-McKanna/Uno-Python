@@ -60,11 +60,13 @@ def generate_uno_deck():
 
 DECK = None
 CURRENT_MODE = None
-CURRENT_PLAYER = None
+CLIENT_PLAYER = None
 OPPONENT_TRACKER = None
 turnOrder=None
 turn = None
-
+opponents = None
+playerNumToName=None
+clientName = None
 def check_for_key_press():
     if len(pygame.event.get(pg.QUIT)) > 0:
         terminate()
@@ -88,30 +90,6 @@ def player_cycle(opponents):
         for opponent in opponents:
             print(opponent.name)
             yield opponent
-
-
-def opponent_turn(opponent_tracker):
-    sleep_time = random.random() + .5
-    animwait(sleep_time)
-    opponent = next(opponent_tracker)
-    deck = opponent.hand.deck
-    matches = [card for card in opponent.hand.cards if card.match(
-        deck.getDiscard())]
-    if matches:
-        # Play Card
-        chosen_card = random.choice(matches)
-        sfx_card_place.play()
-        opponent.playCard(chosen_card, accept_input=False)
-        animation.game.opponent_play_card(opponent.name, chosen_card.id)
-        if len(opponent.hand.cards) == 1:
-            sfx_uno.play()
-    else:
-        # Draw Card
-        sfx_card_draw.play()
-        opponent.draw(1)
-        animation.game.opponent_draw_card(opponent.name)
-    animation.next_frame()
-
 
 def animwait(seconds):
     goal = pygame.time.get_ticks() + seconds*1000
@@ -180,6 +158,9 @@ def init_game():
     global DECK
     global turnOrder
     global turn
+    global playerNumToName
+    global opponents
+    playerNumToName = {}
     DECK = generate_uno_deck()
     
     #Determine lobby leader is responsible for shuffling the deck and creating the turn order
@@ -187,50 +168,51 @@ def init_game():
     lobbyLeader=None    
     turnOrder = [] #order for game using server PIDs
     turn = None
-    for thing in networking.players.get("data"):            
-      turnOrder=turnOrder+[thing["id"]] #append id to turn order
-      if thing["id"]==networking.PID:
-        lobbyLeader=thing["isLobbyLeader"] #set lobbyleader bool
+    for playerInfo in networking.players.get("data"):        
+      #print("Player Data: ", playerInfo)
+      playerNumToName[playerInfo["id"]]=playerInfo["clientInfo"]["id"]
+      turnOrder=turnOrder+[playerInfo["id"]] #append id to turn order
+      if playerInfo["id"]==networking.PID:
+        lobbyLeader=playerInfo["isLobbyLeader"] #set lobbyleader bool
       if lobbyLeader:
         turn=networking.PID #for now, lobby leader always goes first    
-    
+        
     if lobbyLeader:
-      networking.turnSend(turn, turnOrder, DECK) #send the others the necessary info for the turn order and whose turn it is    
+      networking.turnSend(turn, turnOrder, DECK) #send the others the necessary info for the turn order and whose turn it is  
+      animwait(2)
+      networking.turnRec()
     else:    
       animwait(2)    
       t=networking.turnRec() #everyone else reads the data for turn info
       turn = t.get("data")["state"]["turn"]
       turnOrder = t.get("data")["state"]["order"]
-      print(t.get("data")["state"]["deck"])
+      #print(t.get("data")["state"]["deck"])
       DECK.loadJSON(json.dumps(t.get("data")["state"]["deck"],cls=ComplexEncoder))
 
     opponent_names = networking.opponentInit() #retrieve list of opponent names
-    
+    #print("Onames: ", opponent_names)
     
     opponents = [Player(name, DECK) for name in opponent_names]
 
     for opponent in opponents:
         animation.game.add_opponent(opponent.name)
 
-    global OPPONENT_TRACKER
-    OPPONENT_TRACKER = player_cycle(opponents)
-
-    global CURRENT_PLAYER
-    CURRENT_PLAYER = Player(opponent_names[turnOrder.index(turn)], DECK)
-    print(CURRENT_PLAYER)
+    global CLIENT_PLAYER
+    CLIENT_PLAYER = Player(clientName, DECK)
+    #print(CLIENT_PLAYER)
     animation.game.show()
 
-    for _ in range(7):
-        card = CURRENT_PLAYER.draw(1)[0]
-        animation.game.draw_card(card.id)
-        check_for_key_press()
-        animation.next_frame()
+    # for _ in range(7):
+        # card = CLIENT_PLAYER.draw(1)[0]
+        # animation.game.draw_card(card.id)
+        # check_for_key_press()
+        # animation.next_frame()
 
-        for opponent in opponents:
-            opponent.draw(1)
-            animation.game.opponent_draw_card(opponent.name)
-            check_for_key_press()
-            animation.next_frame()
+        # for opponent in opponents:
+            # opponent.draw(1)
+            # animation.game.opponent_draw_card(opponent.name)
+            # check_for_key_press()
+            # animation.next_frame()
 
     first_discard = DECK.draw(1)
     DECK.discard(first_discard)
@@ -247,7 +229,8 @@ def do_lobby_iteration(searching):
                 print("Clicked join game button!")
                 animation.lobby.join_button_to_waiting()
                 #animwait(10)
-                threading.Thread(target = networking.serverConnect, args = (animation.lobby.get_name(),)).start()  #start connection thread
+                clientName = animation.lobby.get_name()
+                threading.Thread(target = networking.serverConnect, args = (clientName,)).start()  #start connection thread
             elif animation.lobby.clicked_cancel(position):
                 print("Clicked cancel button!")
                 networking.threadStop=True #kill the thread that was looking for a server
@@ -266,20 +249,23 @@ def do_game_iteration():
     global CURRENT_MODE
     global turnOrder
     global turn
+    global opponents
     for event in pygame.event.get():  # event handling loop
         if event.type == pg.KEYDOWN:
             # Draw card
             if event.key == pg.K_DOWN and turn == networking.PID:
                 sfx_card_draw.play()
-                card = CURRENT_PLAYER.draw(1)[0]
+                card = CLIENT_PLAYER.draw(1)[0]
                 animation.game.draw_card(card.id)
 				#send the draw event to the other players
-                networking.sendMove("deck",networking.PID,card.color,card.value,networking.getNextPlayer(networking.PID,turnOrder,card.value))
+                np = networking.getNextPlayer(networking.PID,turnOrder,card.value)
+                networking.sendMove("deck",networking.PID,card.color,card.value,card.id,np)
+                turn = np
 
             # Play card
             elif event.key == pg.K_UP and turn == networking.PID:
                 cur_card_id = animation.game.get_focus_id()
-                cur_card = CURRENT_PLAYER.getCardFromID(cur_card_id)
+                cur_card = CLIENT_PLAYER.getCardFromID(cur_card_id)
                 if cur_card.match(DECK.getDiscard()):
                     sfx_card_place.play()
                     # Handle playing of wild card
@@ -317,10 +303,12 @@ def do_game_iteration():
                         # Play non-wild card
                         animation.game.play_card(cur_card.id)
 
-                    CURRENT_PLAYER.playCard(cur_card)
+                    CLIENT_PLAYER.playCard(cur_card)
 					#send the play event to the other players
-                    networking.sendMove(networking.PID,"discard",cur_card.color,cur_card.value,networking.getNextPlayer(networking.PID,turnOrder,cur_card.value))
-                    if len(CURRENT_PLAYER.hand.cards) == 1:
+                    np = networking.getNextPlayer(networking.PID,turnOrder,cur_card.value)
+                    networking.sendMove(networking.PID,"discard",cur_card.color,cur_card.value,cur_card.id,np)
+                    turn = np
+                    if len(CLIENT_PLAYER.hand.cards) == 1:
                         sfx_uno.play()
 						
                 else:
@@ -354,9 +342,15 @@ def do_game_iteration():
           raise Exception(move.get('data'))
         else: #update the clients for a game move
           if(move["data"]["state"]["source"]=="deck"):#draw
-            pass
+            animation.game.opponent_draw_card(playerNumToName[move["data"]["state"]["sender"]]);
+            opponents[:].remove(networking.PID)[turnOrder.index(move["data"]["state"]["sender"])].draw(1)
+            turn = move["data"]["state"]["nextPlayer"]
           elif (move["data"]["state"]["dest"]=="discard"):#play
-            pass
+            animation.game.opponent_play_card(playerNumToName[move["data"]["state"]["sender"]],move["data"]["state"]["cardID"])
+            opp = opponents[:].remove(networking.PID)[turnOrder.index(move["data"]["state"]["sender"])]
+          
+            opp.playCard(opp.getCardFromID(move["data"]["state"]["cardID"]))
+            turn = move["data"]["state"]["nextPlayer"]
 				
 if __name__ == '__main__':
     main()
