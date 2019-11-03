@@ -276,7 +276,6 @@ def do_lobby_iteration(searching):
                 searching=False
                 endGame()
         elif event.type == pg.KEYDOWN and searching==False:
-                animation.util.start_timer(3,myfunc)
             animation.lobby.append_char_to_name(chr(event.key))            
     if networking.playersDone and searching==True: #playersDone==True, so server is ready
         searching=False
