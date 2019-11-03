@@ -2,6 +2,7 @@ import pygame
 import random
 
 from ..assets import BDECK as DECK
+from ..assets import INSTRUCTIONS_LEFT, INSTRUCTIONS_RIGHT
 from .. import constants as c
 from ..shared_objects import SharedObjects
 from ..animatable import Animatable
@@ -102,6 +103,16 @@ def show():
     base_surf = SharedObjects.get_base_surface()
     base_surf.fill(pygame.Color("black"))
     base_surf = put_felt_background(base_surf)
+
+    ileft = Animatable(INSTRUCTIONS_LEFT)
+    ileft.instant_scale(c.WINHEIGHT * 0.0006)
+
+    iright = Animatable(INSTRUCTIONS_RIGHT)
+    iright.instant_scale(c.WINHEIGHT * 0.0006)
+
+    margin = c.WINHEIGHT * 0.05
+    base_surf.blit(ileft.surface, (margin,margin))
+    base_surf.blit(iright.surface, (c.WINWIDTH - iright.rect.w - margin, margin))
 
     # Get animatables and clear any previous items
     animatables = SharedObjects.get_animatables()

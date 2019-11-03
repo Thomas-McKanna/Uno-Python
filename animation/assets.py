@@ -7,6 +7,8 @@ DECK = pygame.image.load(assets_path + '/Deck.png')
 BDECK = pygame.image.load(assets_path + '/Bordered_Deck.png')
 BLANK = pygame.image.load(assets_path + '/Blank.png')
 FELT = pygame.image.load(assets_path + '/Green_Felt.jpg')
+INSTRUCTIONS_LEFT = pygame.image.load(assets_path + '/instructions_left.png')
+INSTRUCTIONS_RIGHT = pygame.image.load(assets_path + '/instructions_right.png')
 
 # Used for choosing wildcard color
 WILDWHEEL = {
