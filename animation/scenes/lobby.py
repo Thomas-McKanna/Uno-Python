@@ -1,5 +1,6 @@
 import pygame
 import random
+import string
 
 from ..assets import BDECK as DECK
 from ..assets import INSTRUCTIONS_LEFT, INSTRUCTIONS_RIGHT, CS_PROFS
@@ -48,7 +49,7 @@ def append_char_to_name(char):
     if char == '\b':
         name_field.append_char(char)
     # Check if characters will fit in text box
-    elif len(name_field.get_text()) < 15:
+    elif len(name_field.get_text()) < 15 and char in string.ascii_letters + string.digits:
         name_field.append_char(char)
 
 
