@@ -202,7 +202,7 @@ def init_game():
     #print(CLIENT_PLAYER)
     animation.game.show()
 
-    for _ in range(7):
+    for _ in range(1):
         for i in turnOrder:
             if i==networking.PID:
                 card = CLIENT_PLAYER.draw(1)[0]
@@ -248,6 +248,15 @@ def getPos(ID):
     arr.remove(networking.PID)
     return arr.index(ID)
     
+
+
+def endGame():
+    global CURRENT_MODE
+    networking.threadStop = True
+    animwait(3)
+    CURRENT_MODE = Modes.INTRO
+    animation.intro.show()
+    animation.game.reset()
     
 def do_game_iteration():
     global CURRENT_MODE
@@ -262,7 +271,7 @@ def do_game_iteration():
                 card = CLIENT_PLAYER.draw(1)[0]
                 animation.game.draw_card(card.id)
 				#send the draw event to the other players
-                np = networking.getNextPlayer(networking.PID,turnOrder,card.value)
+                np = networking.getNextPlayer(networking.PID,turnOrder,"")
                 networking.sendMove("deck",networking.PID,card.color,card.value,card.id,np)
                 turn = np
 
@@ -314,7 +323,10 @@ def do_game_iteration():
                     turn = np
                     if len(CLIENT_PLAYER.hand.cards) == 1:
                         sfx_uno.play()
-						
+                    elif len(CLIENT_PLAYER.hand.cards) == 0:
+                        show_text("You Win!", 3)
+                        networking.sendEndGame()
+                        endGame()
                 else:
                     sfx_error.play()
                     print("Cannot play card")
@@ -333,28 +345,78 @@ def do_game_iteration():
                 animation.intro.show()
                 animation.game.reset()
     #recieve networking events from other players
-    if (turn != networking.PID):
-      move = networking.checkMoves()
-      #only read messages from other players
-      if(move != None and move["data"]["state"]["sender"] != networking.PID):
-        if(move.get("messageType") == "disconnect" or move.get("messageType") == "game-finished"):
-          networking.threadStop = True
-          CURRENT_MODE = Modes.INTRO
-          animation.intro.show()
-          animation.game.reset()
-        elif(move.get("messageType") == "error"):
-          raise Exception(move.get('data'))
-        else: #update the clients for a game move
+    
+    move = networking.checkMoves()
+    #only read messages from other players
+    if(move != None):
+      if(move.get("messageType") == "disconnect" or move.get("messageType") == "game-finished"):
+        show_text("Game Over!", 3)
+        endGame()
+      elif(move.get("messageType") == "error"):
+        raise Exception(move.get('data'))
+      else: #update the clients for a game move
+        if move["data"]["state"]["sender"] != networking.PID:
           if(move["data"]["state"]["source"]=="deck"):#draw
             animation.game.opponent_draw_card(playerNumToName[move["data"]["state"]["sender"]]);
             opponents[getPos(move["data"]["state"]["sender"])].draw(1)
             turn = move["data"]["state"]["nextPlayer"]
           elif (move["data"]["state"]["dest"]=="discard"):#play
-            animation.game.opponent_play_card(playerNumToName[move["data"]["state"]["sender"]],move["data"]["state"]["cardID"])
+            wildColor=None
+            if move["data"]["state"]["value"] in ["wild", "wild_draw"]:
+                if move["data"]["state"]["color"]  == "Blue":
+                    wildColor = 0
+                elif move["data"]["state"]["color"]  == "Red":
+                    wildColor = 1
+                elif move["data"]["state"]["color"]  == "Yellow":
+                    wildColor = 2
+                else:
+                    wildColor = 3                
+            animation.game.opponent_play_card(playerNumToName[move["data"]["state"]["sender"]],move["data"]["state"]["cardID"],wildColor)
             opp = opponents[getPos(move["data"]["state"]["sender"])]
           
             opp.playCard(opp.getCardFromID(move["data"]["state"]["cardID"]))
             turn = move["data"]["state"]["nextPlayer"]
+            
+            #if turn is now this player, check if last card is draw type
+            if turn==networking.PID:
+                #check if last played was draw type
+                if move["data"]["state"]["value"]=="draw":
+                    np = networking.getNextPlayer(networking.PID,turnOrder,"")
+                    for i in range(2):
+                        sfx_card_draw.play()
+                        card = CLIENT_PLAYER.draw(1)[0]
+                        animation.game.draw_card(card.id)
+                        #send the draw event to the other players
+                        if i<1:
+                            networking.sendMove("deck",networking.PID,card.color,card.value,card.id, networking.PID)
+                        else:
+                            networking.sendMove("deck",networking.PID,card.color,card.value,card.id, np)
+                        check_for_key_press()
+                        animation.next_frame()
+                    turn = np
+                elif move["data"]["state"]["value"]=="wild_draw":
+                    np = networking.getNextPlayer(networking.PID,turnOrder,"")
+                    for i in range(4):
+                        sfx_card_draw.play()
+                        card = CLIENT_PLAYER.draw(1)[0]
+                        animation.game.draw_card(card.id)
+                        #send the draw event to the other players
+                        if i<3:
+                            networking.sendMove("deck",networking.PID,card.color,card.value,card.id, networking.PID)
+                        else:
+                            networking.sendMove("deck",networking.PID,card.color,card.value,card.id, np)
+                        check_for_key_press()
+                        animation.next_frame()
+
+                    turn = np
+            
+            
+            
+            
+            
+            
+            
+            
 				
 if __name__ == '__main__':
     main()

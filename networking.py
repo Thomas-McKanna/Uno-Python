@@ -58,7 +58,7 @@ def send_json_norec(server_socket, msg_payload):
 #used for the initial turn order sending        
 def turnSend(turn, turnOrder, deck):
   global serv   
-  print(json.dumps(deck.reprJSON(), cls=ComplexEncoder))
+  
   turnInfo = json.dumps({
         "messageType": "game-state",
         "data": {
@@ -307,7 +307,12 @@ def connect():
 
       
       
-      
+def sendEndGame():    
+    global serv
+    endGameMessage = json.dumps({
+        "messageType": "game-finished"        
+    })  
+    send_json_norec(serv, endGameMessage)      
       
       
       
