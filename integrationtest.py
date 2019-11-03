@@ -214,6 +214,8 @@ def init_game():
     first_discard = DECK.draw(1)
     DECK.discard(first_discard)
     animation.game.draw_to_play_deck(first_discard[0].id)
+    if lobbyLeader:
+        show_text("Your Turn", 1)
 
 
 def do_lobby_iteration(searching):
@@ -378,9 +380,10 @@ def do_game_iteration():
             turn = move["data"]["state"]["nextPlayer"]
             
             #if turn is now this player, check if last card is draw type
-            if turn==networking.PID:
+            if turn==networking.PID:                
                 #check if last played was draw type
                 if move["data"]["state"]["value"]=="draw":
+                    show_text("Draw 2!", 1)
                     np = networking.getNextPlayer(networking.PID,turnOrder,"")
                     for i in range(2):
                         sfx_card_draw.play()
@@ -395,6 +398,7 @@ def do_game_iteration():
                         animation.next_frame()
                     turn = np
                 elif move["data"]["state"]["value"]=="wild_draw":
+                    show_text("Draw 4!", 1)
                     np = networking.getNextPlayer(networking.PID,turnOrder,"")
                     for i in range(4):
                         sfx_card_draw.play()
@@ -409,6 +413,8 @@ def do_game_iteration():
                         animation.next_frame()
 
                     turn = np
+                else:
+                    show_text("Your Turn", 1)
             
             
             
