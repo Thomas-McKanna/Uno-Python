@@ -202,7 +202,7 @@ def init_game():
     #print(CLIENT_PLAYER)
     animation.game.show()
 
-    for _ in range(1):
+    for _ in range(7):
         for i in turnOrder:
             if i==networking.PID:
                 card = CLIENT_PLAYER.draw(1)[0]
