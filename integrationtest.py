@@ -22,7 +22,33 @@ class Modes(enum.Enum):
     LOBBY = 2
     GAME = 3
 
-
+def reset():
+    global DECK
+    global CURRENT_MODE
+    global CLIENT_PLAYER
+    global OPPONENT_TRACKER
+    global turnOrder
+    global turn
+    global opponents
+    global playerNumToName
+    global clientName
+    
+    networking.players = None 
+    networking.playersDone = False 
+    networking.PID = None        
+    networking.threadStop=False  
+    networking.servConnect=None
+    networking.turnDir=1 
+    
+    DECK = None
+    CURRENT_MODE = None
+    CLIENT_PLAYER = None
+    OPPONENT_TRACKER = None
+    turnOrder=None
+    turn = None
+    opponents = None
+    playerNumToName=None
+    clientName = None
 def generate_uno_deck():
     # Generate cards for UNO
     cards = []
@@ -217,7 +243,18 @@ def init_game():
     if lobbyLeader:
         show_text("Your Turn", 1)
 
-
+def endGame():
+    global CURRENT_MODE
+    networking.threadStop = True
+    reset()
+    networking.serv.shutdown(1)
+    networking.serv.close()    
+    animwait(3)
+    CURRENT_MODE = Modes.INTRO
+    animation.intro.show()
+    animation.game.reset()
+ 
+ 
 def do_lobby_iteration(searching):
     global CURRENT_MODE
     for event in pygame.event.get():  # event handling loop
@@ -232,9 +269,7 @@ def do_lobby_iteration(searching):
                 threading.Thread(target = networking.serverConnect, args = (clientName,)).start()  #start connection thread
             elif animation.lobby.clicked_cancel(position):
                 print("Clicked cancel button!")
-                networking.threadStop=True #kill the thread that was looking for a server
-                CURRENT_MODE = Modes.INTRO
-                animation.intro.show()
+                endGame()
         elif event.type == pg.KEYDOWN and searching==False:
             animation.lobby.append_char_to_name(chr(event.key))
     if networking.playersDone and searching==True: #playersDone==True, so server is ready
@@ -252,14 +287,7 @@ def getPos(ID):
     
 
 
-def endGame():
-    global CURRENT_MODE
-    networking.threadStop = True
-    animwait(3)
-    CURRENT_MODE = Modes.INTRO
-    animation.intro.show()
-    animation.game.reset()
-    
+   
 def do_game_iteration():
     global CURRENT_MODE
     global turnOrder
@@ -320,9 +348,12 @@ def do_game_iteration():
 
                     CLIENT_PLAYER.playCard(cur_card)
 					#send the play event to the other players
-                    np = networking.getNextPlayer(networking.PID,turnOrder,cur_card.value)
+                    np = networking.getNextPlayer(networking.PID,turnOrder,cur_card.value)                    
                     networking.sendMove(networking.PID,"discard",cur_card.color,cur_card.value,cur_card.id,np)
                     turn = np
+                    
+                    if turn == networking.PID:
+                        show_text("Your Turn", 1)
                     if len(CLIENT_PLAYER.hand.cards) == 1:
                         sfx_uno.play()
                     elif len(CLIENT_PLAYER.hand.cards) == 0:

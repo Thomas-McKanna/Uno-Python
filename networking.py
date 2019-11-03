@@ -110,10 +110,13 @@ def getNextPlayer(id, turnOrder, cardValue):
   skip=False  
   ind=turnOrder.index(id)
   if (cardValue=="reverse"):
-    if turnDir==1:
-      turnDir=-1
+    if len(turnOrder)==2:
+      skip=True
     else:
-      turnDir=1
+      if turnDir==1:
+        turnDir=-1
+      else:
+        turnDir=1
   elif (cardValue=="skip"):
     skip=True
   if skip:
@@ -270,7 +273,8 @@ def serverConnect(screenNameInput):
       data = json.dumps({  #to avoid timeout
       "messageType": "client-list"
       })
-      send_json_norec(serv, data)
+      if (serv!=None):
+        send_json_norec(serv, data)
       time.sleep(3)
      
 
