@@ -171,7 +171,7 @@ def do_intro_iteration(searching):
             networking.servConnect=None
             CURRENT_MODE = Modes.LOBBY
             animation.lobby.show()
-            animation.start_timer(120)
+            #animation.start_timer(120)
         elif networking.servConnect==0:
             searching=False
             networking.servConnect=None
@@ -242,6 +242,7 @@ def init_game():
     animation.game.draw_to_play_deck(first_discard[0].id)
     if lobbyLeader:
         show_text("Your Turn", 1)
+        animation.start_timer(30)
 
 def endGame():
     global CURRENT_MODE
@@ -355,6 +356,7 @@ def do_game_iteration():
                     
                     if turn == networking.PID:
                         show_text("Your Turn", 1)
+                        animation.start_timer(30)
                     if len(CLIENT_PLAYER.hand.cards) == 1:
                         sfx_uno.play()
                     elif len(CLIENT_PLAYER.hand.cards) == 0:
@@ -398,6 +400,7 @@ def do_game_iteration():
             turn = move["data"]["state"]["nextPlayer"]
             if turn==networking.PID:
               show_text("Your Turn", 1)
+              animation.start_timer(30)
           elif (move["data"]["state"]["dest"]=="discard"):#play
             wildColor=None
             if move["data"]["state"]["value"] in ["wild", "wild_draw"]:
@@ -451,6 +454,7 @@ def do_game_iteration():
                     turn = np
                 else:
                     show_text("Your Turn", 1)
+                    animation.start_timer(30)
             
             
             
