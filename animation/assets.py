@@ -10,6 +10,15 @@ FELT = pygame.image.load(assets_path + '/Green_Felt.jpg')
 INSTRUCTIONS_LEFT = pygame.image.load(assets_path + '/instructions_left.png')
 INSTRUCTIONS_RIGHT = pygame.image.load(assets_path + '/instructions_right.png')
 
+CS_PROFS = [
+    pygame.image.load(assets_path + '/gosnell.png'),
+    pygame.image.load(assets_path + '/markowsky.png'),
+    pygame.image.load(assets_path + '/mcmillin.png'),
+    pygame.image.load(assets_path + '/morales.png'),
+    pygame.image.load(assets_path + '/price.png'),
+    pygame.image.load(assets_path + '/sabharwal.png')
+]
+
 # Used for choosing wildcard color
 WILDWHEEL = {
     'BLUE': pygame.image.load(assets_path + '/Wildwheel_Blue.png'),

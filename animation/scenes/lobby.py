@@ -2,7 +2,7 @@ import pygame
 import random
 
 from ..assets import BDECK as DECK
-from ..assets import INSTRUCTIONS_LEFT, INSTRUCTIONS_RIGHT
+from ..assets import INSTRUCTIONS_LEFT, INSTRUCTIONS_RIGHT, CS_PROFS
 from .. import constants as c
 from ..shared_objects import SharedObjects
 from ..animatable import Animatable
@@ -111,14 +111,49 @@ def show():
     iright.instant_scale(c.WINHEIGHT * 0.0006)
 
     margin = c.WINHEIGHT * 0.05
-    base_surf.blit(ileft.surface, (margin,margin))
-    base_surf.blit(iright.surface, (c.WINWIDTH - iright.rect.w - margin, margin))
+    base_surf.blit(ileft.surface, (margin, margin))
+    base_surf.blit(iright.surface, (c.WINWIDTH -
+                                    iright.rect.w - margin, margin))
 
     # Get animatables and clear any previous items
     animatables = SharedObjects.get_animatables()
     disposable_animatables = SharedObjects.get_disposable_animatables()
     animatables.clear()
     disposable_animatables.queue.clear()
+
+    #############################################################
+    # Spinning Heads
+    #############################################################
+
+    # Left side
+    left_heads = [Animatable(item, hidden=False, chain_movements=True)
+                  for item in CS_PROFS[:3]]
+    right_heads = [Animatable(item, hidden=False, chain_movements=True)
+                   for item in CS_PROFS[3:]]
+
+    for i, animatable in enumerate(left_heads):
+        animatable.instant_scale(c.WINHEIGHT * 0.0007)
+        animatable.instant_move(c.WINWIDTH * 1/7, c.WINHEIGHT * 9/8)
+        animatable.rotate(36000, 600)
+        animatable.freeze(i*10)
+        for _ in range(100):
+            animatable.move(c.WINWIDTH * 1/7, c.WINHEIGHT * 3/4, duration=2)
+            animatable.freeze()
+            animatable.move(c.WINWIDTH * 1/7, c.WINHEIGHT * 9/8, duration=2)
+            animatable.freeze(25.5)
+        animatables.append(animatable)
+
+    for i, animatable in enumerate(right_heads):
+        animatable.instant_scale(c.WINHEIGHT * 0.0007)
+        animatable.instant_move(c.WINWIDTH * 6/7, c.WINHEIGHT * 9/8)
+        animatable.rotate(36000, 600)
+        animatable.freeze(i*10 + 5)
+        for _ in range(100):
+            animatable.move(c.WINWIDTH * 6/7, c.WINHEIGHT * 3/4, duration=2)
+            animatable.freeze()
+            animatable.move(c.WINWIDTH * 6/7, c.WINHEIGHT * 9/8, duration=2)
+            animatable.freeze(25.5)
+        animatables.append(animatable)
 
     #############################################################
     # User Name and Game ID Form
