@@ -202,17 +202,14 @@ def init_game():
     #print(CLIENT_PLAYER)
     animation.game.show()
 
-    # for _ in range(7):
-        # card = CLIENT_PLAYER.draw(1)[0]
-        # animation.game.draw_card(card.id)
-        # check_for_key_press()
-        # animation.next_frame()
-
-        # for opponent in opponents:
-            # opponent.draw(1)
-            # animation.game.opponent_draw_card(opponent.name)
-            # check_for_key_press()
-            # animation.next_frame()
+    for _ in range(7):
+        for i in turnOrder:
+            if i==networking.PID:
+                card = CLIENT_PLAYER.draw(1)[0]
+                animation.game.draw_card(card.id)
+            else:
+                animation.game.opponent_draw_card(playerNumToName[i]);
+                opponents[getPos(i)].draw(1)
 
     first_discard = DECK.draw(1)
     DECK.discard(first_discard)
@@ -245,6 +242,13 @@ def do_lobby_iteration(searching):
     return searching
 
 
+def getPos(ID):
+    global turnOrder
+    arr = turnOrder[:]
+    arr.remove(networking.PID)
+    return arr.index(ID)
+    
+    
 def do_game_iteration():
     global CURRENT_MODE
     global turnOrder
@@ -343,11 +347,11 @@ def do_game_iteration():
         else: #update the clients for a game move
           if(move["data"]["state"]["source"]=="deck"):#draw
             animation.game.opponent_draw_card(playerNumToName[move["data"]["state"]["sender"]]);
-            opponents[:].remove(networking.PID)[turnOrder.index(move["data"]["state"]["sender"])].draw(1)
+            opponents[getPos(move["data"]["state"]["sender"])].draw(1)
             turn = move["data"]["state"]["nextPlayer"]
           elif (move["data"]["state"]["dest"]=="discard"):#play
             animation.game.opponent_play_card(playerNumToName[move["data"]["state"]["sender"]],move["data"]["state"]["cardID"])
-            opp = opponents[:].remove(networking.PID)[turnOrder.index(move["data"]["state"]["sender"])]
+            opp = opponents[getPos(move["data"]["state"]["sender"])]
           
             opp.playCard(opp.getCardFromID(move["data"]["state"]["cardID"]))
             turn = move["data"]["state"]["nextPlayer"]

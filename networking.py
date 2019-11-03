@@ -18,7 +18,7 @@ threadStop=False  #inter-thread message to stop when the game is being closed
 servConnect=None
 turnDir=1 #0:left, 1:right
 
-HOST = '169.254.227.222' #hardcoded host and port for now
+HOST = '127.0.0.1' #hardcoded host and port for now
 PORT = 8000
 
 #provided receive function
