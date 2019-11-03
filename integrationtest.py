@@ -178,7 +178,9 @@ def do_intro_iteration(searching):
             show_text("No Servers Available", 3)            
     return searching
                 
-
+def autoTurn():
+    newevent = pygame.event.Event(pygame.locals.KEYDOWN, unicode="", key=274, mod=pygame.locals.KMOD_NONE) #create the event
+    pygame.event.post(newevent) #add the event to the queue
 
 def init_game():
     global DECK
@@ -241,11 +243,12 @@ def init_game():
     DECK.discard(first_discard)
     animation.game.draw_to_play_deck(first_discard[0].id)
     if lobbyLeader:
-        show_text("Your Turn", 1)
-        animation.start_timer(30)
+        show_text("Your Turn", 1)        
+        animation.util.start_timer(30, autoTurn)
 
 def endGame():
     global CURRENT_MODE
+    animation.util.stop_timer()
     networking.threadStop = True    
     networking.serv.shutdown(1)
     networking.serv.close()    
@@ -279,8 +282,7 @@ def do_lobby_iteration(searching):
                 def myfunc():
                     print("howdydo")
                 animation.util.start_timer(3,myfunc)
-            animation.lobby.append_char_to_name(chr(event.key))
-            animation.lobby.append_char_to_name(chr(event.key))
+            animation.lobby.append_char_to_name(chr(event.key))            
     if networking.playersDone and searching==True: #playersDone==True, so server is ready
         searching=False
         CURRENT_MODE = Modes.GAME                   
@@ -306,6 +308,8 @@ def do_game_iteration():
         if event.type == pg.KEYDOWN:
             # Draw card
             if event.key == pg.K_DOWN and turn == networking.PID:
+                print(event)
+                animation.util.stop_timer()
                 sfx_card_draw.play()
                 card = CLIENT_PLAYER.draw(1)[0]
                 animation.game.draw_card(card.id)
@@ -315,7 +319,7 @@ def do_game_iteration():
                 turn = np
 
             # Play card
-            elif event.key == pg.K_UP and turn == networking.PID:
+            elif event.key == pg.K_UP and turn == networking.PID:                
                 cur_card_id = animation.game.get_focus_id()
                 cur_card = CLIENT_PLAYER.getCardFromID(cur_card_id)
                 if cur_card.match(DECK.getDiscard()):
@@ -354,7 +358,7 @@ def do_game_iteration():
                     else:
                         # Play non-wild card
                         animation.game.play_card(cur_card.id)
-
+                    animation.util.stop_timer()
                     CLIENT_PLAYER.playCard(cur_card)
 					#send the play event to the other players
                     np = networking.getNextPlayer(networking.PID,turnOrder,cur_card.value)                    
@@ -363,7 +367,7 @@ def do_game_iteration():
                     
                     if turn == networking.PID:
                         show_text("Your Turn", 1)
-                        animation.start_timer(30)
+                        animation.util.start_timer(30, autoTurn)
                     if len(CLIENT_PLAYER.hand.cards) == 1:
                         sfx_uno.play()
                     elif len(CLIENT_PLAYER.hand.cards) == 0:
@@ -407,7 +411,7 @@ def do_game_iteration():
             turn = move["data"]["state"]["nextPlayer"]
             if turn==networking.PID:
               show_text("Your Turn", 1)
-              animation.start_timer(30)
+              animation.util.start_timer(30, autoTurn)
           elif (move["data"]["state"]["dest"]=="discard"):#play
             wildColor=None
             if move["data"]["state"]["value"] in ["wild", "wild_draw"]:
@@ -461,7 +465,7 @@ def do_game_iteration():
                     turn = np
                 else:
                     show_text("Your Turn", 1)
-                    animation.start_timer(30)
+                    animation.util.start_timer(30, autoTurn)
             
             
             
