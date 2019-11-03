@@ -371,7 +371,9 @@ def do_game_iteration():
                 else:
                     sfx_error.play()
                     print("Cannot play card")
-
+            elif (event.key == pg.K_DOWN or event.key == pg.K_UP) and turn != networking.PID:
+                sfx_error.play()
+                print("It is not your turn, you cannot play a Card now")
             # Shift hand
             elif event.key == pg.K_LEFT:
               animation.game.shift_hand(False)
