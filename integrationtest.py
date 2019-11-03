@@ -393,6 +393,8 @@ def do_game_iteration():
             animation.game.opponent_draw_card(playerNumToName[move["data"]["state"]["sender"]]);
             opponents[getPos(move["data"]["state"]["sender"])].draw(1)
             turn = move["data"]["state"]["nextPlayer"]
+            if turn==networking.PID:
+              show_text("Your Turn", 1)
           elif (move["data"]["state"]["dest"]=="discard"):#play
             wildColor=None
             if move["data"]["state"]["value"] in ["wild", "wild_draw"]:
