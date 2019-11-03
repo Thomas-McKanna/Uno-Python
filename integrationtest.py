@@ -269,6 +269,7 @@ def do_lobby_iteration(searching):
                 threading.Thread(target = networking.serverConnect, args = (clientName,)).start()  #start connection thread
             elif animation.lobby.clicked_cancel(position):
                 print("Clicked cancel button!")
+                searching=False
                 endGame()
         elif event.type == pg.KEYDOWN and searching==False:
             animation.lobby.append_char_to_name(chr(event.key))
@@ -377,8 +378,7 @@ def do_game_iteration():
                 CURRENT_MODE = Modes.INTRO
                 animation.intro.show()
                 animation.game.reset()
-    #recieve networking events from other players
-    print(networking.serv)
+    #recieve networking events from other players    
     if networking.serv!=None:
       move = networking.checkMoves()
     else:
