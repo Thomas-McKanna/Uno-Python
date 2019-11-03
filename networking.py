@@ -134,24 +134,27 @@ def checkMoves():
   global serv   
   global turnDir
   global PID
-  ready_to_read, ready_to_write, in_error =\
-                select.select(
-                  [serv],
-                  [],
-                  [],
-                  0)
-  if len(ready_to_read)==1:
-    message = recv_json(serv)    
-    if message.get('messageType') in ("game-state", "disconnect", "error", "game-finished"):
-      print("network checkMove: ",message)
-      if message.get('messageType')=="game-state" and message["data"]["state"]["sender"]!=PID:
-        if message["data"]["state"]["reverseOrder"]==True:
-          if turnDir==1:
-            turnDir=-1
-          else:
-            turnDir=1
-      return message                            
-  return None
+  try:
+    ready_to_read, ready_to_write, in_error =\
+                  select.select(
+                    [serv],
+                    [],
+                    [],
+                    0)
+    if len(ready_to_read)==1:
+      message = recv_json(serv)    
+      if message.get('messageType') in ("game-state", "disconnect", "error", "game-finished"):
+        print("network checkMove: ",message)
+        if message.get('messageType')=="game-state" and message["data"]["state"]["sender"]!=PID:
+          if message["data"]["state"]["reverseOrder"]==True:
+            if turnDir==1:
+              turnDir=-1
+            else:
+              turnDir=1
+        return message                            
+    return None
+  except Exception:
+    return None
   
 #send move to other players  
 def sendMove(source,destination,color,value,cardID,nextPlayer):

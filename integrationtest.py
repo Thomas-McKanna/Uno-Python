@@ -245,10 +245,10 @@ def init_game():
 
 def endGame():
     global CURRENT_MODE
-    networking.threadStop = True
-    reset()
+    networking.threadStop = True    
     networking.serv.shutdown(1)
     networking.serv.close()    
+    reset()
     animwait(3)
     CURRENT_MODE = Modes.INTRO
     animation.intro.show()
@@ -378,8 +378,11 @@ def do_game_iteration():
                 animation.intro.show()
                 animation.game.reset()
     #recieve networking events from other players
-    
-    move = networking.checkMoves()
+    print(networking.serv)
+    if networking.serv!=None:
+      move = networking.checkMoves()
+    else:
+      move=None
     #only read messages from other players
     if(move != None):
       if(move.get("messageType") == "disconnect" or move.get("messageType") == "game-finished"):
