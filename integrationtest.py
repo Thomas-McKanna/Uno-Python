@@ -371,6 +371,7 @@ def do_game_iteration():
                 cur_card_id = animation.game.get_focus_id()
                 cur_card = CLIENT_PLAYER.getCardFromID(cur_card_id)
                 if cur_card.match(DECK.getDiscard()):
+                    animation.util.stop_timer()
                     sfx_card_place.play()
                     # Handle playing of wild card
                     if cur_card.value in ["wild", "wild_draw"]:
@@ -406,7 +407,6 @@ def do_game_iteration():
                     else:
                         # Play non-wild card
                         animation.game.play_card(cur_card.id)
-                    animation.util.stop_timer()
                     CLIENT_PLAYER.playCard(cur_card)
 					#send the play event to the other players
                     np = networking.getNextPlayer(networking.PID,turnOrder,cur_card.value)                    
@@ -501,8 +501,7 @@ def do_game_iteration():
                 #check if last played was draw type
                 if move["data"]["state"]["value"]=="draw":
                     sfx_whoosh.play()
-                    show_text("Draw 2!", 1)
-                    animwait(2)
+                    show_text("Draw 2!", 1)                    
                     np = networking.getNextPlayer(networking.PID,turnOrder,"")
                     for i in range(2):
                         sfx_card_draw.play()
@@ -512,6 +511,7 @@ def do_game_iteration():
                         if i<1:
                             networking.sendMove("deck",networking.PID,card.color,card.value,card.id, networking.PID)
                         else:
+                            animwait(2)
                             networking.sendMove("deck",networking.PID,card.color,card.value,card.id, np)
                         check_for_key_press()
                         animation.next_frame()
@@ -519,7 +519,6 @@ def do_game_iteration():
                 elif move["data"]["state"]["value"]=="wild_draw":
                     sfx_whoosh.play()
                     show_text("Draw 4!", 1)
-                    animwait(2)
                     np = networking.getNextPlayer(networking.PID,turnOrder,"")
                     for i in range(4):
                         sfx_card_draw.play()
@@ -529,6 +528,7 @@ def do_game_iteration():
                         if i<3:
                             networking.sendMove("deck",networking.PID,card.color,card.value,card.id, networking.PID)
                         else:
+                            animwait(2)
                             networking.sendMove("deck",networking.PID,card.color,card.value,card.id, np)
                         check_for_key_press()
                         animation.next_frame()
