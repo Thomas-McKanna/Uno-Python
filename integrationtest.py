@@ -371,6 +371,7 @@ def do_game_iteration():
                 cur_card_id = animation.game.get_focus_id()
                 cur_card = CLIENT_PLAYER.getCardFromID(cur_card_id)
                 if cur_card.match(DECK.getDiscard()):
+                    animation.util.stop_timer()
                     sfx_card_place.play()
                     # Handle playing of wild card
                     if cur_card.value in ["wild", "wild_draw"]:
@@ -406,7 +407,6 @@ def do_game_iteration():
                     else:
                         # Play non-wild card
                         animation.game.play_card(cur_card.id)
-                    animation.util.stop_timer()
                     CLIENT_PLAYER.playCard(cur_card)
 					#send the play event to the other players
                     np = networking.getNextPlayer(networking.PID,turnOrder,cur_card.value)                    
