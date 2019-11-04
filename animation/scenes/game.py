@@ -3,6 +3,7 @@ import threading
 import time
 import random
 
+from audio.audio import *
 from .. import constants as c
 from ..shared_objects import SharedObjects
 from ..opponent_hand import OpponentHand
@@ -70,7 +71,7 @@ def play_card(id, wild_color=None):
     if wild_color is not None:
         args = [wild_color, c.WILDCARD_MORPH_WAIT_TIME]
         threading.Thread(target=_wildcard_morph,
-                        args=args, daemon=True).start()
+                         args=args, daemon=True).start()
 
 
 def draw_card(id):
@@ -212,6 +213,8 @@ def _wildcard_morph(color, wait):
         raise Exception
 
     time.sleep(wait)
+
+    sfx_morph.play()
 
     blank_card = Card(surf, c.PLAY_DECK_SCALE)
     blank_card.instant_move(c.PLAY_DECK_CENTER_X, c.PLAY_DECK_CENTER_Y)
@@ -403,7 +406,8 @@ def show():
 
     # Write prompt
     medium_font = SharedObjects.get_small_font()
-    prompt = medium_font.render("Pick a color (use arrow keys): ", True, (255, 255, 255))
+    prompt = medium_font.render(
+        "Pick a color (use arrow keys): ", True, (255, 255, 255))
     background.blit(prompt, (dim*(1-t), dim*(1-t)))
 
     confirm_msg = medium_font.render(

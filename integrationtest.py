@@ -247,7 +247,8 @@ def init_game():
     animation.game.draw_to_play_deck(first_discard[0].id)
     if lobbyLeader:
         sfx_whoosh.play()
-        show_text("Your Turn", 1, position=WINHEIGHT * 1/4)        
+        sfx_ding.play()
+        show_text("Your Turn", 1)        
         animation.util.start_timer(30, autoTurn)
 
 def endGame():
@@ -416,7 +417,8 @@ def do_game_iteration():
                     
                     if turn == networking.PID:
                         sfx_whoosh.play()
-                        show_text("Your Turn", 1, position=WINHEIGHT * 1/4)
+                        sfx_ding.play()
+                        show_text("Your Turn", 1)
                         animation.util.start_timer(30, autoTurn)
                     if len(CLIENT_PLAYER.hand.cards) == 1:
                         sfx_uno.play()
@@ -467,7 +469,8 @@ def do_game_iteration():
             turn = move["data"]["state"]["nextPlayer"]
             if turn==networking.PID:
                 sfx_whoosh.play()
-                show_text("Your Turn", 1, position=WINHEIGHT * 1/4)
+                sfx_ding.play()
+                show_text("Your Turn", 1)
                 animation.util.start_timer(30, autoTurn)
           elif (move["data"]["state"]["dest"]=="discard"):#play
             wildColor=None
@@ -530,7 +533,8 @@ def do_game_iteration():
                     turn = np
                 else:
                     sfx_whoosh.play()
-                    show_text("Your Turn", 1, position=WINHEIGHT * 1/4)
+                    sfx_ding.play()
+                    show_text("Your Turn", 1)
                     animation.util.start_timer(30, autoTurn)
             
             
