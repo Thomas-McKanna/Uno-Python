@@ -273,14 +273,22 @@ def do_lobby_iteration(searching):
                 searching=True
                 print("Clicked join game button!")
                 animation.lobby.join_button_to_waiting()
-                #animwait(10)
                 clientName = animation.lobby.get_name()
+                if clientName == "":
+                    clientName = "noob" + ''.join([str(random.randint(0,9)) for _ in range(3)])
                 threading.Thread(target = networking.serverConnect, args = (clientName,)).start()  #start connection thread
             elif animation.lobby.clicked_cancel(position):
                 print("Clicked cancel button!")
                 searching=False
                 endGame()
         elif event.type == pg.KEYDOWN and searching==False:
+            if event.key == pg.K_RETURN:
+                print("Pressed enter: finding match!")
+                animation.lobby.join_button_to_waiting()
+                clientName = animation.lobby.get_name()
+                if clientName == "":
+                    clientName = "noob" + ''.join([str(random.randint(0,9)) for _ in range(3)])
+                threading.Thread(target = networking.serverConnect, args = (clientName,)).start()  #start connection thread
             animation.lobby.append_char_to_name(chr(event.key))            
     if networking.playersDone and searching==True: #playersDone==True, so server is ready
         searching=False
