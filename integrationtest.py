@@ -496,6 +496,7 @@ def do_game_iteration():
                 if move["data"]["state"]["value"]=="draw":
                     sfx_whoosh.play()
                     show_text("Draw 2!", 1)
+                    animwait(2)
                     np = networking.getNextPlayer(networking.PID,turnOrder,"")
                     for i in range(2):
                         sfx_card_draw.play()
@@ -512,6 +513,7 @@ def do_game_iteration():
                 elif move["data"]["state"]["value"]=="wild_draw":
                     sfx_whoosh.play()
                     show_text("Draw 4!", 1)
+                    animwait(2)
                     np = networking.getNextPlayer(networking.PID,turnOrder,"")
                     for i in range(4):
                         sfx_card_draw.play()
