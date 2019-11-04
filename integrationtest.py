@@ -311,10 +311,61 @@ def do_game_iteration():
                 sfx_card_draw.play()
                 card = CLIENT_PLAYER.draw(1)[0]
                 animation.game.draw_card(card.id)
-				#send the draw event to the other players
-                np = networking.getNextPlayer(networking.PID,turnOrder,"")
-                networking.sendMove("deck",networking.PID,card.color,card.value,card.id,np)
-                turn = np
+                if card.match(DECK.getDiscard()):
+                    # We can play the card
+
+                    # Send the draw move, keeping nextplayer to self
+                    networking.sendMove("deck",networking.PID, card.color, card.value, card.id, networking.PID)
+
+                    # Send the played card and advance turn order
+                    
+                    
+                    sfx_card_place.play()
+                    # Handle playing of wild card
+                    if card.value in ["wild", "wild_draw"]:
+                        curr = 0
+                        animation.game.show_wildcard_wheel()
+                        animation.game.switch_wildcard_wheel_focus(curr)
+                        enter_pressed = False
+                        while not enter_pressed:
+                            for event in pygame.event.get():
+                                if event.type == pg.KEYDOWN:
+                                    if event.key == pg.K_LEFT:
+                                        curr = (curr + 1) % 4
+                                    if event.key == pg.K_RIGHT:
+                                        curr = (curr - 1) % 4
+                                    if event.key == pg.K_RETURN:
+                                        enter_pressed = True
+                                    animation.game.switch_wildcard_wheel_focus(curr)
+                            animation.next_frame()
+                        
+                        animation.game.hide_wildcard_wheel()
+
+                        if curr == 0:
+                            card.color = "Blue"
+                        elif curr == 1:
+                            card.color = "Red"
+                        elif curr == 2:
+                            card.color = "Yellow"
+                        else:
+                            card.color = "Green"
+
+                        animation.game.play_card(card.id, wild_color=curr)
+                    else:
+                        # Play non-wild card
+                        animation.game.play_card(card.id)
+                    CLIENT_PLAYER.playCard(card)
+					#send the play event to the other players
+                    np = networking.getNextPlayer(networking.PID, turnOrder, card.value)
+                    print("Sending Move!")
+                    networking.sendMove(networking.PID, "discard", card.color, card.value, card.id, np)
+                    print("Sent Move!")
+                    turn = np
+                else:
+                    #send the draw event to the other players
+                    np = networking.getNextPlayer(networking.PID,turnOrder,"")
+                    networking.sendMove("deck",networking.PID,card.color,card.value,card.id,np)
+                    turn = np
 
             # Play card
             elif event.key == pg.K_UP and turn == networking.PID:                
@@ -379,7 +430,7 @@ def do_game_iteration():
                     print("Cannot play card")
             elif (event.key == pg.K_DOWN or event.key == pg.K_UP) and turn != networking.PID:
                 sfx_error.play()
-                print("It is not your turn, you cannot play a Card now")
+                print("It is not your turn, you cannot play a Card now, current turn is:", turn, " | ", playerNumToName[turn])
             # Shift hand
             elif event.key == pg.K_LEFT:
                 sfx_tick.play()
