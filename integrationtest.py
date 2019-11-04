@@ -283,6 +283,7 @@ def do_lobby_iteration(searching):
                 endGame()
         elif event.type == pg.KEYDOWN and searching==False:
             if event.key == pg.K_RETURN:
+                searching=True
                 print("Pressed enter: finding match!")
                 animation.lobby.join_button_to_waiting()
                 clientName = animation.lobby.get_name()
