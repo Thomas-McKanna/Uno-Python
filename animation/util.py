@@ -57,7 +57,7 @@ def bring_to_front(animatable):
     SharedObjects.get_animatables().append(animatable)
 
 
-def show_text(msg, duration, bg_color=c.MESSAGE_BACKGROUND_COLOR, position=None):
+def show_text(msg, duration, bg_color=c.MESSAGE_BACKGROUND_COLOR):
     """
     A message is shown in the middle of the screen in large font.
     Parameters:
@@ -66,10 +66,7 @@ def show_text(msg, duration, bg_color=c.MESSAGE_BACKGROUND_COLOR, position=None)
     bg_color: (R,G,B) tuple indicating background color
     duration: a float indicating the number of seconds to display the message
     """
-    if position is not None and position >= 0 and position <= c.WINHEIGHT:
-        y = position
-    else:
-        y = c.HALF_WINHEIGHT
+    y = c.WINHEIGHT * 1/4
 
     # Message portion
     extra_large_font = SharedObjects.get_extra_large_font()
