@@ -431,7 +431,8 @@ def do_game_iteration():
                         sfx_uno.play()
                     elif len(CLIENT_PLAYER.hand.cards) == 0:
                         sfx_whoosh.play()
-                        show_text("You Win!", 3)
+                        sfx_gameover.play()
+                        show_text("You Win!", 5)
                         networking.sendEndGame()
                         endGame()
                 else:
@@ -464,7 +465,8 @@ def do_game_iteration():
     if(move != None):
       if(move.get("messageType") == "disconnect" or move.get("messageType") == "game-finished"):
         sfx_whoosh.play()
-        show_text("Game Over!", 3)
+        sfx_gameover.play()
+        show_text("Game Over!", 5)
         endGame()
       elif(move.get("messageType") == "error"):
         raise Exception(move.get('data'))
