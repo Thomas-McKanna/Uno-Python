@@ -1,20 +1,24 @@
 import pygame
-import cardanim.constants as c
+import animation.constants as c
 import json
 from struct import pack, unpack
 import select
-from cardanim.shared_objects import SharedObjects
+from animation.shared_objects import SharedObjects
 import time
 import threading
 import socket
 import sys
+from cardgame.cards import Card, Deck, Hand, ComplexEncoder
+
 
 players = None #list of players
 playersDone = False #specifies when the other thread has finished fetching client data
 PID = None        #personal ID for this client
 threadStop=False  #inter-thread message to stop when the game is being closed
+servConnect=None
+turnDir=1 #0:left, 1:right
 
-HOST = '127.0.0.1' #hardcoded host and port for now
+HOST = '169.254.227.222' #hardcoded host and port for now
 PORT = 8000
 
 #provided receive function
@@ -50,43 +54,27 @@ def send_json_norec(server_socket, msg_payload):
     server_socket.sendall(prefix + size + message)
     return
     
-#class for a text box, only really used to get username as of now    
-class InputBox:
-    def __init__(self, x, y, w, h, text=''):
-        self.rect = pygame.Rect(x, y, w, h)
-        self.color = c.COLOR_INACTIVE
-        self.text = text
-        self.txt_surface = SharedObjects.get_font().render(text, True, self.color)
-        self.active = False    
-    def update(self):
-        # Resize the box if the text is too long.
-        width = max(200, self.txt_surface.get_width()+10)
-        self.rect.w = width
-    def draw(self, screen):
-        # Blit the text.
-        screen.blit(self.txt_surface, (self.rect.x+5, self.rect.y+5))
-        # Blit the rect.
-        pygame.draw.rect(screen, self.color, self.rect, 2)
-        
-        
+    
 #used for the initial turn order sending        
-def turnSend(turn, turnOrder):
+def turnSend(turn, turnOrder, deck):
   global serv   
+  
   turnInfo = json.dumps({
         "messageType": "game-state",
         "data": {
             "state": {
                 "turn": turn,
-                "order": turnOrder
+                "order": turnOrder,
+                "deck": deck
             }
         }
-  })
+  }, cls=ComplexEncoder)
   #print(turnInfo)
   send_json_norec(serv, turnInfo)
 
 #used for the initial turn order sending  
 def turnRec():
-  global serv   
+  global serv  
   while True:
     ready_to_read, ready_to_write, in_error = \
      select.select(
@@ -117,43 +105,80 @@ def turnRec():
 
   
 #returns the next player whose turn it should be
-def getNextPlayer(id, turnOrder):
-  index=turnOrder.index(id)
-  if index==-1:
-    raise exception("Invalid player ID")
-  index+=1
-  if index >= len(turnOrder):
-    index=0
-  return turnOrder[index]
-  
+def getNextPlayer(id, turnOrder, cardValue):
+  global turnDir
+  skip=False  
+  ind=turnOrder.index(id)
+  if (cardValue=="reverse"):
+    if len(turnOrder)==2:
+      skip=True
+    else:
+      if turnDir==1:
+        turnDir=-1
+      else:
+        turnDir=1
+  elif (cardValue=="skip"):
+    skip=True
+  if skip:
+    ind=ind+2*turnDir
+  else:
+    ind=ind+turnDir  
+  if ind<0:
+    ind=ind+len(turnOrder)
+  elif ind>=len(turnOrder):
+    ind=ind-len(turnOrder)
+  return turnOrder[ind]
   
 #check for messages from the current player  
 def checkMoves():
   global serv   
-  ready_to_read, ready_to_write, in_error = \
-               select.select(
-                  [serv],
-                  [],
-                  [],
-                  0)
-  if len(ready_to_read)==1:
-    message = recv_json(serv)    
-    if message.get('messageType')=="game-state": #ignore messages not about game state
-      if "msgType" in message.get("data")["state"]: 
-        if message.get("data")["state"]["msgType"]=="move": #make sure the 'msgType' is move, so that other game state messages
-          return message.get("data")                        #not about moves do not break the main loop
-  return None
+  global turnDir
+  global PID
+  try:
+    ready_to_read, ready_to_write, in_error =\
+                  select.select(
+                    [serv],
+                    [],
+                    [],
+                    0)
+    if len(ready_to_read)==1:
+      message = recv_json(serv)    
+      if message.get('messageType') in ("game-state", "disconnect", "error", "game-finished"):
+        print("network checkMove: ",message)
+        if message.get('messageType')=="game-state" and message["data"]["state"]["sender"]!=PID:
+          if message["data"]["state"]["reverseOrder"]==True:
+            if turnDir==1:
+              turnDir=-1
+            else:
+              turnDir=1
+        return message                            
+    return None
+  except Exception:
+    return None
   
 #send move to other players  
-def sendMove(t,turn):  
+def sendMove(source,destination,color,value,cardID,nextPlayer):
+  """
+  Parameters:
+  -----------
+  source: can be "deck", "discard", or an integer specifying player id
+  destination: "discard", or an integer specifying player id
+  color: string
+  value: string
+  nextPlayer: integer specifying player id
+  """
   global serv, PID  
   move = json.dumps({
         "messageType": "game-state",
         "data": {
             "state": {
-                "msgType": "move",
-                "turn": turn, #next player
-                "type": t,    #either 'draw' or 'play', specifing drawing a card or playing a card
+                "source": source,
+                "dest": destination,
+                "color": color,
+                "value": value,
+                "cardID": cardID,
+                "reverseOrder": (value=="reverse" and destination=="discard"),
+                "nextPlayer": nextPlayer,
                 "sender": PID #designates who sent the message
             }
         }
@@ -163,12 +188,13 @@ def sendMove(t,turn):
   
   
 #separate thread function, used to connect clients and maintain connection  
-def serverConnect(serv,screenNameInput):
+def serverConnect(screenNameInput):
     global players
     global playersDone
     global PID
     global threadStop   
-    id = screenNameInput.text
+    global serv
+    id = screenNameInput
     
     data = json.dumps({
         "messageType": "connect",
@@ -250,13 +276,15 @@ def serverConnect(serv,screenNameInput):
       data = json.dumps({  #to avoid timeout
       "messageType": "client-list"
       })
-      send_json_norec(serv, data)
+      if (serv!=None):
+        send_json_norec(serv, data)
       time.sleep(3)
      
 
 
 #initial function for establishing connection to server
-def connect(clock):
+def connect():
+    global servConnect
     global players
     global playersDone
     global PID
@@ -273,69 +301,33 @@ def connect(clock):
         tries-=1
         if tries==0:
           print("Failed to connect to server")
-          pygame.quit()
-          sys.exit()
+          servConnect=0
+          return
         else:
           print("Could not connect to matchmaking server, trying again")          
           time.sleep(1)
     
     
+   #get player name
+    servConnect=1
     
-    screenNameInput = InputBox(300, 284, 200, 50)    #text box for name
-    done = False #use this event handler until player enters name
 
-    while not done:
-        for event in pygame.event.get():          
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                sys.exit()
-            elif event.type == pygame.MOUSEBUTTONDOWN:
-                if screenNameInput.rect.collidepoint(event.pos):                    
-                    screenNameInput.active = not screenNameInput.active
-                else:
-                    screenNameInput.active = False                
-                screenNameInput.color = c.COLOR_ACTIVE if screenNameInput.active else c.COLOR_INACTIVE
-            if event.type == pygame.KEYDOWN:
-                if screenNameInput.active:
-                    if event.key == pygame.K_RETURN:
-                        if (len(screenNameInput.text)>0):
-                            done = True                    #valid name, get out of the event handler loop
-                    elif event.key == pygame.K_BACKSPACE:
-                        screenNameInput.text = screenNameInput.text[:-1]
-                    else:
-                        screenNameInput.text += event.unicode
-                    screenNameInput.txt_surface = SharedObjects.get_font().render(screenNameInput.text, True, screenNameInput.color)
-
-        SharedObjects.get_surface().fill((30, 30, 30)) #fill background
-        
-        screenNameInput.draw(SharedObjects.get_surface()) #draw input box
-        
-        #create label text
-        SharedObjects.get_surface().blit(SharedObjects.get_font().render("Enter your name:", True, pygame.Color(52, 235, 88)), (290, 180))
-        pygame.display.flip() #flip buffer
-        clock.tick(c.FPS)
-    
-    
-    
-    th = threading.Thread(target = serverConnect, args = (serv, screenNameInput,)) #start connection thread
-    th.start()
-    screenNameInput.active = False #deselect name box when searching
-    screenNameInput.color = c.COLOR_INACTIVE
-    while playersDone==False: #sit in this useless event handler until other thread has found a game
-      for event in pygame.event.get():    #ignore every event except quit event
-        if event.type == pygame.QUIT:   
-          threadStop=True                   #tell other thread to die
-          pygame.quit()                     #quit out
-          sys.exit()      
-        print(event)
-      SharedObjects.get_surface().fill((30, 30, 30)) #fill background
       
-      screenNameInput.draw(SharedObjects.get_surface()) #draw textbox
-      #create label text
-      SharedObjects.get_surface().blit(SharedObjects.get_font().render("Enter your name:", True, pygame.Color(52, 235, 88)), (290, 180))
-      pygame.display.flip()
-      clock.tick(c.FPS)
-
+      
+def sendEndGame():    
+    global serv
+    endGameMessage = json.dumps({
+        "messageType": "game-finished"        
+    })  
+    send_json_norec(serv, endGameMessage)      
+      
+      
+      
+      
+      
+      
+      
+      
 #initalizes opponent name array      
 def opponentInit():
   o=[]
