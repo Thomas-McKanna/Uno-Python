@@ -56,7 +56,7 @@ def bring_to_front(animatable):
     SharedObjects.get_animatables().append(animatable)
 
 
-def show_text(msg, duration, bg_color=c.MESSAGE_BACKGROUND_COLOR):
+def show_text(msg, duration, bg_color=c.MESSAGE_BACKGROUND_COLOR, position=None):
     """
     A message is shown in the middle of the screen in large font.
     Parameters:
@@ -65,28 +65,33 @@ def show_text(msg, duration, bg_color=c.MESSAGE_BACKGROUND_COLOR):
     bg_color: (R,G,B) tuple indicating background color
     duration: a float indicating the number of seconds to display the message
     """
+    if position is not None and position >= 0 and position <= c.WINHEIGHT:
+        y = position
+    else:
+        y = c.HALF_WINHEIGHT
+
     # Message portion
     extra_large_font = SharedObjects.get_extra_large_font()
     msg_surf = extra_large_font.render(msg, True, c.MESSAGE_TEXT_COLOR)
 
     msg = Animatable(msg_surf, hidden=False, chain_movements=True)
 
-    msg.instant_move(0 - msg.rect.w / 2, c.HALF_WINHEIGHT)
+    msg.instant_move(0 - msg.rect.w / 2, y)
 
-    msg.move(c.HALF_WINWIDTH, c.HALF_WINHEIGHT, 1/5*duration)
-    msg.move(c.HALF_WINWIDTH+1, c.HALF_WINHEIGHT, 3/5*duration)
-    msg.move(c.WINWIDTH+msg.rect.w, c.HALF_WINHEIGHT, 1/5*duration)
+    msg.move(c.HALF_WINWIDTH, y, 1/5*duration)
+    msg.move(c.HALF_WINWIDTH+1, y, 3/5*duration)
+    msg.move(c.WINWIDTH+msg.rect.w, y, 1/5*duration)
 
     # Background portion
     surf = pygame.Surface((c.WINWIDTH, c.WINHEIGHT/5))
     surf.fill(bg_color)
 
     background = Animatable(
-        surf, -c.WINWIDTH, c.HALF_WINHEIGHT, hidden=False, chain_movements=True)
+        surf, -c.WINWIDTH, y, hidden=False, chain_movements=True)
 
-    background.move(c.HALF_WINWIDTH, c.HALF_WINHEIGHT, 1/5*duration)
-    background.move(c.HALF_WINWIDTH+1, c.HALF_WINHEIGHT, 3/5*duration)
-    background.move(2*c.WINWIDTH, c.HALF_WINHEIGHT, 1/5*duration)
+    background.move(c.HALF_WINWIDTH, y, 1/5*duration)
+    background.move(c.HALF_WINWIDTH+1, y, 3/5*duration)
+    background.move(2*c.WINWIDTH, y, 1/5*duration)
 
     disposable_animatables = SharedObjects.get_disposable_animatables()
 
@@ -170,5 +175,6 @@ def start_timer(seconds, cb=None):
     time of when timer started
     """
     now = time.time()
-    threading.Thread(target=_timer_thread, args=[seconds,cb], daemon=True).start()
+    threading.Thread(target=_timer_thread, args=[
+                     seconds, cb], daemon=True).start()
     return now
