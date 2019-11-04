@@ -12,6 +12,7 @@ import threading
 from cardgame.cards import Card, Deck, Hand, ComplexEncoder
 from cardgame.player import Player
 from animation.util import show_text
+from animation.constants import WINHEIGHT
 import animation
 
 from audio.audio import *
@@ -158,6 +159,7 @@ def do_intro_iteration(searching):
                 if searching==False:
                   searching=True
                   print("Clicked start card!")
+                  sfx_whoosh.play()
                   show_text("Connecting to Server...", 3)
                   networking.servConnect=None
                   #networking.connect()     
@@ -175,6 +177,7 @@ def do_intro_iteration(searching):
         elif networking.servConnect==0:
             searching=False
             networking.servConnect=None
+            sfx_whoosh.play()
             show_text("No Servers Available", 3)            
     return searching
                 
@@ -243,7 +246,8 @@ def init_game():
     DECK.discard(first_discard)
     animation.game.draw_to_play_deck(first_discard[0].id)
     if lobbyLeader:
-        show_text("Your Turn", 1)        
+        sfx_whoosh.play()
+        show_text("Your Turn", 1, position=WINHEIGHT * 1/4)        
         animation.util.start_timer(30, autoTurn)
 
 def endGame():
@@ -411,11 +415,13 @@ def do_game_iteration():
                     turn = np
                     
                     if turn == networking.PID:
-                        show_text("Your Turn", 1)
+                        sfx_whoosh.play()
+                        show_text("Your Turn", 1, position=WINHEIGHT * 1/4)
                         animation.util.start_timer(30, autoTurn)
                     if len(CLIENT_PLAYER.hand.cards) == 1:
                         sfx_uno.play()
                     elif len(CLIENT_PLAYER.hand.cards) == 0:
+                        sfx_whoosh.play()
                         show_text("You Win!", 3)
                         networking.sendEndGame()
                         endGame()
@@ -424,11 +430,13 @@ def do_game_iteration():
                     print("Cannot play card")
             elif (event.key == pg.K_DOWN or event.key == pg.K_UP) and turn != networking.PID:
                 sfx_error.play()
-                print("It is not your turn, you cannot play a Card now")
+                print("It is not your turn, you cannot play a Card now, current turn is:", turn, " | ", playerNumToName[turn])
             # Shift hand
             elif event.key == pg.K_LEFT:
+                sfx_tick.play()
                 animation.game.shift_hand(False)
             elif event.key == pg.K_RIGHT:
+                sfx_tick.play()
                 animation.game.shift_hand(True)
             # Testing wildcard wheel
             elif event.key == pg.K_9:
@@ -446,6 +454,7 @@ def do_game_iteration():
     #only read messages from other players
     if(move != None):
       if(move.get("messageType") == "disconnect" or move.get("messageType") == "game-finished"):
+        sfx_whoosh.play()
         show_text("Game Over!", 3)
         endGame()
       elif(move.get("messageType") == "error"):
@@ -457,7 +466,8 @@ def do_game_iteration():
             opponents[getPos(move["data"]["state"]["sender"])].draw(1)
             turn = move["data"]["state"]["nextPlayer"]
             if turn==networking.PID:
-                show_text("Your Turn", 1)
+                sfx_whoosh.play()
+                show_text("Your Turn", 1, position=WINHEIGHT * 1/4)
                 animation.util.start_timer(30, autoTurn)
           elif (move["data"]["state"]["dest"]=="discard"):#play
             wildColor=None
@@ -484,6 +494,7 @@ def do_game_iteration():
             if turn==networking.PID:                
                 #check if last played was draw type
                 if move["data"]["state"]["value"]=="draw":
+                    sfx_whoosh.play()
                     show_text("Draw 2!", 1)
                     np = networking.getNextPlayer(networking.PID,turnOrder,"")
                     for i in range(2):
@@ -499,6 +510,7 @@ def do_game_iteration():
                         animation.next_frame()
                     turn = np
                 elif move["data"]["state"]["value"]=="wild_draw":
+                    sfx_whoosh.play()
                     show_text("Draw 4!", 1)
                     np = networking.getNextPlayer(networking.PID,turnOrder,"")
                     for i in range(4):
@@ -515,7 +527,8 @@ def do_game_iteration():
 
                     turn = np
                 else:
-                    show_text("Your Turn", 1)
+                    sfx_whoosh.play()
+                    show_text("Your Turn", 1, position=WINHEIGHT * 1/4)
                     animation.util.start_timer(30, autoTurn)
             
             
