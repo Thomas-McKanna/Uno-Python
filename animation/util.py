@@ -3,6 +3,7 @@ import time
 import threading
 import math
 
+from audio.audio import *
 from .animatable import Animatable
 from .shared_objects import SharedObjects
 
@@ -127,6 +128,7 @@ def _timer_thread(seconds, cb=None):
     broke_out = False
     while seconds > 0:
         if not TIMER_THREAD_STOP:
+            sfx_timer.play()
             time.sleep(1)
             seconds = start_seconds - math.floor(time.time() - start_time)
 
