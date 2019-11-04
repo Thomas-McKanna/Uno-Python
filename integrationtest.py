@@ -307,10 +307,61 @@ def do_game_iteration():
                 sfx_card_draw.play()
                 card = CLIENT_PLAYER.draw(1)[0]
                 animation.game.draw_card(card.id)
-				#send the draw event to the other players
-                np = networking.getNextPlayer(networking.PID,turnOrder,"")
-                networking.sendMove("deck",networking.PID,card.color,card.value,card.id,np)
-                turn = np
+                if card.match(DECK.getDiscard()):
+                    # We can play the card
+
+                    # Send the draw move, keeping nextplayer to self
+                    networking.sendMove("deck",networking.PID, card.color, card.value, card.id, networking.PID)
+
+                    # Send the played card and advance turn order
+                    
+                    
+                    sfx_card_place.play()
+                    # Handle playing of wild card
+                    if card.value in ["wild", "wild_draw"]:
+                        curr = 0
+                        animation.game.show_wildcard_wheel()
+                        animation.game.switch_wildcard_wheel_focus(curr)
+                        enter_pressed = False
+                        while not enter_pressed:
+                            for event in pygame.event.get():
+                                if event.type == pg.KEYDOWN:
+                                    if event.key == pg.K_LEFT:
+                                        curr = (curr + 1) % 4
+                                    if event.key == pg.K_RIGHT:
+                                        curr = (curr - 1) % 4
+                                    if event.key == pg.K_RETURN:
+                                        enter_pressed = True
+                                    animation.game.switch_wildcard_wheel_focus(curr)
+                            animation.next_frame()
+                        
+                        animation.game.hide_wildcard_wheel()
+
+                        if curr == 0:
+                            card.color = "Blue"
+                        elif curr == 1:
+                            card.color = "Red"
+                        elif curr == 2:
+                            card.color = "Yellow"
+                        else:
+                            card.color = "Green"
+
+                        animation.game.play_card(card.id, wild_color=curr)
+                    else:
+                        # Play non-wild card
+                        animation.game.play_card(card.id)
+                    CLIENT_PLAYER.playCard(card)
+					#send the play event to the other players
+                    np = networking.getNextPlayer(networking.PID, turnOrder, card.value)
+                    print("Sending Move!")
+                    networking.sendMove(networking.PID, "discard", card.color, card.value, card.id, np)
+                    print("Sent Move!")
+                    turn = np
+                else:
+                    #send the draw event to the other players
+                    np = networking.getNextPlayer(networking.PID,turnOrder,"")
+                    networking.sendMove("deck",networking.PID,card.color,card.value,card.id,np)
+                    turn = np
 
             # Play card
             elif event.key == pg.K_UP and turn == networking.PID:                
@@ -376,9 +427,9 @@ def do_game_iteration():
                 print("It is not your turn, you cannot play a Card now")
             # Shift hand
             elif event.key == pg.K_LEFT:
-              animation.game.shift_hand(False)
+                animation.game.shift_hand(False)
             elif event.key == pg.K_RIGHT:
-              animation.game.shift_hand(True)
+                animation.game.shift_hand(True)
             # Testing wildcard wheel
             elif event.key == pg.K_9:
                 animation.game.show_wildcard_wheel()
@@ -406,8 +457,8 @@ def do_game_iteration():
             opponents[getPos(move["data"]["state"]["sender"])].draw(1)
             turn = move["data"]["state"]["nextPlayer"]
             if turn==networking.PID:
-              show_text("Your Turn", 1)
-              animation.util.start_timer(30, autoTurn)
+                show_text("Your Turn", 1)
+                animation.util.start_timer(30, autoTurn)
           elif (move["data"]["state"]["dest"]=="discard"):#play
             wildColor=None
             if move["data"]["state"]["value"] in ["wild", "wild_draw"]:
