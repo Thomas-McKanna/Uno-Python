@@ -98,6 +98,11 @@ def show_text(msg, duration, bg_color=c.MESSAGE_BACKGROUND_COLOR):
     disposable_animatables.append(msg)
 
 
+def time_is_running():
+    global TIMER_THREAD_RUNNING
+    return TIMER_THREAD_RUNNING
+
+
 def _timer_thread(seconds, cb=None):
     global timer, TIMER_THREAD_STOP, TIMER_THREAD_RUNNING
 
