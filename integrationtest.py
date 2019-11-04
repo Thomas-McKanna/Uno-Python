@@ -487,6 +487,10 @@ def do_game_iteration():
             opp = opponents[getPos(move["data"]["state"]["sender"])]
           
             opp.playCard(opp.getCardFromID(move["data"]["state"]["cardID"]))
+
+            if len(opp.hand.cards) == 1:
+                sfx_uno.play()
+
             turn = move["data"]["state"]["nextPlayer"]
             
             #if turn is now this player, check if last card is draw type
